@@ -112,3 +112,41 @@ Stage Summary:
 - Nota técnica: el gating es funcional de verdad (límites diarios con reset a medianoche, bloqueos por nivel, upgrades/downgrades instantáneos que persisten en localStorage); los "pagos" son demo explícita.
 - Archivos nuevos: src/lib/lms/plans.ts, src/components/lms/plan-badge.tsx, src/components/lms/views/pricing.tsx. Modificados: store, types, globals.css, shell, page, views/{courses,tutor,skills,progress,home,exams}.
 - Capturas: preview-pricing.png, preview-platinum-home.png, preview-cert-verified.png, preview-weekly-plan.png, preview-pricing-mobile.png.
+
+---
+Task ID: 4
+Agent: Super Z (main agent)
+Task: Añadir PANEL ADMIN con control total de la app (usuario: Mkoo, password: Mk/06612) — administrar, gestionar y tener acceso completo a la plataforma Italiano Master.
+
+Work Log:
+- Prisma: nuevo schema (User con role/level/plan/xp/streak/lessonsDone/wordsInSrs/active/lastSeen, Setting key/value, TelemetryEvent con índices) → db:push. Seed scripts/seed-admin.ts: admin Mkoo (hash sha256 "italiano-master::user::pass"), 6 estudiantes demo con progreso, config por defecto, 83 eventos de telemetría 7 días.
+- Lib servidor src/lib/admin/server.ts: hashPassword, getSetting/setSetting, token admin bearer (UUID 7d TTL), requireAdmin guard, getAppConfig/saveAppConfig (merge defensivo), logEvent/logAdminAction.
+- 13 API routes: /api/app-config (GET bundle público: config + vocabOverrides + lessonOverrides + customExercises + version con hash djb2 del contenido), /api/telemetry (POST + lastSeen), /api/auth/login (ambos roles; admin recibe token), /api/auth/logout, /api/auth/profile (GET progreso servidor + PATCH con XP monotónico Math.max — nunca baja), /api/admin/{overview,users,settings,content,activity,export,reset,seed} (todas con Bearer; Mkoo protegido contra auto-eliminación).
+- Cliente: src/lib/lms/appconfig.ts (AppConfig + bundle + defaults), remote.ts (getClientId, token localStorage, fetchAppConfig, telemetry fire&forget, login/logout, syncProfile debounced, fetchServerProgress, adminFetch), overrides.ts (motor que reconstruye VOCAB/COURSES/EXERCISES in place desde copias prístinas + aplica precios/flags; exporta snapshots prístinas para el panel; setPlansDisabled).
+- plans.ts: flag PLANS_DISABLED + planLimits() (todos con límites platinum si el admin desactiva planes); hasAtLeast/levelAllowed/requiredPlanForLevel la respetan.
+- store.ts: account, remoteConfig, configVersion, loginAccount (adopta displayName/level/plan y max(xp,streak) servidor), adoptServerProgress, logoutAccount, applyRemoteConfig (aplica overrides + forceDefaults), telemetría en markLessonComplete/recordQuiz/addCertificate/setLevel/login.
+- shell.tsx: nav "Panel Admin" (grupo Sistema, icono Shield), botón Accedi/Esci en header con modal login (estudiantes + admin), chip de cuenta con rol, features.plans/tutor/games/certificates ocultan entradas de nav (deps del useMemo corregidas: +features), appName configurable en logo/footer.
+- page.tsx: fetch config al boot + refetch al focus (throttle 60s), telemetría boot por sesión, maintenance guard con MaintenanceScreen (mensaje admin + login embebido "Area riservata" para que el admin entre durante mantenimiento), subscribe con debounce 1.2s que sincroniza progreso del estudiante, key configVersion para remontar vistas al cambiar contenido, boot-adopt de progreso servidor para sesiones persistidas.
+- Panel Admin (4 archivos): admin.tsx (LoginGate "Area Riservata" que también hace loginAccount — coherencia header + guard; 6 tabs; Dashboard con KPIs + BarChart recharts 7d + distribución niveles + top estudiantes + toggle mantenimiento + actividad reciente; Actividad con filtros por tipo; Datos con export JSON, seed demo y zona peligrosa con confirmación RESET), admin-users.tsx (tabla con búsqueda, CRUD completo: crear/editar/eliminar, roles, planes, XP, racha, activo, password reset, Mkoo protegido), admin-content.tsx (Vocabolario: 156 palabras base+custom con estados base/custom/modificada/oculta, editor completo, ocultar/restaurar/eliminar; Lezioni: 45 lecciones con toggle desactivar, editor de lecciones custom con vocabulario rápido y constructor de preguntas MC que genera palabras+ejercicios custom), admin-settings.tsx (identidad appName/tagline, mantenimiento+mensaje, 5 toggles de funciones, 7 niveles activables, defaults con forceDefaults, precios de planes).
+- Gating por config en vistas: tutor.tsx (aviso desactivado + telemetría), games.tsx, exams.tsx CertificatesView, pricing.tsx ("Tutto sbloccato per tutti"), courses.tsx + home.tsx (niveles desactivados "Disattivato dall'amministrazione"), plan-badge.tsx (UpgradeCta/LockedOverlay/LockedFeatureCard → null si planes off), 7 usos de PLANS[plan].limits migrados a planLimits().
+- Bugs encontrados y corregidos: (1) transporte de herramientas come la secuencia "[m" → corrupción en tutor.tsx useState reparada y verificada por booleanos Python (la visualización siempre la oculta); (2) deps del useMemo del sidebar sin features → nav obsoleto tras cambio de config; (3) LoginGate no hacía loginAccount → header y guard de mantenimiento no reconocían al admin; (4) sincronización de perfil podía borrar XP del servidor (local 0 > servidor 1840) → triple fix: XP monotónico en servidor + max() al login + boot-adopt; (5) hooks condicionales en tutor/games/exams/pricing evitados insertando los guards tras todos los hooks; (6) set-state-in-effect ×4 → patrón setTimeout(0).
+- Dev server se cayó a mitad de la sesión (PID muerto) → recuperado con init-fullstack.sh.
+
+Verification (agent-browser E2E + curl):
+- Login Mkoo/Mk/06612 → Pannello di Controllo con 6 tabs ✓; credencial errónea → "Credenciales incorrectas" ✓; giulia estudiante → sin token ✓
+- Dashboard: KPIs (7→8 usuarios, XP total, eventos hoy), BarChart 7 días, niveles A1-C1, top estudiantes ✓
+- Usuarios: creado mario.test (B1/pro) → "Usuario creado"; editado XP 500/racha 3 → "actualizado" ✓
+- Contenido: palabra custom "la merenda" → Vocabulario público "Saludos 11 parole" tras reload ✓; overrides vocab/lessons verificados por API (crear/ocultar/restaurar) ✓
+- Impostazioni: desactivar juegos → guardado → nav sin "Juegos" (tras fix de deps) ✓; restaurado ✓
+- Mantenimiento: activado con mensaje custom → visitante ve "Manutenzione in corso" + mensaje ✓; admin entra desde "Area riservata" embebida → app completa ✓; desactivado ✓
+- Estudiante: login giulia → "Ciao Giulia", chip PRO, XP 1840 adoptado del servidor tras restauración ✓
+- Actividad: filtros por tipo con contadores (19 tutor, 18 lecciones, 17 boot…) ✓
+- Datos: export JSON (8 usuarios, 117 eventos, hash truncado) ✓
+- Móvil 390px admin: sin overflow horizontal ✓; modo oscuro ✓
+- bun run lint: 0 errores ✓; tsc --noEmit: limpio ✓; dev.log: sin errores runtime ✓
+
+Stage Summary:
+- Deliverable: PANEL ADMIN "Pannello di Controllo" integrado en Italiano Master (sidebar → Sistema → Panel Admin, o botón Accedi del header) con control total real: gestión de usuarios (CRUD + planes + XP), gestión de contenido (palabras y lecciones custom con editor + ocultación reversible de contenido base), configuración global (identidad, mantenimiento con login embebido, 5 funciones activables, niveles, defaults forzables, precios), telemetría y actividad, export/backup JSON, seed demo y reset por zonas.
+- Credenciales: Mkoo / Mk/06612 (rol admin, protegido contra eliminación). Estudiantes demo: giulia, carlos, lucia, diego, valentina, marco (contraseña italiano123) + mario.test creado en pruebas (clave123).
+- Arquitectura: SQLite+Prisma (User/Setting/TelemetryEvent), 13 API routes con token bearer, overrides de contenido reconstruidos in place (contenido base nunca se pierde), version con hash de contenido → clientes se actualizan al enfocar pestaña, XP monotónico en servidor.
+- Capturas: download/preview-admin-{dashboard,dashboard-dark,dark,mobile,activity,final}.png

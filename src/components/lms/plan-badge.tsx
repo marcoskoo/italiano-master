@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Crown, Gem, Lock, Sparkles, Sprout, Zap } from "lucide-react";
-import { PLANS, type PlanId } from "@/lib/lms/plans";
+import { PLANS, plansDisabled, type PlanId } from "@/lib/lms/plans";
 import { useLms } from "@/lib/lms/store";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +42,7 @@ export function PlanChip({ size = "md", onClick, className }: { size?: "sm" | "m
 /** CTA dorada para usuarios FREE. */
 export function UpgradeCta({ className, label = "⚡ PRO" }: { className?: string; label?: string }) {
   const navigate = useLms((s) => s.navigate);
+  if (plansDisabled()) return null;
   return (
     <button
       type="button"
@@ -70,6 +71,7 @@ export function LockedOverlay({
   className?: string;
 }) {
   const navigate = useLms((s) => s.navigate);
+  if (plansDisabled()) return null;
   return (
     <div
       className={cn(
@@ -104,6 +106,7 @@ export function LockedFeatureCard({
   required?: PlanId;
 }) {
   const navigate = useLms((s) => s.navigate);
+  if (plansDisabled()) return null;
   return (
     <div className="relative flex min-h-64 flex-col items-center justify-center gap-2 overflow-hidden rounded-3xl border-2 border-dashed border-oro/45 bg-oro-tenue/25 p-6 text-center dark:bg-oro-tenue/10">
       <span aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle at 30% 20%, #c9862b 0, transparent 40%), radial-gradient(circle at 75% 80%, #128a54 0, transparent 35%)" }} />

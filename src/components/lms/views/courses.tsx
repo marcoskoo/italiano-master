@@ -29,6 +29,7 @@ export function CoursesView() {
   const completedLessons = useLms((s) => s.completedLessons);
   const userLevel = useLms((s) => s.level);
   const plan = useLms((s) => s.plan);
+  const remoteConfig = useLms((s) => s.remoteConfig);
   const [openLevel, setOpenLevel] = useState<string | null>(navParams.level ?? null);
   const [openLesson, setOpenLesson] = useState<string | null>(navParams.lessonId ?? null);
 
@@ -49,6 +50,7 @@ export function CoursesView() {
             const total = c.units.reduce((n, u) => n + u.lessons.length, 0);
             const done = c.units.reduce((n, u) => n + u.lessons.filter((l) => completedLessons.includes(l.id)).length, 0);
             const isCurrent = userLevel === c.level;
+            const levelOff = !(remoteConfig?.levels?.[c.level] ?? true);
             const locked = !levelAllowed(plan, c.level);
             const required = PLANS[requiredPlanForLevel(c.level)];
             return (
@@ -57,19 +59,27 @@ export function CoursesView() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                onClick={() => (locked ? navigate("piani") : setOpenLevel(c.level))}
+                onClick={() => (levelOff ? undefined : locked ? navigate("piani") : setOpenLevel(c.level))}
+                disabled={levelOff}
                 className={cn(
                   "group relative overflow-hidden rounded-3xl border-2 p-5 text-left transition-all",
-                  locked
+                  levelOff
+                    ? "cursor-not-allowed border-dashed border-soft bg-inchiostro/5 opacity-60"
+                    : locked
                     ? "border-dashed border-oro/50 bg-oro-tenue/25 hover:shadow-lg dark:bg-oro-tenue/10"
                     : isCurrent
                       ? "border-verde bg-verde-tenue hover:-translate-y-1 hover:shadow-lg"
                       : "border-soft bg-surface hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
                 )}
               >
-                {locked && (
+                {locked && !levelOff && (
                   <span className="absolute right-4 top-4 z-10 inline-flex items-center gap-1 rounded-full plan-gold-bg px-2.5 py-1 text-[10px] font-bold text-white shadow-md">
                     🔒 {required.name}
+                  </span>
+                )}
+                {levelOff && (
+                  <span className="absolute right-4 top-4 z-10 rounded-full bg-inchiostro/15 px-2.5 py-1 text-[10px] font-bold text-inchiostro/70">
+                    disattivato
                   </span>
                 )}
                 <div className={cn("flex items-center justify-between", locked && "opacity-50")}>

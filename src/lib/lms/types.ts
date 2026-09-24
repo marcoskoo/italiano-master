@@ -203,7 +203,7 @@ export type ViewId =
   | "inicio" | "progreso" | "test" | "cursos" | "grammatica" | "vocabolario"
   | "conversazione" | "ascolto" | "lettura" | "scrittura" | "pronuncia"
   | "coniugatore" | "dizionario" | "situazioni" | "cultura" | "tutor" | "giochi"
-  | "repaso" | "esami" | "certificati" | "impostazioni" | "piani";
+  | "repaso" | "esami" | "certificati" | "impostazioni" | "piani" | "admin";
 
 export interface NavParams {
   level?: CefrLevel | "zero";

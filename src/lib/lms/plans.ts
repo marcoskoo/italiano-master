@@ -123,15 +123,35 @@ export function planRank(id: PlanId): number {
   return PLAN_ORDER.indexOf(id);
 }
 
+/* Bandera global: cuando el admin desactiva el sistema de planes (features.plans=false)
+   todo el gating desaparece y todos los usuarios tienen acceso completo. */
+let PLANS_DISABLED = false;
+export function setPlansDisabled(disabled: boolean): void {
+  PLANS_DISABLED = disabled;
+}
+export function plansDisabled(): boolean {
+  return PLANS_DISABLED;
+}
+
+/** Límites efectivos del plan: si el admin desactivó el sistema de planes,
+    todo el mundo tiene los límites PLATINUM (acceso total). */
+export function planLimits(plan: PlanId): PlanLimits {
+  if (PLANS_DISABLED) return PLANS.platinum.limits;
+  return PLANS[plan].limits;
+}
+
 export function hasAtLeast(plan: PlanId, min: PlanId): boolean {
+  if (PLANS_DISABLED) return true;
   return planRank(plan) >= planRank(min);
 }
 
 export function levelAllowed(plan: PlanId, level: string): boolean {
+  if (PLANS_DISABLED) return true;
   return PLANS[plan].limits.levels.includes(level as CefrLevel | "zero");
 }
 
 export function requiredPlanForLevel(level: string): PlanId {
+  if (PLANS_DISABLED) return "free";
   if (["zero", "A1", "A2"].includes(level)) return "free";
   if (["B1", "B2"].includes(level)) return "pro";
   return "premium";

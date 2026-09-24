@@ -36,6 +36,7 @@ export function PricingView() {
   const plan = useLms((s) => s.plan);
   const setPlan = useLms((s) => s.setPlan);
   const navigate = useLms((s) => s.navigate);
+  const remoteConfig = useLms((s) => s.remoteConfig);
   const userName = useLms((s) => s.userName);
 
   const [billing, setBilling] = useState<"monthly" | "yearly">("yearly");
@@ -63,6 +64,22 @@ export function PricingView() {
     setCheckout(null);
     setStage("summary");
   };
+
+  // sistema de planes desactivado desde el Panel Admin (tras todos los hooks)
+  if (remoteConfig && !remoteConfig.features.plans) {
+    return (
+      <div className="mx-auto max-w-lg rounded-3xl border border-soft bg-surface p-8 text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-verde-tenue text-2xl">🎁</span>
+        <h2 className="mt-4 font-display text-xl font-semibold">Tutto sbloccato per tutti</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-it">
+          La administración ha desactivado el sistema de planes: todos los cursos, el tutor IA y las analíticas avanzadas están abiertos para toda la comunidad. Buono studio!
+        </p>
+        <button onClick={() => navigate("inicio")} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 hover:bg-verde-scuro">
+          Torna all'inizio
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12">

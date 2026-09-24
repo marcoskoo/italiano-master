@@ -13,7 +13,7 @@ import { getExercises } from "@/lib/lms/exercises";
 import { CEFR_LEVELS, type CefrLevel } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { speakSequence, stopSpeaking, speak } from "@/lib/lms/tts";
-import { PLANS, todayUsage } from "@/lib/lms/plans";
+import { PLANS, todayUsage, planLimits } from "@/lib/lms/plans";
 import { QuizEngine } from "../quiz-engine";
 import { StepReveal } from "../step-reveal";
 import { AudioButton, VoiceHint } from "../audio-button";
@@ -186,7 +186,7 @@ export function ReadingView() {
   const [quizOpen, setQuizOpen] = useState(false);
   const plan = useLms((s) => s.plan);
   const navigate = useLms((s) => s.navigate);
-  const exclusiveOk = PLANS[plan].limits.exclusiveContent;
+  const exclusiveOk = planLimits(plan).exclusiveContent;
 
   const texts = useMemo(() => READINGS.filter((t) => levelFilter === "all" || t.level === levelFilter), [levelFilter]);
   const text = READINGS.find((t) => t.id === openId);
@@ -310,7 +310,7 @@ export function WritingView() {
   const writingCountDate = useLms((s) => s.writingCountDate);
   const incrementWriting = useLms((s) => s.incrementWriting);
 
-  const wLimit = PLANS[plan].limits.writingPerDay;
+  const wLimit = planLimits(plan).writingPerDay;
   const wUsed = todayUsage(writingCount, writingCountDate);
   const wBlocked = wLimit >= 0 && wUsed >= wLimit;
 
@@ -467,7 +467,7 @@ export function ConversationView() {
   const navigate = useLms((s) => s.navigate);
   const level = useLms((s) => s.level);
   const plan = useLms((s) => s.plan);
-  const exclusiveOk = PLANS[plan].limits.exclusiveContent;
+  const exclusiveOk = planLimits(plan).exclusiveContent;
 
   return (
     <div className="space-y-6">

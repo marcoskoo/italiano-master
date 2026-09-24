@@ -18,6 +18,24 @@ type GameId = "memoria" | "ordinare" | "quiz";
 
 export function GamesView() {
   const [game, setGame] = useState<GameId | null>(null);
+  const remoteConfig = useLms((s) => s.remoteConfig);
+  const navigate = useLms((s) => s.navigate);
+
+  // función desactivada desde el Panel Admin (tras todos los hooks)
+  if (remoteConfig && !remoteConfig.features.games) {
+    return (
+      <div className="mx-auto max-w-lg rounded-3xl border border-soft bg-surface p-8 text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-inchiostro/10 text-2xl">🎮</span>
+        <h2 className="mt-4 font-display text-xl font-semibold">Giochi temporalmente desactivados</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-it">
+          La administración ha desactivado la sección de juegos por ahora. Los cursos, el vocabulario y el repaso espaciado siguen a tu disposición.
+        </p>
+        <button onClick={() => navigate("inicio")} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 hover:bg-verde-scuro">
+          Torna all'inizio
+        </button>
+      </div>
+    );
+  }
 
   if (game === "memoria") return <MemoryGame onBack={() => setGame(null)} />;
   if (game === "ordinare") return <OrderGame onBack={() => setGame(null)} />;

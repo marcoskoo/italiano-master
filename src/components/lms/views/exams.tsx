@@ -7,7 +7,7 @@ import { CEFR_LEVELS, LEVEL_LABELS, type CefrLevel } from "@/lib/lms/types";
 import { exercisesByLevel } from "@/lib/lms/exercises";
 import { COURSES } from "@/lib/lms/courses";
 import { useLms } from "@/lib/lms/store";
-import { PLANS, levelAllowed, requiredPlanForLevel } from "@/lib/lms/plans";
+import { PLANS, levelAllowed, requiredPlanForLevel, planLimits } from "@/lib/lms/plans";
 import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
 import { QuizEngine } from "../quiz-engine";
 import { PlanChip } from "../plan-badge";
@@ -142,8 +142,9 @@ export function CertificatesView() {
   const certificates = useLms((s) => s.certificates);
   const userName = useLms((s) => s.userName);
   const navigate = useLms((s) => s.navigate);
+  const remoteConfig = useLms((s) => s.remoteConfig);
   const plan = useLms((s) => s.plan);
-  const verified = PLANS[plan].limits.verifiedCerts;
+  const verified = planLimits(plan).verifiedCerts;
 
   const download = (cert: { id: string; level: string; date: string; score: number }) => {
     const canvas = document.createElement("canvas");
@@ -219,7 +220,23 @@ export function CertificatesView() {
   };
 
   if (certificates.length === 0) {
+    // función desactivada desde el Panel Admin (tras todos los hooks)
+  if (remoteConfig && !remoteConfig.features.certificates) {
     return (
+      <div className="mx-auto max-w-lg rounded-3xl border border-soft bg-surface p-8 text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-inchiostro/10 text-2xl">🏆</span>
+        <h2 className="mt-4 font-display text-xl font-semibold">Certificados desactivados</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-it">
+          La administración ha desactivado la emisión de certificados. Podrás seguir estudiando y haciendo exámenes; tu progreso se guarda igualmente.
+        </p>
+        <button onClick={() => navigate("inicio")} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 hover:bg-verde-scuro">
+          Torna all'inizio
+        </button>
+      </div>
+    );
+  }
+
+  return (
       <div className="mx-auto max-w-lg rounded-3xl border border-soft bg-surface p-8 text-center">
         <p className="text-5xl" aria-hidden="true">🏆</p>
         <h2 className="mt-4 font-display text-2xl font-semibold">Nessun certificato ancora</h2>

@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import { Bot, Check, Crown, PenLine, Send, Sparkles, Theater, User } from "lucide-react";
 import { CEFR_LEVELS } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
-import { PLANS, todayUsage } from "@/lib/lms/plans";
+import { PLANS, todayUsage, planLimits } from "@/lib/lms/plans";
+import { telemetry } from "@/lib/lms/remote";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Tutor IA ──────────────────────────────────────────────── */
@@ -28,6 +29,7 @@ const QUICK = [
 export function TutorView() {
   const navParams = useLms((s) => s.navParams);
   const navigate = useLms((s) => s.navigate);
+  const remoteConfig = useLms((s) => s.remoteConfig);
   const userLevel = useLms((s) => s.level);
   const userName = useLms((s) => s.userName);
   const addXp = useLms((s) => s.addXp);
@@ -36,9 +38,10 @@ export function TutorView() {
   const tutorCountDate = useLms((s) => s.tutorCountDate);
   const incrementTutor = useLms((s) => s.incrementTutor);
 
-  const tutorLimit = PLANS[plan].limits.tutorPerDay;
+  const tutorLimit = planLimits(plan).tutorPerDay;
   const tutorUsed = todayUsage(tutorCount, tutorCountDate);
   const tutorBlocked = tutorLimit >= 0 && tutorUsed >= tutorLimit;
+  const account = useLms((s) => s.account);
 
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -65,6 +68,7 @@ export function TutorView() {
     setMessages(nextMessages);
     setInput("");
     setLoading(true);
+    telemetry("tutor_message", { mode }, account?.username);
     try {
       const res = await fetch("/api/tutor", {
         method: "POST",
@@ -100,6 +104,22 @@ export function TutorView() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  // función desactivada desde el Panel Admin (tras todos los hooks)
+  if (remoteConfig && !remoteConfig.features.tutor) {
+    return (
+      <div className="mx-auto max-w-lg rounded-3xl border border-soft bg-surface p-8 text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-inchiostro/10 text-2xl">🤖</span>
+        <h2 className="mt-4 font-display text-xl font-semibold">Tutor IA temporalmente desactivado</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-it">
+          La administración ha desactivado el tutor IA en este momento. Todos los demás materiales (cursos, gramática, vocabulario, juegos) siguen disponibles. Vuelve a probar más tarde.
+        </p>
+        <button onClick={() => navigate("inicio")} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 hover:bg-verde-scuro">
+          Torna all'inizio
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-3xl">

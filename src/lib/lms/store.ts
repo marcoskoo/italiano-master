@@ -6,6 +6,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CefrLevel, SrsCard, SkillStats, QuizResultEntry, ViewId, NavParams, Topic, WordCategory } from "./types";
 import type { PlanId } from "./plans";
+import type { AppConfig, AppConfigBundle } from "./appconfig";
+import { applyRemoteBundle } from "./overrides";
+import { telemetry } from "./remote";
+
+export interface Account {
+  id: string;
+  username: string;
+  displayName: string;
+  role: "admin" | "student";
+}
 
 export interface Settings {
   theme: "light" | "dark";
@@ -50,6 +60,11 @@ interface LmsState {
   navParams: NavParams;
   onboarded: boolean;
 
+  /* cuenta + configuración remota (Panel Admin) */
+  account: Account | null;
+  remoteConfig: AppConfig | null;
+  configVersion: string;
+
   /* plan PRO/PREMIUM/PLATINUM */
   plan: PlanId;
   planBilling: "monthly" | "yearly" | null;
@@ -77,6 +92,10 @@ interface LmsState {
   incrementTutor: () => void;
   incrementWriting: () => void;
   resetAll: () => void;
+  loginAccount: (account: Account, profile?: { displayName?: string; level?: string; plan?: string; xp?: number; streak?: number }) => void;
+  adoptServerProgress: (progress: { xp: number; streak: number }) => void;
+  logoutAccount: () => void;
+  applyRemoteConfig: (bundle: AppConfigBundle) => void;
 }
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -122,6 +141,10 @@ export const useLms = create<LmsState>()(
       navParams: {},
       onboarded: false,
 
+      account: null,
+      remoteConfig: null,
+      configVersion: "",
+
       plan: "free",
       planBilling: null,
       planSince: null,
@@ -134,7 +157,10 @@ export const useLms = create<LmsState>()(
 
       setUserName: (name) => set({ userName: name.trim() || "Studente" }),
 
-      setLevel: (level) => set({ level, placementDone: true }),
+      setLevel: (level) => {
+        set({ level, placementDone: true });
+        telemetry("level_set", { level }, get().account?.username);
+      },
 
       updateSettings: (partial) => set({ settings: { ...get().settings, ...partial } }),
 
@@ -170,9 +196,13 @@ export const useLms = create<LmsState>()(
           completedLessons: s.completedLessons.includes(lessonId) ? s.completedLessons : [...s.completedLessons, lessonId],
           completedUnits: unitId && !s.completedUnits.includes(unitId) ? [...s.completedUnits, unitId] : s.completedUnits,
         });
+        telemetry("lesson_completed", { lessonId, total: s.completedLessons.length + 1 }, s.account?.username);
       },
 
-      recordQuiz: (entry) => set({ quizHistory: [entry, ...get().quizHistory].slice(0, 60) }),
+      recordQuiz: (entry) => {
+        set({ quizHistory: [entry, ...get().quizHistory].slice(0, 60) });
+        telemetry("quiz_completed", { label: entry.label, score: entry.score, total: entry.total }, get().account?.username);
+      },
 
       recordError: (topic) => {
         const el = { ...get().errorLog };
@@ -192,6 +222,7 @@ export const useLms = create<LmsState>()(
         const s = get();
         if (s.certificates.some((c) => c.id === cert.id)) return;
         set({ certificates: [...s.certificates, cert] });
+        telemetry("cert_earned", { level: cert.level, score: cert.score }, s.account?.username);
       },
 
       saveWriting: (entry) => set({ writingHistory: [entry, ...get().writingHistory].slice(0, 20) }),
@@ -227,6 +258,60 @@ export const useLms = create<LmsState>()(
           plan: "free", planBilling: null, planSince: null,
           tutorCount: 0, tutorCountDate: today(), writingCount: 0, writingCountDate: today(),
         }),
+
+      loginAccount: (account, profile) => {
+        const s = get();
+        const patch: Partial<LmsState> = { account };
+        if (profile?.displayName) patch.userName = profile.displayName;
+        if (profile?.plan && profile.plan !== "free") {
+          patch.plan = profile.plan as PlanId;
+          patch.planBilling = "monthly";
+          patch.planSince = today();
+        }
+        if (profile?.level) {
+          patch.level = profile.level as CefrLevel;
+          patch.placementDone = true;
+        }
+        // continuidad: si el servidor tiene más progreso que este dispositivo, se adopta
+        const serverXp = typeof profile?.xp === "number" ? profile.xp : -1;
+        if (serverXp > s.xp) {
+          patch.xp = serverXp;
+          patch.dailyXp = s.dailyXpDate === today() ? s.dailyXp : 0;
+        }
+        const serverStreak = typeof profile?.streak === "number" ? profile.streak : -1;
+        if (serverStreak > s.streakCount) patch.streakCount = serverStreak;
+        set(patch);
+        telemetry("login", { role: account.role }, account.username);
+      },
+
+      logoutAccount: () => set({ account: null }),
+
+      adoptServerProgress: (progress) => {
+        const s = get();
+        const patch: Partial<LmsState> = {};
+        if (progress.xp > s.xp) patch.xp = progress.xp;
+        if (progress.streak > s.streakCount) patch.streakCount = progress.streak;
+        if (Object.keys(patch).length > 0) set(patch);
+      },
+
+      applyRemoteConfig: (bundle) => {
+        applyRemoteBundle(bundle);
+        const patch: Partial<LmsState> = {
+          remoteConfig: bundle.config,
+          configVersion: bundle.version,
+        };
+        // el admin puede forzar los defaults (tema, tamaño, meta, audio)
+        if (bundle.config.forceDefaults) {
+          patch.settings = {
+            ...get().settings,
+            theme: bundle.config.defaults.theme,
+            textSize: bundle.config.defaults.textSize,
+            audioRate: bundle.config.defaults.audioRate,
+            dailyGoalXp: bundle.config.defaults.dailyGoalXp,
+          };
+        }
+        set(patch);
+      },
     }),
     { name: "italiano-master-v1" }
   )

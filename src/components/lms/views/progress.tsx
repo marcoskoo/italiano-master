@@ -8,7 +8,7 @@ import { useLms, BADGES, rankFor, nextRank } from "@/lib/lms/store";
 import { masteredCount, learningCount, dueCards } from "@/lib/lms/srs";
 import { weakTopics, topicStats, TOPIC_LABELS } from "@/lib/lms/adaptive";
 import { COURSES, totalLessons } from "@/lib/lms/courses";
-import { PLANS } from "@/lib/lms/plans";
+import { PLANS, planLimits } from "@/lib/lms/plans";
 import { LockedFeatureCard } from "../plan-badge";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +34,7 @@ export function ProgressView() {
   const dailyXp = useLms((s) => s.dailyXp);
   const goal = useLms((s) => s.settings.dailyGoalXp);
   const plan = useLms((s) => s.plan);
-  const advanced = PLANS[plan].limits.advancedAnalytics;
+  const advanced = planLimits(plan).advancedAnalytics;
 
   const rank = rankFor(xp);
   const next = nextRank(xp);

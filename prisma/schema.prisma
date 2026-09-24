@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Italiano Master · schema del panel de administración
+// learn more: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +10,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/* Usuarios de la plataforma: admin (Mkoo) + estudiantes creados/gestionados desde el panel */
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  role         String   @default("student") // "admin" | "student"
+  displayName  String
+  level        String   @default("A1") // MCER
+  plan         String   @default("free") // free | pro | premium | platinum
+  xp           Int      @default(0)
+  streak       Int      @default(0)
+  lessonsDone  Int      @default(0)
+  wordsInSrs   Int      @default(0)
+  active       Boolean  @default(true)
+  lastSeen     DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
-model Post {
+/* Configuración key/value: config de la app, overrides de contenido, token admin */
+model Setting {
+  key   String @id
+  value String // JSON
+}
+
+/* Telemetría: eventos de uso de la plataforma (para el dashboard admin) */
+model TelemetryEvent {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+  clientId  String
+  username  String?
+  event     String // boot | login | lesson_completed | quiz_completed | plan_changed | tutor_message | cert_earned | level_test | admin_action | ...
+  detail    String? // JSON pequeño
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([event])
 }

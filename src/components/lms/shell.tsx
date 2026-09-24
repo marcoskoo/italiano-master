@@ -4,11 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
   BookOpen, BookMarked, Brain, Calculator, Clapperboard, Compass, Crown, Ear, FlaskConical,
   Gamepad2, GraduationCap, Home, Languages, Library, LineChart, MapPin, Medal, PenLine,
-  RefreshCcw, ScrollText, Settings, Sparkles, Trophy, Volume2, X, Zap, Flame, Menu,
+  RefreshCcw, ScrollText, Settings, Shield, Sparkles, Trophy, Volume2, X, Zap, Flame, Menu,
+  LogIn, LogOut,
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { PlanChip, UpgradeCta } from "./plan-badge";
+import { loginRequest, setAdminToken, logoutRequest, getAdminToken } from "@/lib/lms/remote";
 import { cn } from "@/lib/utils";
 
 /* ── Shell del LMS: sidebar + header + vista activa ──────────────── */
@@ -60,7 +62,10 @@ const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typ
   },
   {
     group: "Sistema",
-    items: [{ id: "impostazioni", label: "Configuración", icon: Settings }],
+    items: [
+      { id: "impostazioni", label: "Configuración", icon: Settings },
+      { id: "admin", label: "Panel Admin", icon: Shield },
+    ],
   },
 ];
 
@@ -87,6 +92,7 @@ const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   certificati: { title: "Certificati", sub: "Tus diplomas de italiano, listos para descargar" },
   impostazioni: { title: "Impostazioni", sub: "Tema, tamaño de texto, audio y perfil" },
   piani: { title: "Piani PRO · Premium · Platinum", sub: "Sblocca tutto il potenziale di Italiano Master" },
+  admin: { title: "Pannello di Controllo", sub: "Amministrazione totale de la plataforma" },
 };
 
 function NavItem({ id, label, icon: Icon, onNav, active }: { id: ViewId; label: string; icon: typeof Home; onNav: () => void; active: boolean }) {
@@ -115,10 +121,56 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const settings = useLms((s) => s.settings);
   const plan = useLms((s) => s.plan);
   const updateSettings = useLms((s) => s.updateSettings);
+  const account = useLms((s) => s.account);
+  const loginAccount = useLms((s) => s.loginAccount);
+  const logoutAccount = useLms((s) => s.logoutAccount);
+  const remoteConfig = useLms((s) => s.remoteConfig);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [loginUser, setLoginUser] = useState("");
+  const [loginPass, setLoginPass] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginBusy, setLoginBusy] = useState(false);
+
   const rank = rankFor(xp);
   const meta = VIEW_TITLES[view];
+  const appName = remoteConfig?.appName || "Italiano Master";
+
+  // features activables/desactivables desde el Panel Admin
+  const features = remoteConfig?.features ?? { plans: true, tutor: true, games: true, certificates: true, weeklyPlan: true };
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setLoginBusy(true);
+    setLoginError(null);
+    try {
+      const { user, token } = await loginRequest(loginUser.trim(), loginPass);
+      if (token) setAdminToken(token);
+      loginAccount({ id: user.id, username: user.username, displayName: user.displayName, role: user.role }, {
+        displayName: user.displayName,
+        level: user.role === "student" ? user.level : undefined,
+        plan: user.role === "student" ? user.plan : undefined,
+        xp: user.role === "student" ? user.xp : undefined,
+        streak: user.role === "student" ? user.streak : undefined,
+      });
+      setLoginOpen(false);
+      setLoginUser("");
+      setLoginPass("");
+      if (user.role === "admin") navigate("admin");
+    } catch (err) {
+      setLoginError(err instanceof Error ? err.message : "Error de acceso");
+    } finally {
+      setLoginBusy(false);
+    }
+  }
+
+  async function handleLogout() {
+    await logoutRequest(getAdminToken());
+    setAdminToken(null);
+    logoutAccount();
+    if (view === "admin") navigate("inicio");
+  }
 
   // aplica tema + tamaño de texto al <html>
   useEffect(() => {
@@ -135,23 +187,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const sidebar = useMemo(
     () => (
       <nav aria-label="Secciones del curso" className="flex h-full flex-col gap-5 overflow-y-auto px-3 py-5 scrollbar-thin">
-        {NAV_GROUPS.map((g) => (
-          <div key={g.group}>
-            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-inchiostro/40 dark:text-inchiostro/50">{g.group}</p>
-            <div className="flex flex-col gap-0.5">
-              {g.items.map((item) => (
-                <NavItem
-                  key={item.id}
-                  id={item.id}
-                  label={item.label}
-                  icon={item.icon}
-                  active={view === item.id}
-                  onNav={() => { navigate(item.id); setMenuOpen(false); }}
-                />
-              ))}
+        {NAV_GROUPS.map((g) => {
+          const items = g.items.filter((item) => {
+            if (item.id === "piani" && !features.plans) return false;
+            if (item.id === "tutor" && !features.tutor) return false;
+            if (item.id === "giochi" && !features.games) return false;
+            if (item.id === "certificati" && !features.certificates) return false;
+            return true;
+          });
+          if (items.length === 0) return null;
+          return (
+            <div key={g.group}>
+              <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-inchiostro/40 dark:text-inchiostro/50">{g.group}</p>
+              <div className="flex flex-col gap-0.5">
+                {items.map((item) => (
+                  <NavItem
+                    key={item.id}
+                    id={item.id}
+                    label={item.label}
+                    icon={item.icon}
+                    active={view === item.id}
+                    onNav={() => { navigate(item.id); setMenuOpen(false); }}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div className="mt-auto rounded-2xl border border-soft bg-crema-scura p-3.5 dark:bg-inchiostro/10">
           <p className="flex items-center gap-2 text-xs font-bold text-muted-it">
             <FlaskConical className="h-3.5 w-3.5" aria-hidden="true" /> Italiano Master
@@ -162,7 +224,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
     ),
-    [view, navigate]
+    [view, navigate, features]
   );
 
   return (
@@ -188,7 +250,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </span>
             </span>
             <span className="hidden font-display text-lg font-semibold tracking-tight sm:block">
-              Italiano <span className="italic text-verde-scuro dark:text-verde">Master</span>
+              {appName.split(" ")[0]} <span className="italic text-verde-scuro dark:text-verde">{appName.split(" ").slice(1).join(" ") || "Master"}</span>
             </span>
           </button>
 
@@ -210,10 +272,42 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Medal className="h-3.5 w-3.5" aria-hidden="true" />
               {level ?? "—"} · {rank.name}
             </span>
-            {plan === "free" ? (
+            {plan === "free" && features.plans ? (
               <UpgradeCta />
-            ) : (
+            ) : plan !== "free" ? (
               <PlanChip onClick={() => navigate("piani")} className="hidden sm:inline-flex" />
+            ) : null}
+            {account ? (
+              <>
+                <span
+                  className={cn(
+                    "hidden items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold sm:inline-flex",
+                    account.role === "admin" ? "bg-rosso-tenue text-rosso-scuro dark:text-rosso" : "bg-verde-tenue text-verde-scuro dark:text-verde"
+                  )}
+                  title={account.role === "admin" ? "Administrador de la plataforma" : "Sesión iniciada"}
+                >
+                  {account.role === "admin" ? <Shield className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                  {account.username}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-soft transition-colors hover:bg-rosso-tenue"
+                  aria-label="Cerrar sesión"
+                  title="Cerrar sesión"
+                >
+                  <LogOut className="h-4.5 w-4.5" aria-hidden="true" />
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setLoginOpen(true)}
+                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-soft px-3 text-xs font-bold transition-colors hover:bg-verde-tenue"
+                aria-label="Iniciar sesión"
+                title="Iniciar sesión (estudiantes y administración)"
+              >
+                <LogIn className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Accedi</span>
+              </button>
             )}
             <button
               onClick={() => updateSettings({ theme: settings.theme === "dark" ? "light" : "dark" })}
@@ -262,13 +356,65 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="h-1.5 w-full bg-gradient-to-r from-verde via-crema to-rosso" aria-hidden="true" />
             <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-muted-it sm:flex-row sm:px-6">
               <p>
-                <span className="font-display text-sm font-semibold text-inchiostro">Italiano Master</span> · LMS de
+                <span className="font-display text-sm font-semibold text-inchiostro">{appName}</span> · LMS de
                 italiano para hispanohablantes · desde cero hasta C2
               </p>
               <p className="font-mono">A1 → A2 → B1 → B2 → C1 → C2</p>
             </div>
           </footer>
         </main>
+        {/* ── modal de acceso ── */}
+        {loginOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Iniciar sesión">
+            <div className="absolute inset-0 bg-inchiostro/50 backdrop-blur-sm" onClick={() => setLoginOpen(false)} />
+            <form
+              onSubmit={handleLogin}
+              className="relative w-full max-w-sm rounded-3xl border border-soft bg-surface p-6 shadow-2xl"
+            >
+              <div className="mb-1 flex items-center justify-between">
+                <h2 className="font-display text-xl font-semibold">Accedi al tuo account</h2>
+                <button type="button" onClick={() => setLoginOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-soft" aria-label="Cerrar">
+                  <X className="h-4.5 w-4.5" aria-hidden="true" />
+                </button>
+              </div>
+              <p className="mb-4 text-xs text-muted-it">Estudiantes y administración de la plataforma</p>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it" htmlFor="login-user">Usuario</label>
+              <input
+                id="login-user"
+                value={loginUser}
+                onChange={(e) => setLoginUser(e.target.value)}
+                autoComplete="username"
+                className="mb-3 w-full rounded-xl border border-soft bg-crema px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-verde/40"
+                placeholder="p. ej. giulia"
+                required
+              />
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it" htmlFor="login-pass">Contraseña</label>
+              <input
+                id="login-pass"
+                type="password"
+                value={loginPass}
+                onChange={(e) => setLoginPass(e.target.value)}
+                autoComplete="current-password"
+                className="mb-1 w-full rounded-xl border border-soft bg-crema px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-verde/40"
+                placeholder="••••••••"
+                required
+              />
+              {loginError && (
+                <p role="alert" className="mb-3 rounded-xl bg-rosso-tenue px-3 py-2 text-xs font-semibold text-rosso-scuro dark:text-rosso">{loginError}</p>
+              )}
+              <button
+                type="submit"
+                disabled={loginBusy}
+                className="mt-2 w-full rounded-xl bg-verde px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:bg-verde-scuro disabled:opacity-60"
+              >
+                {loginBusy ? "Verifica…" : "Entra"}
+              </button>
+              <p className="mt-3 text-center text-[11px] leading-relaxed text-muted-it">
+                ¿No tienes cuenta? Puedes estudiar como invitado; la administración puede crear cuentas de estudiante desde el Panel Admin.
+              </p>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ import { pickDaily, weakTopics, TOPIC_LABELS } from "@/lib/lms/adaptive";
 import { COURSES, totalLessons } from "@/lib/lms/courses";
 import { dueCards } from "@/lib/lms/srs";
 import { CEFR_LEVELS, LEVEL_LABELS } from "@/lib/lms/types";
-import { PLANS, levelAllowed, requiredPlanForLevel, generateWeeklyPlan } from "@/lib/lms/plans";
+import { PLANS, levelAllowed, requiredPlanForLevel, generateWeeklyPlan, planLimits } from "@/lib/lms/plans";
 import { PremiumBanner } from "../plan-badge";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
@@ -38,13 +38,14 @@ export function HomeView() {
   const goal = useLms((s) => s.settings.dailyGoalXp);
   const userName = useLms((s) => s.userName);
   const plan = useLms((s) => s.plan);
+  const remoteConfig = useLms((s) => s.remoteConfig);
 
   const rank = rankFor(xp);
   const due = dueCards(srs).length;
   const wordOfDay = useMemo(() => pickDaily(VOCAB), []);
   const weaknesses = useMemo(() => weakTopics(errorLog, 3), [errorLog]);
   const allLessons = useMemo(() => totalLessons(), []);
-  const showWeekly = PLANS[plan].limits.weeklyPlan;
+  const showWeekly = planLimits(plan).weeklyPlan && (remoteConfig?.features.weeklyPlan ?? true);
   const weeklyPlan = useMemo(
     () => generateWeeklyPlan(level, due, weaknesses.map((w) => TOPIC_LABELS[w.topic] ?? w.topic)),
     [level, due, weaknesses]
@@ -296,6 +297,15 @@ export function HomeView() {
             <p className="mt-1 text-xs text-muted-it">Alfabeto, saludos, números</p>
           </button>
           {CEFR_LEVELS.map((lv) => {
+            const levelOff = !(remoteConfig?.levels?.[lv] ?? true);
+            if (levelOff) {
+              return (
+                <button key={lv} disabled className="cursor-not-allowed rounded-2xl border-2 border-dashed border-soft bg-inchiostro/5 p-4 text-left opacity-60">
+                  <p className="font-display text-2xl font-bold text-muted-it">{lv}</p>
+                  <p className="mt-1 text-xs text-muted-it">Disattivato dall'amministrazione</p>
+                </button>
+              );
+            }
             const locked = !levelAllowed(plan, lv);
             const required = PLANS[requiredPlanForLevel(lv)];
             return (
