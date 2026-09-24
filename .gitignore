@@ -62,4 +62,4 @@ server.log
 /mini-services/
 /.zscripts/
 /worklog.md
-/Caddyfile
+/Caddyfile/upload/
