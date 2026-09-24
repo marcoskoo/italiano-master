@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { hashPassword, logAdminAction, requireAdmin } from "@/lib/admin/server";
-import { db } from "@/lib/db";
+import { db } from "@/lib/admin/store";
 
 export const runtime = "nodejs";
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin, getAppConfig, getSetting, KEY_LESSON_OVR, KEY_VOCAB_OVR, KEY_CUSTOM_EX } from "@/lib/admin/server";
-import { db } from "@/lib/db";
+import { db, getPersistenceInfo } from "@/lib/admin/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     const since7 = new Date(Date.now() - 7 * 86400000);
     const since24 = new Date(Date.now() - 86400000);
 
-    const [users, events7, eventsToday, recent, vocabOvr, lessonOvr, customEx, config] = await Promise.all([
+    const [users, events7, eventsToday, recent, vocabOvr, lessonOvr, customEx, config, persistence] = await Promise.all([
       db.user.findMany({ orderBy: { xp: "desc" } }),
       db.telemetryEvent.findMany({ where: { createdAt: { gte: since7 } }, orderBy: { createdAt: "desc" } }),
       db.telemetryEvent.count({ where: { createdAt: { gte: since24 } } }),
@@ -23,6 +23,7 @@ export async function GET(req: Request) {
       getSetting<Record<string, unknown>>(KEY_LESSON_OVR, {}),
       getSetting<unknown[]>(KEY_CUSTOM_EX, []),
       getAppConfig(),
+      getPersistenceInfo(),
     ]);
 
     // actividad por día (7 días)
@@ -85,6 +86,7 @@ export async function GET(req: Request) {
         features: config.features,
         appName: config.appName,
       },
+      persistence,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error desconocido";

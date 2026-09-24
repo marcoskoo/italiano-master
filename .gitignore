@@ -52,3 +52,14 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# entorno de desarrollo del sandbox (no forman parte de la app)
+/db/
+/download/
+/scripts/
+/tests/
+/examples/
+/mini-services/
+/.zscripts/
+/worklog.md
+/Caddyfile

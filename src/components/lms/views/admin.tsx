@@ -42,6 +42,7 @@ export interface OverviewData {
   topStudents: { username: string; displayName: string; xp: number; level: string; plan: string; streak: number }[];
   recent: EventRow[];
   configSummary: { maintenance: boolean; features: AppConfig["features"]; appName: string };
+  persistence?: { mode: "blob" | "file" | "memory"; durable: boolean };
 }
 
 export const EVENT_LABELS: Record<string, string> = {
@@ -269,6 +270,27 @@ function DashboardTab({ overview, onChanged }: { overview: OverviewData; onChang
             <p className="text-[11px] leading-relaxed text-muted-it">
               Con el mantenimiento activo, cualquier visitante ve una pantalla de «Manutenzione in corso» y solo la administración puede entrar. El mensaje personalizado se edita en Impostazioni.
             </p>
+            <div className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-soft px-4 py-2.5 text-sm">
+              <span className="flex items-center gap-2 font-semibold">
+                <Database className="h-4 w-4 text-oro-scuro dark:text-oro" aria-hidden="true" />
+                Almacenamiento de datos
+              </span>
+              <span
+                className={cn(
+                  "rounded-full px-2.5 py-1 text-[10px] font-bold uppercase",
+                  overview.persistence?.durable ? "bg-verde text-white" : "bg-oro text-inchiostro"
+                )}
+              >
+                {overview.persistence?.durable
+                  ? `Persistente · ${overview.persistence.mode === "blob" ? "Vercel Blob" : "archivo local"}`
+                  : "Efímero · memoria"}
+              </span>
+            </div>
+            {!overview.persistence?.durable && (
+              <p className="text-[11px] leading-relaxed text-muted-it">
+                Los cambios viven solo en la memoria de la instancia actual. Para que persistan entre reinicios, activa un almacén <strong>Vercel Blob</strong> en tu proyecto (la variable <code className="rounded bg-crema-scura px-1 dark:bg-inchiostro/20">BLOB_READ_WRITE_TOKEN</code> se inyecta automáticamente) o ejecuta el proyecto en local.
+              </p>
+            )}
           </div>
         </div>
 

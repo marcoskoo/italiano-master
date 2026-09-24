@@ -1,19 +1,17 @@
 /* ── Helpers del servidor para el Panel Admin (auth, settings, telemetría) ── */
 
-import { createHash, randomUUID } from "crypto";
+import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db } from "@/lib/admin/store";
 import { DEFAULT_APP_CONFIG, type AppConfig } from "@/lib/lms/appconfig";
+
+export { hashPassword } from "./store";
 
 export const KEY_CONFIG = "config";
 export const KEY_ADMIN_TOKEN = "adminToken";
 export const KEY_VOCAB_OVR = "vocabOverrides";
 export const KEY_LESSON_OVR = "lessonOverrides";
 export const KEY_CUSTOM_EX = "customExercises";
-
-export function hashPassword(username: string, password: string): string {
-  return createHash("sha256").update(`italiano-master::${username}::${password}`).digest("hex");
-}
 
 export async function getSetting<T>(key: string, fallback: T): Promise<T> {
   const row = await db.setting.findUnique({ where: { key } });

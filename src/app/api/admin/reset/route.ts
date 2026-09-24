@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { DEFAULT_APP_CONFIG } from "@/lib/lms/appconfig";
 import { hashPassword, KEY_CONFIG, KEY_CUSTOM_EX, KEY_LESSON_OVR, KEY_VOCAB_OVR, logAdminAction, requireAdmin, setSetting } from "@/lib/admin/server";
-import { db } from "@/lib/db";
+import { db } from "@/lib/admin/store";
 
 export const runtime = "nodejs";
 
