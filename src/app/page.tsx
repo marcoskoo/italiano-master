@@ -19,6 +19,7 @@ import { TutorView } from "@/components/lms/views/tutor";
 import { GamesView } from "@/components/lms/views/games";
 import { ReviewView } from "@/components/lms/views/review";
 import { ExamsView, CertificatesView, SettingsView } from "@/components/lms/views/exams";
+import { PricingView } from "@/components/lms/views/pricing";
 
 /* ── Italiano Master · LMS completo de italiano (SPA) ─────────────── */
 
@@ -72,6 +73,7 @@ export default function Home() {
       {view === "esami" && <ExamsView />}
       {view === "certificati" && <CertificatesView />}
       {view === "impostazioni" && <SettingsView />}
+      {view === "piani" && <PricingView />}
     </AppShell>
   );
 }

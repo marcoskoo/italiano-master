@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Bot, Check, PenLine, Send, Sparkles, Theater, User } from "lucide-react";
+import { Bot, Check, Crown, PenLine, Send, Sparkles, Theater, User } from "lucide-react";
 import { CEFR_LEVELS } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
+import { PLANS, todayUsage } from "@/lib/lms/plans";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Tutor IA ──────────────────────────────────────────────── */
@@ -26,9 +27,18 @@ const QUICK = [
 
 export function TutorView() {
   const navParams = useLms((s) => s.navParams);
+  const navigate = useLms((s) => s.navigate);
   const userLevel = useLms((s) => s.level);
   const userName = useLms((s) => s.userName);
   const addXp = useLms((s) => s.addXp);
+  const plan = useLms((s) => s.plan);
+  const tutorCount = useLms((s) => s.tutorCount);
+  const tutorCountDate = useLms((s) => s.tutorCountDate);
+  const incrementTutor = useLms((s) => s.incrementTutor);
+
+  const tutorLimit = PLANS[plan].limits.tutorPerDay;
+  const tutorUsed = todayUsage(tutorCount, tutorCountDate);
+  const tutorBlocked = tutorLimit >= 0 && tutorUsed >= tutorLimit;
 
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -50,7 +60,7 @@ export function TutorView() {
 
   const send = async (text?: string) => {
     const content = (text ?? input).trim();
-    if (!content || loading) return;
+    if (!content || loading || tutorBlocked) return;
     const nextMessages: Msg[] = [...messages, { role: "user", content }];
     setMessages(nextMessages);
     setInput("");
@@ -69,6 +79,7 @@ export function TutorView() {
       const data = await res.json();
       const reply = data.reply ?? `⚠️ ${data.error ?? "El tutor no pudo responder. Inténtalo de nuevo."}`;
       setMessages([...nextMessages, { role: "assistant", content: reply }]);
+      incrementTutor();
       addXp(5, "parlato");
     } catch {
       setMessages([...nextMessages, { role: "assistant", content: "⚠️ Problema de conexión con el tutor. Revisa tu red e inténtalo otra vez." }]);
@@ -134,7 +145,10 @@ export function TutorView() {
           <div>
             <p className="font-display text-lg font-semibold leading-tight">Marco · Tutor IA</p>
             <p className="text-xs text-muted-it">
-              Nivel {level} · {MODES.find((m) => m.id === mode)?.desc}
+              Nivel {level} · {MODES.find((m) => m.id === mode)?.desc} ·{" "}
+              <span className={cn("font-bold", tutorLimit >= 0 && tutorLimit - tutorUsed <= 2 ? "text-rosso" : "text-verde-scuro dark:text-verde")}>
+                {tutorLimit < 0 ? "messaggi ∞" : `${tutorUsed}/${tutorLimit} messaggi oggi`}
+              </span>
             </p>
           </div>
         </div>
@@ -193,6 +207,25 @@ export function TutorView() {
         )}
 
         {/* input */}
+        {tutorBlocked ? (
+          <div className="border-t border-soft p-4">
+            <div className="rounded-2xl border-2 border-oro/45 bg-oro-tenue p-5 text-center dark:bg-oro-tenue/20">
+              <Crown className="mx-auto h-7 w-7 text-oro-scuro dark:text-oro" aria-hidden="true" />
+              <p className="mt-2 font-display text-lg font-semibold">
+                Hai esaurito i {tutorLimit} messaggi di oggi ({PLANS[plan].name})
+              </p>
+              <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted-it">
+                Con PRO hai 20 messaggi al giorno, con PREMIUM 100 e con PLATINUM conversationi illimitate con Marco.
+              </p>
+              <button
+                onClick={() => navigate("piani")}
+                className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl plan-gold-bg px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-oro/30 transition-all hover:scale-105"
+              >
+                <Crown className="h-4 w-4" aria-hidden="true" /> Passa a PRO · PREMIUM · PLATINUM
+              </button>
+            </div>
+          </div>
+        ) : (
         <div className="flex items-center gap-2 border-t border-soft p-3.5">
           <input
             type="text"
@@ -212,6 +245,7 @@ export function TutorView() {
             <Send className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
+        )}
       </div>
 
       <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-muted-it">

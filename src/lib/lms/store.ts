@@ -5,6 +5,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CefrLevel, SrsCard, SkillStats, QuizResultEntry, ViewId, NavParams, Topic, WordCategory } from "./types";
+import type { PlanId } from "./plans";
 
 export interface Settings {
   theme: "light" | "dark";
@@ -49,6 +50,15 @@ interface LmsState {
   navParams: NavParams;
   onboarded: boolean;
 
+  /* plan PRO/PREMIUM/PLATINUM */
+  plan: PlanId;
+  planBilling: "monthly" | "yearly" | null;
+  planSince: string | null;
+  tutorCount: number;
+  tutorCountDate: string;
+  writingCount: number;
+  writingCountDate: string;
+
   /* actions */
   navigate: (view: ViewId, params?: NavParams) => void;
   setUserName: (name: string) => void;
@@ -63,6 +73,9 @@ interface LmsState {
   addCertificate: (cert: { id: string; level: CefrLevel; date: string; score: number; label: string }) => void;
   saveWriting: (entry: { id: string; title: string; text: string; feedback: string; date: string }) => void;
   setOnboarded: () => void;
+  setPlan: (plan: PlanId, billing: "monthly" | "yearly" | null) => void;
+  incrementTutor: () => void;
+  incrementWriting: () => void;
   resetAll: () => void;
 }
 
@@ -108,6 +121,14 @@ export const useLms = create<LmsState>()(
       view: "inicio",
       navParams: {},
       onboarded: false,
+
+      plan: "free",
+      planBilling: null,
+      planSince: null,
+      tutorCount: 0,
+      tutorCountDate: today(),
+      writingCount: 0,
+      writingCountDate: today(),
 
       navigate: (view, params = {}) => set({ view, navParams: params }),
 
@@ -177,6 +198,25 @@ export const useLms = create<LmsState>()(
 
       setOnboarded: () => set({ onboarded: true }),
 
+      setPlan: (plan, billing) =>
+        set({
+          plan,
+          planBilling: plan === "free" ? null : billing,
+          planSince: plan === "free" ? null : today(),
+        }),
+
+      incrementTutor: () => {
+        const s = get();
+        const t = today();
+        set({ tutorCount: s.tutorCountDate === t ? s.tutorCount + 1 : 1, tutorCountDate: t });
+      },
+
+      incrementWriting: () => {
+        const s = get();
+        const t = today();
+        set({ writingCount: s.writingCountDate === t ? s.writingCount + 1 : 1, writingCountDate: t });
+      },
+
       resetAll: () =>
         set({
           userName: "Studente", level: null, placementDone: false, xp: 0, streakCount: 0,
@@ -184,6 +224,8 @@ export const useLms = create<LmsState>()(
           completedLessons: [], completedUnits: [], quizHistory: [], certificates: [],
           writingHistory: [], srs: {}, errorLog: {}, skillStats: { ...DEFAULT_SKILLS },
           view: "inicio", navParams: {},
+          plan: "free", planBilling: null, planSince: null,
+          tutorCount: 0, tutorCountDate: today(), writingCount: 0, writingCountDate: today(),
         }),
     }),
     { name: "italiano-master-v1" }

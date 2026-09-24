@@ -11,6 +11,7 @@ import { getExercises } from "@/lib/lms/exercises";
 import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
 import { useLms } from "@/lib/lms/store";
 import { newCard } from "@/lib/lms/srs";
+import { levelAllowed, requiredPlanForLevel, PLANS } from "@/lib/lms/plans";
 import { QuizEngine } from "../quiz-engine";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ export function CoursesView() {
   const navigate = useLms((s) => s.navigate);
   const completedLessons = useLms((s) => s.completedLessons);
   const userLevel = useLms((s) => s.level);
+  const plan = useLms((s) => s.plan);
   const [openLevel, setOpenLevel] = useState<string | null>(navParams.level ?? null);
   const [openLesson, setOpenLesson] = useState<string | null>(navParams.lessonId ?? null);
 
@@ -47,29 +49,46 @@ export function CoursesView() {
             const total = c.units.reduce((n, u) => n + u.lessons.length, 0);
             const done = c.units.reduce((n, u) => n + u.lessons.filter((l) => completedLessons.includes(l.id)).length, 0);
             const isCurrent = userLevel === c.level;
+            const locked = !levelAllowed(plan, c.level);
+            const required = PLANS[requiredPlanForLevel(c.level)];
             return (
               <motion.button
                 key={c.level}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                onClick={() => setOpenLevel(c.level)}
+                onClick={() => (locked ? navigate("piani") : setOpenLevel(c.level))}
                 className={cn(
-                  "group rounded-3xl border-2 p-5 text-left transition-all hover:-translate-y-1 hover:shadow-lg",
-                  isCurrent ? "border-verde bg-verde-tenue" : "border-soft bg-surface hover:border-verde/40"
+                  "group relative overflow-hidden rounded-3xl border-2 p-5 text-left transition-all",
+                  locked
+                    ? "border-dashed border-oro/50 bg-oro-tenue/25 hover:shadow-lg dark:bg-oro-tenue/10"
+                    : isCurrent
+                      ? "border-verde bg-verde-tenue hover:-translate-y-1 hover:shadow-lg"
+                      : "border-soft bg-surface hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
                 )}
               >
-                <div className="flex items-center justify-between">
+                {locked && (
+                  <span className="absolute right-4 top-4 z-10 inline-flex items-center gap-1 rounded-full plan-gold-bg px-2.5 py-1 text-[10px] font-bold text-white shadow-md">
+                    🔒 {required.name}
+                  </span>
+                )}
+                <div className={cn("flex items-center justify-between", locked && "opacity-50")}>
                   <p className="font-display text-3xl font-bold">{c.level === "zero" ? "Da zero" : c.level}</p>
-                  {isCurrent && <span className="rounded-full bg-verde px-2.5 py-1 text-[10px] font-bold uppercase text-white">tu nivel</span>}
+                  {!locked && isCurrent && <span className="rounded-full bg-verde px-2.5 py-1 text-[10px] font-bold uppercase text-white">tu nivel</span>}
                 </div>
-                <p className="mt-1 text-sm font-semibold">{c.label.includes("·") ? c.label.split("·")[1].trim() : c.label}</p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-it">{c.goal}</p>
-                <div className="mt-4 flex items-center gap-3 text-xs text-muted-it">
-                  <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" aria-hidden="true" /> {total} lezioni</span>
-                  <span className="flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5" aria-hidden="true" /> ~{c.hours}h</span>
-                  <span className="ml-auto font-bold text-verde-scuro dark:text-verde">{done}/{total} ✓</span>
-                </div>
+                <p className={cn("mt-1 text-sm font-semibold", locked && "opacity-60")}>{c.label.includes("·") ? c.label.split("·")[1].trim() : c.label}</p>
+                <p className={cn("mt-2 text-sm leading-relaxed text-muted-it", locked && "line-clamp-2 opacity-70")}>{locked ? c.goal : c.goal}</p>
+                {locked ? (
+                  <p className="mt-4 flex items-center gap-1.5 text-xs font-bold text-oro-scuro dark:text-oro">
+                    🔒 Contenuto a pagamento — sblocca con {required.name}
+                  </p>
+                ) : (
+                  <div className="mt-4 flex items-center gap-3 text-xs text-muted-it">
+                    <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" aria-hidden="true" /> {total} lezioni</span>
+                    <span className="flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5" aria-hidden="true" /> ~{c.hours}h</span>
+                    <span className="ml-auto font-bold text-verde-scuro dark:text-verde">{done}/{total} ✓</span>
+                  </div>
+                )}
               </motion.button>
             );
           })}
@@ -171,6 +190,7 @@ function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void
   const upsertSrs = useLms((s) => s.upsertSrs);
   const srs = useLms((s) => s.srs);
   const setTutorSeed = useLms((s) => s.navigate);
+  const plan = useLms((s) => s.plan);
 
   const [stage, setStage] = useState(0);
   const [evalPassed, setEvalPassed] = useState(false);
@@ -181,6 +201,30 @@ function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void
 
   if (!data) return <p className="text-muted-it">Lección no encontrada.</p>;
   const { lesson, unit, course } = data;
+
+  /* guard de plan: curso bloqueado */
+  if (!levelAllowed(plan, lesson.level)) {
+    const required = PLANS[requiredPlanForLevel(lesson.level)];
+    return (
+      <div className="mx-auto max-w-lg rounded-3xl border-2 border-dashed border-oro/50 bg-oro-tenue/25 p-10 text-center dark:bg-oro-tenue/10">
+        <span className="mx-auto flex h-16 w-16 animate-pop-in items-center justify-center rounded-full plan-gold-bg text-white shadow-lg">
+          <GraduationCap className="h-8 w-8" aria-hidden="true" />
+        </span>
+        <h2 className="mt-5 font-display text-2xl font-semibold">Corso {lesson.level} · {course.level === "zero" ? "Da zero" : course.label.split("·")[1] ?? ""}</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-it">
+          Questo corso fa parte del piano <strong>{required.name}</strong>. Passa a PRO · PREMIUM · PLATINUM
+          per sbloccare {course.units.reduce((n, u) => n + u.lessons.length, 0)} lezioni, esercizi e certificati.
+        </p>
+        <button
+          onClick={() => navigate("piani")}
+          className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-2xl plan-gold-bg px-7 py-3 text-sm font-bold text-white shadow-lg shadow-oro/30 transition-all hover:scale-[1.03]"
+        >
+          Vedi i piani →
+        </button>
+      </div>
+    );
+  }
+
   const isExamLesson = lesson.id.includes("-12") || lesson.title.includes("Examen") || lesson.checkpointIds.length >= 4;
   const alreadyDone = completedLessons.includes(lesson.id);
 

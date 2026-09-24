@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  BookOpen, BookMarked, Brain, Calculator, Clapperboard, Compass, Ear, FlaskConical,
+  BookOpen, BookMarked, Brain, Calculator, Clapperboard, Compass, Crown, Ear, FlaskConical,
   Gamepad2, GraduationCap, Home, Languages, Library, LineChart, MapPin, Medal, PenLine,
   RefreshCcw, ScrollText, Settings, Sparkles, Trophy, Volume2, X, Zap, Flame, Menu,
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
 import { useLms, rankFor } from "@/lib/lms/store";
+import { PlanChip, UpgradeCta } from "./plan-badge";
 import { cn } from "@/lib/utils";
 
 /* ── Shell del LMS: sidebar + header + vista activa ──────────────── */
@@ -19,6 +20,7 @@ const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typ
       { id: "inicio", label: "Inicio", icon: Home },
       { id: "progreso", label: "Mi progreso", icon: LineChart },
       { id: "test", label: "Test de nivel", icon: Compass },
+      { id: "piani", label: "Piani PRO", icon: Crown },
     ],
   },
   {
@@ -84,6 +86,7 @@ const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   esami: { title: "Esami", sub: "Pruebas por nivel con certificado al aprobar" },
   certificati: { title: "Certificati", sub: "Tus diplomas de italiano, listos para descargar" },
   impostazioni: { title: "Impostazioni", sub: "Tema, tamaño de texto, audio y perfil" },
+  piani: { title: "Piani PRO · Premium · Platinum", sub: "Sblocca tutto il potenziale di Italiano Master" },
 };
 
 function NavItem({ id, label, icon: Icon, onNav, active }: { id: ViewId; label: string; icon: typeof Home; onNav: () => void; active: boolean }) {
@@ -110,6 +113,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const level = useLms((s) => s.level);
   const userName = useLms((s) => s.userName);
   const settings = useLms((s) => s.settings);
+  const plan = useLms((s) => s.plan);
   const updateSettings = useLms((s) => s.updateSettings);
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -175,7 +179,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
 
           <button onClick={() => navigate("inicio")} className="flex items-center gap-2.5" aria-label="Ir al inicio">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-verde via-crema to-rosso p-[1.5px]">
+            <span className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-xl p-[1.5px] transition-all",
+              plan === "platinum" ? "plan-platinum-bg ring-platinum" : "bg-gradient-to-br from-verde via-crema to-rosso"
+            )}>
               <span className="flex h-full w-full items-center justify-center rounded-[10px] bg-crema">
                 <span className="font-display text-lg font-bold italic text-verde-scuro dark:text-verde">I</span>
               </span>
@@ -203,6 +210,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Medal className="h-3.5 w-3.5" aria-hidden="true" />
               {level ?? "—"} · {rank.name}
             </span>
+            {plan === "free" ? (
+              <UpgradeCta />
+            ) : (
+              <PlanChip onClick={() => navigate("piani")} className="hidden sm:inline-flex" />
+            )}
             <button
               onClick={() => updateSettings({ theme: settings.theme === "dark" ? "light" : "dark" })}
               className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-soft transition-colors hover:bg-verde-tenue"

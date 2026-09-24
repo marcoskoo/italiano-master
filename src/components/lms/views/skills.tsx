@@ -13,6 +13,7 @@ import { getExercises } from "@/lib/lms/exercises";
 import { CEFR_LEVELS, type CefrLevel } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { speakSequence, stopSpeaking, speak } from "@/lib/lms/tts";
+import { PLANS, todayUsage } from "@/lib/lms/plans";
 import { QuizEngine } from "../quiz-engine";
 import { StepReveal } from "../step-reveal";
 import { AudioButton, VoiceHint } from "../audio-button";
@@ -183,6 +184,9 @@ export function ReadingView() {
   const [levelFilter, setLevelFilter] = useState<CefrLevel | "all">("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [quizOpen, setQuizOpen] = useState(false);
+  const plan = useLms((s) => s.plan);
+  const navigate = useLms((s) => s.navigate);
+  const exclusiveOk = PLANS[plan].limits.exclusiveContent;
 
   const texts = useMemo(() => READINGS.filter((t) => levelFilter === "all" || t.level === levelFilter), [levelFilter]);
   const text = READINGS.find((t) => t.id === openId);
@@ -251,25 +255,39 @@ export function ReadingView() {
         <LevelFilter value={levelFilter} onChange={setLevelFilter} />
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {texts.map((t, i) => (
+        {texts.map((t, i) => {
+          const exclusive = t.level === "B2" || t.level === "C1";
+          const locked = exclusive && !exclusiveOk;
+          return (
           <motion.button
             key={t.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            onClick={() => setOpenId(t.id)}
-            className="group rounded-3xl border-2 border-soft bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
+            onClick={() => (locked ? navigate("piani") : setOpenId(t.id))}
+            className={cn(
+              "group relative rounded-3xl border-2 p-5 text-left transition-all",
+              locked
+                ? "border-dashed border-oro/50 bg-oro-tenue/25 dark:bg-oro-tenue/10"
+                : "border-soft bg-surface hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
+            )}
           >
-            <div className="flex items-center justify-between">
+            {locked && (
+              <span className="absolute right-3.5 top-3.5 z-10 inline-flex items-center gap-1 rounded-full plan-gold-bg px-2 py-0.5 text-[9px] font-bold text-white shadow">
+                🔒 PREMIUM
+              </span>
+            )}
+            <div className={cn("flex items-center justify-between", locked && "opacity-60")}>
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-oro-tenue text-oro-scuro dark:text-oro">
                 <BookOpen className="h-5 w-5" aria-hidden="true" />
               </span>
               <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">{t.level}</span>
             </div>
-            <p className="mt-3.5 font-display text-lg font-semibold leading-snug">{t.title}</p>
-            <p className="mt-1 text-xs text-muted-it">{t.genre} · {t.minutes} min · {t.questions.length} domande</p>
+            <p className={cn("mt-3.5 font-display text-lg font-semibold leading-snug", locked && "opacity-70")}>{t.title}</p>
+            <p className="mt-1 text-xs text-muted-it">{locked ? "🔒 Lettura esclusiva PREMIUM" : `${t.genre} · ${t.minutes} min · ${t.questions.length} domande`}</p>
           </motion.button>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -287,12 +305,20 @@ export function WritingView() {
   const addXp = useLms((s) => s.addXp);
   const level = useLms((s) => s.level);
   const userName = useLms((s) => s.userName);
+  const plan = useLms((s) => s.plan);
+  const writingCount = useLms((s) => s.writingCount);
+  const writingCountDate = useLms((s) => s.writingCountDate);
+  const incrementWriting = useLms((s) => s.incrementWriting);
+
+  const wLimit = PLANS[plan].limits.writingPerDay;
+  const wUsed = todayUsage(writingCount, writingCountDate);
+  const wBlocked = wLimit >= 0 && wUsed >= wLimit;
 
   const prompts = WRITINGS;
   const prompt = WRITINGS.find((p) => p.id === openId);
 
   const correct = async () => {
-    if (!prompt || text.trim().split(/\s+/).length < 5) return;
+    if (!prompt || text.trim().split(/\s+/).length < 5 || wBlocked) return;
     setLoading(true);
     setAiFeedback(null);
     try {
@@ -309,6 +335,7 @@ export function WritingView() {
       const data = await res.json();
       if (data.reply) {
         setAiFeedback(data.reply);
+        incrementWriting();
         addXp(20, "scrittura");
         saveWriting({ id: `${Date.now()}`, title: prompt.title, text, feedback: data.reply.slice(0, 400), date: new Date().toISOString() });
       } else {
@@ -354,13 +381,22 @@ export function WritingView() {
           />
           <div className="mt-2 flex items-center justify-between text-xs text-muted-it">
             <span>{words} parole {words >= prompt.minWords ? "✓" : `(obiettivo: ${prompt.minWords})`}</span>
-            <span>Consejo: usa las estructuras de la lección de tu nivel.</span>
+            <span className={cn("font-bold", wLimit < 0 ? "text-verde-scuro dark:text-verde" : wBlocked ? "text-rosso" : "text-muted-it")}>
+              {wLimit < 0 ? "Correzioni IA ∞" : `Correzioni IA oggi: ${wUsed}/${wLimit}`}
+            </span>
           </div>
+
+          {wBlocked && (
+            <div className="mt-4 rounded-2xl border-2 border-oro/45 bg-oro-tenue p-4 text-center text-sm leading-relaxed dark:bg-oro-tenue/20">
+              🔒 Limite giornaliero di correzioni raggiunto ({PLANS[plan].name}).
+              Con PREMIUM e PLATINUM le correzioni sono <strong>illimitate</strong>.
+            </div>
+          )}
 
           <div className="mt-4 flex flex-wrap gap-3">
             <button
               onClick={correct}
-              disabled={loading || words < 5}
+              disabled={loading || words < 5 || wBlocked}
               className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03] disabled:opacity-40"
             >
               {loading ? <><RotateCcw className="h-4 w-4 animate-spin" aria-hidden="true" /> Il tutor sta correggendo…</> : <><Sparkles className="h-4 w-4" aria-hidden="true" /> Correggi con il Tutor IA (+20 XP)</>}
@@ -430,6 +466,8 @@ export function WritingView() {
 export function ConversationView() {
   const navigate = useLms((s) => s.navigate);
   const level = useLms((s) => s.level);
+  const plan = useLms((s) => s.plan);
+  const exclusiveOk = PLANS[plan].limits.exclusiveContent;
 
   return (
     <div className="space-y-6">
@@ -445,20 +483,44 @@ export function ConversationView() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {CONVERSATION_SCENARIOS.map((s, i) => (
+        {CONVERSATION_SCENARIOS.map((s, i) => {
+          const exclusive = s.level === "B1" || s.level === "B2";
+          const locked = exclusive && !exclusiveOk;
+          return (
           <motion.article
             key={s.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="flex flex-col rounded-3xl border-2 border-soft bg-surface p-5"
+            className={cn(
+              "relative flex flex-col rounded-3xl border-2 p-5",
+              locked ? "border-dashed border-oro/50 bg-oro-tenue/25 dark:bg-oro-tenue/10" : "border-soft bg-surface"
+            )}
           >
-            <div className="flex items-center justify-between">
+            {locked && (
+              <span className="absolute right-3.5 top-3.5 z-10 inline-flex items-center gap-1 rounded-full plan-gold-bg px-2 py-0.5 text-[9px] font-bold text-white shadow">
+                🔒 PREMIUM
+              </span>
+            )}
+            <div className={cn("flex items-center justify-between", locked && "opacity-60")}>
               <p className="text-3xl" aria-hidden="true">{s.emoji}</p>
               <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">{s.level}</span>
             </div>
-            <h3 className="mt-3 font-display text-lg font-semibold">{s.title}</h3>
+            <h3 className={cn("mt-3 font-display text-lg font-semibold", locked && "opacity-70")}>{s.title}</h3>
 
+            {locked ? (
+              <div className="mt-4 flex flex-1 flex-col items-center justify-center gap-2 rounded-2xl border border-oro/30 bg-surface/60 p-4 text-center dark:bg-inchiostro/10">
+                <p className="text-sm font-bold text-oro-scuro dark:text-oro">Scenario esclusivo PREMIUM</p>
+                <p className="text-xs leading-relaxed text-muted-it">Colloquio di lavoro e dibattito: le conversazioni avanzate che preparano a B2–C1.</p>
+                <button
+                  onClick={() => navigate("piani")}
+                  className="mt-1 inline-flex min-h-10 items-center gap-1.5 rounded-xl plan-gold-bg px-4 py-2 text-xs font-bold text-white shadow-md shadow-oro/30 transition-all hover:scale-105"
+                >
+                  🔒 Sblocca con PREMIUM
+                </button>
+              </div>
+            ) : (
+              <>
             <div className="mt-3 space-y-2">
               {s.phrases.slice(0, 3).map((p, j) => (
                 <div key={j} className="flex items-start gap-2 rounded-xl bg-crema-scura p-2.5 dark:bg-inchiostro/10">
@@ -469,7 +531,7 @@ export function ConversationView() {
                   </div>
                 </div>
               ))}
-              {s.phrases.length > 3 && <p className="text-center text-xs text-muted-it">+{s.phrases.length - 3} frases más…</p>}
+              {s.phrases.length > 3 && <p className="text-center text-xs text-muted-it">+{s.phrases.length - 3} frasi più…</p>}
             </div>
 
             <ul className="mt-3 space-y-1">
@@ -482,10 +544,13 @@ export function ConversationView() {
               onClick={() => navigate("tutor", { tutorSeed: s.tutorSeed })}
               className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-verde px-4 py-2.5 text-sm font-bold text-white transition-all hover:scale-[1.02] dark:text-inchiostro"
             >
-              <Sparkles className="h-4 w-4" aria-hidden="true" /> Practica con Marco
+              <Sparkles className="h-4 w-4" aria-hidden="true" /> Pratica con Marco
             </button>
+              </>
+            )}
           </motion.article>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

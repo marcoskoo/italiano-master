@@ -71,3 +71,44 @@ Stage Summary:
 - Motor adaptativo: cada error registra tema → debilidades <70% → "Rinforzo mirato" en Repaso + recomendaciones en Inicio/Progreso.
 - SRS: SM-2 simplificado con flashcards, grados 0-3, intervalos crecientes, tarjetas dominadas ≥21d.
 - Capturas en download/: preview-home.png, preview-dark.png, preview-mobile.png, preview-mobile-tutor.png.
+
+---
+Task ID: 3
+Agent: Super Z (main agent)
+Task: Convertir "Italiano Master" en versión PRO · PREMIUM · PLATINUM — sistema de planes con gating de funciones, página de precios con checkout demo, contenido exclusivo, certificados verificados, plan semanal personalizado, soporte prioritario, export offline y estética platinum con shimmer.
+
+Work Log:
+- plans.ts (nuevo): 4 planes (FREE 0€/PRO 7,99€/PREMIUM 12,99€/PLATINUM 19,99€, anual −20%) con PlanLimits (tutorPerDay 5/20/100/∞, writingPerDay 2/5/∞/∞, levels, advancedAnalytics, exclusiveContent, verifiedCerts, weeklyPlan, offlinePack, prioritySupport), helpers (planRank, hasAtLeast, levelAllowed, requiredPlanForLevel, todayUsage) y generateWeeklyPlan (7 días determinista según nivel/tarjetas debiles/puntos débiles, actividades clicables a vistas).
+- store.ts: añadidos plan/planBilling/planSince + contadores diarios tutorCount/writingCount (reset a medianoche) + setPlan/incrementTutor/incrementWriting + defaults en resetAll. types.ts: ViewId "piani".
+- globals.css: utilidades platinum — plan-platinum-bg (gradiente metálico animado shimmer), plan-gold-bg, text-shimmer, animate-pop-in, animate-crown-float, ring-platinum, border-premium + reduced-motion guards.
+- plan-badge.tsx (nuevo): PlanChip (chip del plan con color/icono por plan, clicable), UpgradeCta (botón dorado ⚡PRO), LockedOverlay (overlay de bloqueo con CTA), LockedFeatureCard (tarjeta de feature bloqueada con bullets), PremiumBanner (banner shimmer para Home FREE).
+- pricing.tsx (nuevo): hero platinum con coronas flotantes, toggle Mensile/Annuale −20%, 4 PlanCard (FREE/PRO/PREMIUM "IL PIÙ SCELTO"/PLATINUM "ELITE" con fondo shimmer y ring), matriz comparativa de 11 características × 4 planes, FAQ acordeón (4 items con aviso demo), checkout modal con 3 estados (resumen con precio/fatturazione/features + aviso demo → processing 1.4s → success "Benvenuto nel piano X!" con corona pop-in y CTA a inicio).
+- shell.tsx: nav "Piani PRO" (grupo Tu ruta, icono Crown), header con PlanChip (free → UpgradeCta dorada "⚡ PRO", resto → chip del plan), logo con anillo plan-platinum-bg para platinum, VIEW_TITLES.piani.
+- Gating aplicado:
+  · CoursesView: tarjetas de nivel con 🔒+plan requerido (B1/B2→PRO, C1/C2→PREMIUM) → click a pricing; LessonView con guard de plan.
+  · Home: niveles MCER con candado; PremiumBanner solo FREE; plan semanal 7 días solo PREMIUM+ (día actual resaltado, 14 actividades clicables).
+  · TutorView: contador X/N messaggi (rojo cerca del límite), bloqueo con tarjeta upgrade al agotar, ∞ para platinum.
+  · WritingView: contador correzioni IA oggi, bloqueo al límite, ∞ premium+.
+  · ReadingView: lecturas B2/C1 marcadas 🔒 PREMIUM (navegan a pricing si no desbloqueadas).
+  · ConversationView: escenarios B1/B2 (colloquio/dibattito) exclusivos PREMIUM con tarjeta de desbloqueo.
+  · ProgressView: radar + calendario 14 días + motor adaptativo reemplazados por LockedFeatureCard en FREE.
+  · ExamsView: exámenes por nivel con candado según plan.
+  · CertificatesView: verificationCode determinista (ITM-XXXX-XXXX), sello VERIFICATO en preview y banda dorada + código en el PNG canvas para platinum.
+  · SettingsView: sección Abbonamento (plan actual con emoji/billing/fecha, Gestisci piani, downgrade con confirmación), soporte prioritario 24/7 (platinum), pacchetto offline PLATINUM (export JSON completo con palabras SRS) o candado.
+- page.tsx: vista "piani" conectada.
+
+Verification (agent-browser E2E):
+- Usuario FREE nuevo: header muestra CTA "⚡ PRO" ✓; pricing con 4 tarjetas + toggle + matriz + FAQ ✓
+- Checkout PLATINUM (anual): modal resumen con aviso demo → processing → "Benvenuto nel piano PLATINUM!" ✓; store persiste plan=platinum, billing=yearly, since=hoy ✓
+- PLATINUM activo: header chip PLATINUM + logo con anillo shimmer ✓; inicio sin banner y sin candados, plan semanal con 7/7 días y 14 actividades clicables (navegación a cursos verificada) ✓; cursos 7/7 desbloqueados ✓; tutor "messaggi ∞" ✓; lecturas sin candados ✓; settings con Abbonamento + supporto prioritario + pacchetto offline ✓; certificado con sello VERIFICATO y código ITM-0KHE-0HWK ✓
+- Downgrade a FREE (settings con confirmación): cursos bloqueados 4 (B1/B2→PRO, C1/C2→PREMIUM) ✓; analíticas (radar/calendario/motor) como LockedFeatureCard con 3 CTAs ✓; tutor contador 0/5 messaggi ✓; simulado 5/5 → bloqueo con tarjeta "Passa a PRO" y input reemplazado ✓
+- Plan PRO intermedio: chip PRO, solo C1/C2 bloqueados (PREMIUM), radar desbloqueado ✓
+- VLM audit (pricing + platinum home): 4 tarjetas con PLATINUM metálica destacada, toggle y tabla OK, sin defectos visuales ✓
+- Móvil 390px (pricing): sin overflow horizontal ✓
+- bun run lint: 0 errores/0 warnings ✓; tsc: limpio ✓; dev.log: GET / 200 sin errores runtime ✓
+
+Stage Summary:
+- Deliverable: "Italiano Master PRO · PREMIUM · PLATINUM" — capa freemium completa sobre el LMS: 4 planes con gating real en 8 vistas, página de precios premium con checkout demo, contenido exclusivo, certificados verificados con código único, plan semanal adaptativo, export offline y soporte prioritario, con estética platinum (shimmer metálico) coherente en toda la app.
+- Nota técnica: el gating es funcional de verdad (límites diarios con reset a medianoche, bloqueos por nivel, upgrades/downgrades instantáneos que persisten en localStorage); los "pagos" son demo explícita.
+- Archivos nuevos: src/lib/lms/plans.ts, src/components/lms/plan-badge.tsx, src/components/lms/views/pricing.tsx. Modificados: store, types, globals.css, shell, page, views/{courses,tutor,skills,progress,home,exams}.
+- Capturas: preview-pricing.png, preview-platinum-home.png, preview-cert-verified.png, preview-weekly-plan.png, preview-pricing-mobile.png.

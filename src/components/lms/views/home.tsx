@@ -10,6 +10,8 @@ import { pickDaily, weakTopics, TOPIC_LABELS } from "@/lib/lms/adaptive";
 import { COURSES, totalLessons } from "@/lib/lms/courses";
 import { dueCards } from "@/lib/lms/srs";
 import { CEFR_LEVELS, LEVEL_LABELS } from "@/lib/lms/types";
+import { PLANS, levelAllowed, requiredPlanForLevel, generateWeeklyPlan } from "@/lib/lms/plans";
+import { PremiumBanner } from "../plan-badge";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
 import type { ViewId } from "@/lib/lms/types";
@@ -35,12 +37,18 @@ export function HomeView() {
   const dailyXp = useLms((s) => s.dailyXp);
   const goal = useLms((s) => s.settings.dailyGoalXp);
   const userName = useLms((s) => s.userName);
+  const plan = useLms((s) => s.plan);
 
   const rank = rankFor(xp);
   const due = dueCards(srs).length;
   const wordOfDay = useMemo(() => pickDaily(VOCAB), []);
   const weaknesses = useMemo(() => weakTopics(errorLog, 3), [errorLog]);
   const allLessons = useMemo(() => totalLessons(), []);
+  const showWeekly = PLANS[plan].limits.weeklyPlan;
+  const weeklyPlan = useMemo(
+    () => generateWeeklyPlan(level, due, weaknesses.map((w) => TOPIC_LABELS[w.topic] ?? w.topic)),
+    [level, due, weaknesses]
+  );
   // siguiente lección del nivel actual (o primera de A1/zero) — cálculo barato, sin memo
   const nextLesson = (() => {
     const targetLevel = level ?? "A1";
@@ -108,6 +116,58 @@ export function HomeView() {
           <MorphingHero />
         </div>
       </section>
+
+      {/* ── BANNER PREMIUM (solo FREE) ── */}
+      {plan === "free" && <PremiumBanner />}
+
+      {/* ── PLAN SEMANAL (PREMIUM+) ── */}
+      {showWeekly && (
+        <section className="rounded-3xl border border-soft bg-surface p-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="flex items-center gap-2 font-display text-2xl font-semibold">
+                <span aria-hidden="true">🗓️</span> Il tuo piano settimanale <span className="rounded-full plan-gold-bg px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-white">{PLANS[plan].name}</span>
+              </h2>
+              <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-it">
+                Generado esta semana según tu nivel {level ?? "A1"}, {due} tarjetas por repasar y tus puntos débiles.
+                Toca cada actividad para ir directo.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+            {weeklyPlan.map((d, i) => (
+              <motion.div
+                key={d.day}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className={cn(
+                  "flex flex-col rounded-2xl border-2 p-3.5",
+                  i === new Date().getDay() - 1 || (new Date().getDay() === 0 && i === 6)
+                    ? "border-verde/50 bg-verde-tenue/60 dark:bg-verde-tenue/20"
+                    : "border-soft bg-crema dark:bg-inchiostro/5"
+                )}
+              >
+                <p className="font-display text-sm font-bold">{d.day}</p>
+                <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-it">{d.focus}</p>
+                <div className="mt-2.5 flex flex-1 flex-col gap-1.5">
+                  {d.activities.map((a, j) => (
+                    <button
+                      key={j}
+                      onClick={() => navigate(a.view)}
+                      className="flex min-h-9 items-start gap-1.5 rounded-lg bg-surface px-2 py-1.5 text-left text-[11px] font-semibold leading-tight transition-all hover:scale-[1.02] hover:text-verde-scuro dark:bg-inchiostro/10 dark:hover:text-verde"
+                    >
+                      <span aria-hidden="true">{a.emoji}</span>
+                      <span className="min-w-0 flex-1">{a.label}</span>
+                      <span className="shrink-0 text-[9px] font-normal text-muted-it">{a.minutes}′</span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── MISIÓN DIARIA + PALABRA DEL DÍA ── */}
       <section className="grid gap-4 md:grid-cols-2">
@@ -235,20 +295,30 @@ export function HomeView() {
             <p className="font-display text-2xl font-bold text-terracotta">Da zero</p>
             <p className="mt-1 text-xs text-muted-it">Alfabeto, saludos, números</p>
           </button>
-          {CEFR_LEVELS.map((lv, i) => (
-            <button
-              key={lv}
-              onClick={() => navigate("cursos", { level: lv })}
-              className={cn(
-                "rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5",
-                level === lv ? "border-verde bg-verde-tenue" : "border-soft bg-surface hover:border-verde/40"
-              )}
-            >
-              <p className="font-display text-2xl font-bold text-verde-scuro dark:text-verde">{lv}</p>
-              <p className="mt-1 text-xs text-muted-it">{LEVEL_LABELS[lv]}</p>
-              <p className="mt-2 font-mono text-[10px] text-muted-it">{totalLessons(lv)} lezioni</p>
-            </button>
-          ))}
+          {CEFR_LEVELS.map((lv) => {
+            const locked = !levelAllowed(plan, lv);
+            const required = PLANS[requiredPlanForLevel(lv)];
+            return (
+              <button
+                key={lv}
+                onClick={() => (locked ? navigate("piani") : navigate("cursos", { level: lv }))}
+                className={cn(
+                  "relative rounded-2xl border-2 p-4 text-left transition-all",
+                  locked
+                    ? "border-dashed border-oro/50 bg-oro-tenue/25 hover:-translate-y-0.5 dark:bg-oro-tenue/10"
+                    : level === lv
+                      ? "border-verde bg-verde-tenue"
+                      : "border-soft bg-surface hover:-translate-y-0.5 hover:border-verde/40"
+                )}
+              >
+                <p className={cn("font-display text-2xl font-bold", locked ? "text-oro-scuro dark:text-oro" : "text-verde-scuro dark:text-verde")}>
+                  {locked ? "🔒" : ""} {lv}
+                </p>
+                <p className="mt-1 text-xs text-muted-it">{locked ? `Sblocca con ${required.name}` : LEVEL_LABELS[lv]}</p>
+                {!locked && <p className="mt-2 font-mono text-[10px] text-muted-it">{totalLessons(lv)} lezioni</p>}
+              </button>
+            );
+          })}
         </div>
       </section>
     </div>
