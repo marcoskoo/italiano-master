@@ -44,22 +44,58 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* ── Lingua Viva · Italian editorial palette ─────────────────────── */
-@theme {
-  --color-verde: #128a54;
-  --color-verde-scuro: #0a5c38;
-  --color-verde-tenue: #e7f4ec;
-  --color-rosso: #c0392b;
-  --color-rosso-scuro: #96261d;
-  --color-rosso-tenue: #f9eae7;
-  --color-oro: #c9862b;
-  --color-oro-scuro: #9c6512;
-  --color-oro-tenue: #f9f0dd;
-  --color-terracotta: #c96f45;
-  --color-crema: #faf6ee;
-  --color-crema-scura: #f1eadd;
-  --color-inchiostro: #26221e;
+/* ── Italiano Master · Italian editorial palette (dark-aware) ─────── */
+@theme inline {
+  --color-verde: var(--verde);
+  --color-verde-scuro: var(--verde-scuro);
+  --color-verde-tenue: var(--verde-tenue);
+  --color-rosso: var(--rosso);
+  --color-rosso-scuro: var(--rosso-scuro);
+  --color-rosso-tenue: var(--rosso-tenue);
+  --color-oro: var(--oro);
+  --color-oro-scuro: var(--oro-scuro);
+  --color-oro-tenue: var(--oro-tenue);
+  --color-terracotta: var(--terracotta);
+  --color-crema: var(--crema);
+  --color-crema-scura: var(--crema-scura);
+  --color-inchiostro: var(--inchiostro);
+}
 
+:root {
+  --verde: #128a54;
+  --verde-scuro: #0a5c38;
+  --verde-tenue: #e7f4ec;
+  --rosso: #c0392b;
+  --rosso-scuro: #96261d;
+  --rosso-tenue: #f9eae7;
+  --oro: #c9862b;
+  --oro-scuro: #9c6512;
+  --oro-tenue: #f9f0dd;
+  --terracotta: #c96f45;
+  --crema: #faf6ee;
+  --crema-scura: #f1eadd;
+  --inchiostro: #26221e;
+  --surface: #ffffff;
+}
+
+.dark {
+  --verde: #2ebd7c;
+  --verde-scuro: #5cba8f;
+  --verde-tenue: #12291e;
+  --rosso: #e0604f;
+  --rosso-scuro: #ef8a7c;
+  --rosso-tenue: #301411;
+  --oro: #e0a94e;
+  --oro-scuro: #edc27c;
+  --oro-tenue: #2b2110;
+  --terracotta: #dd8a63;
+  --crema: #1b1814;
+  --crema-scura: #242019;
+  --inchiostro: #ece7dc;
+  --surface: #211d18;
+}
+
+@theme {
   --animate-float: float 7s ease-in-out infinite;
   --animate-dot-breathe: dot-breathe 3s ease-in-out infinite;
   --animate-eq: eq 0.9s ease-in-out infinite;
@@ -240,4 +276,35 @@
   html {
     scroll-behavior: auto;
   }
+}
+
+/* ── Italiano Master LMS utilities ───────────────────────────────── */
+html[data-textsize="lg"] { font-size: 17px; }
+html[data-textsize="xl"] { font-size: 18.5px; }
+
+@layer utilities {
+  .bg-surface { background-color: var(--surface); }
+  .text-muted-it { color: color-mix(in oklab, var(--inchiostro) 62%, transparent); }
+  .border-soft { border-color: color-mix(in oklab, var(--inchiostro) 10%, transparent); }
+  .flashcard-flip {
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .flashcard-flip.flipped { transform: rotateY(180deg); }
+  .flashcard-face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .flashcard-back { transform: rotateY(180deg); }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+  .eq-bar { transform-origin: bottom; }
+  .noun-m { color: var(--verde-scuro); }
+  .noun-f { color: var(--rosso); }
+}
+
+/* Certificate print styles */
+@media print {
+  body * { visibility: hidden; }
+  .cert-print, .cert-print * { visibility: visible; }
+  .cert-print { position: absolute; inset: 0; }
 }

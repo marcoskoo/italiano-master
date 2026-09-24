@@ -21,28 +21,23 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Lingua Viva — Learn Italian, Interactively",
+  title: "Italiano Master — LMS de italiano desde cero hasta C2",
   description:
-    "An interactive Italian learning playground: drag vowels on a live IPA chart, sculpt intonation curves with sliders, pulse through quizzes and reveal grammar step by step.",
+    "Sistema integral de aprendizaje de italiano para hispanohablantes: cursos A1–C2, gramática paso a paso, vocabulario con repetición espaciada, escucha, lectura, escritura, conversación, pronunciación interactiva, situaciones reales, cultura, tutor IA y certificados.",
   keywords: [
-    "Italian",
-    "learn Italian",
-    "italiano",
-    "language learning",
-    "vowels",
-    "intonation",
-    "grammar",
-    "interactive",
+    "italiano", "aprender italiano", "curso de italiano", "gramática italiana",
+    "vocabulario italiano", "italiano para hispanohablantes", "LMS", "MCER",
+    "A1", "A2", "B1", "B2", "C1", "C2", "conjugador", "diccionario italiano",
   ],
-  authors: [{ name: "Lingua Viva" }],
+  authors: [{ name: "Italiano Master" }],
   icons: {
     icon: "/italia.svg",
   },
   openGraph: {
-    title: "Lingua Viva — Learn Italian, Interactively",
+    title: "Italiano Master — LMS de italiano desde cero hasta C2",
     description:
-      "Drag, slide, listen and quiz your way to living Italian. Un laboratorio linguistico interattivo.",
-    siteName: "Lingua Viva",
+      "Tu plataforma integral de italiano: lecciones conectadas, 4 destrezas, repaso inteligente, tutor IA y certificados. Da zero a C2.",
+    siteName: "Italiano Master",
     type: "website",
   },
 };
@@ -53,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased bg-background text-foreground`}
       >
