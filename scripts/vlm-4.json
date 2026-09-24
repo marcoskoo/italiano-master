@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "No visual defects are present; the layout is clean with no overlapping, overflowing, or misaligned elements.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790231965,
+  "id": "20260924143916813e93666574482e",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260924143916813e93666574482e",
+  "usage": {
+    "completion_tokens": 22,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1742,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 1764
+  }
+}
