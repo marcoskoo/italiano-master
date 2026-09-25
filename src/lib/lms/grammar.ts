@@ -1,4 +1,5 @@
 import type { GrammarTopic } from "./types";
+import { GRAMMAR_EXTRA } from "./extra/grammar-extra";
 
 /* ── Grammatica · temas progresivos A1→C2 con soluciones paso a paso ── */
 
@@ -620,5 +621,8 @@ export const GRAMMAR: GrammarTopic[] = [
     exerciseIds: ["ex-b2-011", "ex-c2-002"],
   },
 ];
+
+/* # Paquete de expansión v1.1: +8 temas con problemas paso a paso */
+GRAMMAR.push(...GRAMMAR_EXTRA);
 
 export const GRAMMAR_BY_LEVEL = (level: string) => GRAMMAR.filter((g) => g.level === level);

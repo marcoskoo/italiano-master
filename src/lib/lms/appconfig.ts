@@ -11,6 +11,11 @@ export interface AppConfig {
     games: boolean;        // sección Giochi
     certificates: boolean; // certificados descargables
     weeklyPlan: boolean;   // plan semanal premium
+    numberLab: boolean;    // Numeri Lab (conversor + práctica)
+    verbDrill: boolean;    // Allenamento verbi (drill contrarreloj)
+    planner: boolean;      // Piano settimanale (generador de plan)
+    analyzer: boolean;     // Analizzatore di frasi
+    printables: boolean;   // Schede di studio imprimibles
   };
   defaults: {
     dailyGoalXp: number;
@@ -28,7 +33,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   appName: "Italiano Master",
   tagline: "Tu plataforma integral de italiano, desde cero hasta C2",
   maintenance: { enabled: false, message: "Stiamo aggiornando la piattaforma. Torna tra poco!" },
-  features: { plans: true, tutor: true, games: true, certificates: true, weeklyPlan: true },
+  features: { plans: true, tutor: true, games: true, certificates: true, weeklyPlan: true, numberLab: true, verbDrill: true, planner: true, analyzer: true, printables: true },
   defaults: { dailyGoalXp: 120, audioRate: 0.9, theme: "light", textSize: "md" },
   forceDefaults: false,
   levels: { zero: true, A1: true, A2: true, B1: true, B2: true, C1: true, C2: true },

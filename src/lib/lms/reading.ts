@@ -1,4 +1,5 @@
 import type { ReadingText } from "./types";
+import { READINGS_EXTRA } from "./extra/reading-extra";
 
 /* ── Lectura · textos graduados ───────────────────────────────────── */
 
@@ -93,3 +94,6 @@ export const READINGS: ReadingText[] = [
     questions: ["ex-let-006"],
   },
 ];
+
+/* # Paquete de expansión v1.1: +8 lecturas graduadas */
+READINGS.push(...READINGS_EXTRA);

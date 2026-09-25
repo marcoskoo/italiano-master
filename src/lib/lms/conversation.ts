@@ -1,4 +1,5 @@
 import type { ConversationScenario } from "./types";
+import { CONVERSATION_EXTRA } from "./extra/conversation-extra";
 
 /* ── Conversación · escenarios con frases útiles + tutor IA ───────── */
 
@@ -76,3 +77,6 @@ export const CONVERSATION_SCENARIOS: ConversationScenario[] = [
     tutorSeed: "Dibattito: parliamo di turismo di massa e ambiente nelle città italiane. Esponi la tua tesi e io la discuterò con te in italiano.",
   },
 ];
+
+/* # Paquete de expansión v1.1: +6 escenarios de conversación */
+CONVERSATION_SCENARIOS.push(...CONVERSATION_EXTRA);

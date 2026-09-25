@@ -1,4 +1,5 @@
 import type { VocabWord, WordCategory } from "./types";
+import { VOCAB_EXTRA } from "./extra/vocabulary-extra";
 
 /* ── Vocabolario · learning dictionary (IT→ES) ────────────────────── */
 
@@ -216,6 +217,9 @@ export const VOCAB: VocabWord[] = [
   W("w-scrittore", "scrittore", "escritor", "skrittóre", "sostantivo", "letteratura", "B2", { it: "Lo scrittore italiano ha vinto il premio.", es: "El escritor italiano ha ganado el premio." }, { gender: "m", plural: "scrittori" }),
   W("w-capitolo", "capitolo", "capítulo", "kapítoło", "sostantivo", "letteratura", "B2", { it: "Il primo capitolo è avvincente.", es: "El primer capítulo es apasionante." }, { gender: "m", plural: "capitoli" }),
 ];
+
+/* Paquete de expansión v1.1: +96 palabras (6 categorías nuevas) */
+VOCAB.push(...VOCAB_EXTRA);
 
 export const VOCAB_BY_ID: Record<string, VocabWord> = Object.fromEntries(VOCAB.map((w) => [w.id, w]));
 

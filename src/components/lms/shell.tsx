@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   BookOpen, BookMarked, Brain, Calculator, Clapperboard, Compass, Crown, Ear, FlaskConical,
-  Gamepad2, GraduationCap, Home, Languages, Library, LineChart, MapPin, Medal, PenLine,
-  RefreshCcw, ScrollText, Settings, Shield, Sparkles, Trophy, Volume2, X, Zap, Flame, Menu,
+  Gamepad2, GraduationCap, Hash, Home, Languages, Library, LineChart, MapPin, Medal, Microscope,
+  PenLine, Printer, RefreshCcw, ScrollText, Settings, Shield, Sparkles, Timer, Trophy, Volume2,
+  X, Zap, Flame, Menu, CalendarDays,
   LogIn, LogOut,
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
@@ -20,6 +21,7 @@ const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typ
     group: "Tu ruta",
     items: [
       { id: "inicio", label: "Inicio", icon: Home },
+      { id: "pianosettimanale", label: "Piano settimanale", icon: CalendarDays },
       { id: "progreso", label: "Mi progreso", icon: LineChart },
       { id: "test", label: "Test de nivel", icon: Compass },
       { id: "piani", label: "Piani PRO", icon: Crown },
@@ -46,6 +48,10 @@ const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typ
     items: [
       { id: "dizionario", label: "Diccionario", icon: BookMarked },
       { id: "coniugatore", label: "Conjugador", icon: Calculator },
+      { id: "verbidrill", label: "Allenamento verbi", icon: Timer },
+      { id: "numerilab", label: "Numeri lab", icon: Hash },
+      { id: "analizzatore", label: "Analizador de frases", icon: Microscope },
+      { id: "schede", label: "Schede di studio", icon: Printer },
       { id: "situazioni", label: "Situaciones reales", icon: MapPin },
       { id: "cultura", label: "Cultura italiana", icon: Clapperboard },
       { id: "tutor", label: "Tutor IA", icon: Sparkles },
@@ -86,13 +92,18 @@ const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   situazioni: { title: "Situazioni reali", sub: "El italiano que de verdad se usa: aeropuerto, hotel, médico…" },
   cultura: { title: "Cultura italiana", sub: "Historia, arte, gastronomía y gestos: el idioma en contexto" },
   tutor: { title: "Tutor IA", sub: "Tu profesor italiano disponible 24/7" },
-  giochi: { title: "Giochi", sub: "Memoria, orden de frases y quiz relámpago" },
+  giochi: { title: "Giochi", sub: "Memoria, orden de frases, quiz relámpago e impiccato" },
   repaso: { title: "Repaso inteligente", sub: "Repetición espaciada adaptada a tu memoria" },
   esami: { title: "Esami", sub: "Pruebas por nivel con certificado al aprobar" },
   certificati: { title: "Certificati", sub: "Tus diplomas de italiano, listos para descargar" },
   impostazioni: { title: "Impostazioni", sub: "Tema, tamaño de texto, audio y perfil" },
   piani: { title: "Piani PRO · Premium · Platinum", sub: "Sblocca tutto il potenziale di Italiano Master" },
   admin: { title: "Pannello di Controllo", sub: "Amministrazione totale de la plataforma" },
+  numerilab: { title: "Numeri lab", sub: "Conversor de números y hora + práctica con XP" },
+  verbidrill: { title: "Allenamento verbi", sub: "Drill de conjugación contrarreloj con rachas" },
+  pianosettimanale: { title: "Piano settimanale", sub: "Tu semana de estudio en un plan generado a medida" },
+  analizzatore: { title: "Analizzatore di frasi", sub: "Analiza frases italianas palabra por palabra con traducción" },
+  schede: { title: "Schede di studio", sub: "Hojas de vocabulario, verbos y gramática listas para imprimir" },
 };
 
 function NavItem({ id, label, icon: Icon, onNav, active }: { id: ViewId; label: string; icon: typeof Home; onNav: () => void; active: boolean }) {

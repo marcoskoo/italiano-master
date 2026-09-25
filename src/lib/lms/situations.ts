@@ -1,4 +1,5 @@
 import type { Situation } from "./types";
+import { SITUATIONS_EXTRA } from "./extra/situations-extra";
 
 /* ── Situaciones reales · vocabulario → diálogo → ejercicios → role-play ── */
 
@@ -152,3 +153,6 @@ export const SITUATIONS: Situation[] = [
     roleplay: { it: "Role-play: io vengo in banca per aprire un conto, tu sei l'impiegato. Spiegami cosa serve.", es: "Role-play: vengo al banco a abrir una cuenta, tú eres el empleado. Explícame qué necesito." },
   },
 ];
+
+/* # Paquete de expansión v1.1: +6 situaciones reales */
+SITUATIONS.push(...SITUATIONS_EXTRA);

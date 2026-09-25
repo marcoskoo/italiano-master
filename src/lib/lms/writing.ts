@@ -1,4 +1,5 @@
 import type { WritingPrompt } from "./types";
+import { WRITINGS_EXTRA } from "./extra/writing-extra";
 
 /* ── Escritura · consignas por nivel ──────────────────────────────── */
 
@@ -79,3 +80,6 @@ export const WRITINGS: WritingPrompt[] = [
     checklist: ["¿Registro académico sostenido?", "¿Conectores de refinamiento?", "¿Matiz con non è che / semmai?", "¿Tesis-antítesis-síntesis?"],
   },
 ];
+
+/* # Paquete de expansión v1.1: +4 consignas de escritura */
+WRITINGS.push(...WRITINGS_EXTRA);

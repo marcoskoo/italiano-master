@@ -1,4 +1,5 @@
 import type { CultureArticle } from "./types";
+import { CULTURE_EXTRA } from "./extra/culture-extra";
 
 /* ── Cultura italiana · artículos con pregunta ────────────────────── */
 
@@ -85,3 +86,6 @@ export const CULTURE: CultureArticle[] = [
     question: { q: "¿Qué es “la squadra del cuore”?", options: ["El equipo del corazón", "Un tipo de entrenamiento", "El trofeo del campeón", "La hinchada"], answer: 0, explain: "El equipo por el que se suspira de por vida." },
   },
 ];
+
+/* # Paquete de expansión v1.1: +6 artículos de cultura */
+CULTURE.push(...CULTURE_EXTRA);

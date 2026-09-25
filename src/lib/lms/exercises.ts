@@ -1,4 +1,5 @@
 import type { Exercise } from "./types";
+import { EXERCISES_EXTRA } from "./extra/exercises-extra";
 
 /* ── Banca de ejercicios · motor de práctica ──────────────────────── */
 /* Nota: las citas internas usan comillas tipográficas “ ” */
@@ -211,6 +212,9 @@ export const EXERCISES: Exercise[] = [
   { id: "ex-asc-006", type: "mc", level: "A2", topic: "ascolto", prompt: "En el diálogo del médico: ¿qué le duele al paciente?",
     options: ["La garganta y la cabeza", "El estómago", "La espalda", "Una pierna"], answer: 0, explain: "“Ho mal di gola e mi fa male la testa”." },
 ];
+
+/* Paquete de expansión v1.1: +97 ejercicios (nuevas lecciones, lecturas, escuchas y laboratorios) */
+EXERCISES.push(...EXERCISES_EXTRA);
 
 export const EXERCISES_BY_ID: Record<string, Exercise> = Object.fromEntries(EXERCISES.map((e) => [e.id, e]));
 

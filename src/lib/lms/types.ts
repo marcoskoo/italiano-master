@@ -16,7 +16,8 @@ export type WordCategory =
   | "saluti" | "famiglia" | "casa" | "alimentazione" | "compras" | "transporte"
   | "viaggi" | "hotel" | "salud" | "lavoro" | "studi" | "citta" | "clima"
   | "ropa" | "tecnologia" | "sport" | "musica" | "cinema" | "relazioni"
-  | "finanze" | "ristorante" | "professioni" | "attualita" | "scienza" | "letteratura";
+  | "finanze" | "ristorante" | "professioni" | "attualita" | "scienza" | "letteratura"
+  | "colori" | "corpo" | "animali" | "natura" | "tempo" | "svago";
 
 export const CATEGORY_META: Record<WordCategory, { es: string; emoji: string }> = {
   saluti: { es: "Saludos", emoji: "👋" },
@@ -44,6 +45,12 @@ export const CATEGORY_META: Record<WordCategory, { es: string; emoji: string }> 
   attualita: { es: "Actualidad", emoji: "📰" },
   scienza: { es: "Ciencia", emoji: "🧪" },
   letteratura: { es: "Literatura", emoji: "📚" },
+  colori: { es: "Colores", emoji: "🎨" },
+  corpo: { es: "El cuerpo", emoji: "🫀" },
+  animali: { es: "Animales", emoji: "🐶" },
+  natura: { es: "Naturaleza", emoji: "🌿" },
+  tempo: { es: "Tiempo y fechas", emoji: "🗓️" },
+  svago: { es: "Tiempo libre", emoji: "🎲" },
 };
 
 export type WordType = "sostantivo" | "verbo" | "aggettivo" | "avverbio" | "espressione";
@@ -203,7 +210,8 @@ export type ViewId =
   | "inicio" | "progreso" | "test" | "cursos" | "grammatica" | "vocabolario"
   | "conversazione" | "ascolto" | "lettura" | "scrittura" | "pronuncia"
   | "coniugatore" | "dizionario" | "situazioni" | "cultura" | "tutor" | "giochi"
-  | "repaso" | "esami" | "certificati" | "impostazioni" | "piani" | "admin";
+  | "repaso" | "esami" | "certificati" | "impostazioni" | "piani" | "admin"
+  | "numerilab" | "verbidrill" | "pianosettimanale" | "analizzatore" | "schede";
 
 export interface NavParams {
   level?: CefrLevel | "zero";

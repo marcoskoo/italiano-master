@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Gamepad2, Grid3x3, ListOrdered, Sparkles, Timer, Trophy } from "lucide-react";
 import { VOCAB, wordsByCategory } from "@/lib/lms/vocabulary";
-import { CATEGORY_META, type WordCategory } from "@/lib/lms/types";
+import { CATEGORY_META, type CefrLevel, type WordCategory } from "@/lib/lms/types";
 import { EXERCISES } from "@/lib/lms/exercises";
 import { useLms } from "@/lib/lms/store";
 import { QuizEngine } from "../quiz-engine";
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 /* ── Vista: Giochi ────────────────────────────────────────────────── */
 
-type GameId = "memoria" | "ordinare" | "quiz";
+type GameId = "memoria" | "ordinare" | "quiz" | "impiccato";
 
 export function GamesView() {
   const [game, setGame] = useState<GameId | null>(null);
@@ -39,6 +39,7 @@ export function GamesView() {
 
   if (game === "memoria") return <MemoryGame onBack={() => setGame(null)} />;
   if (game === "ordinare") return <OrderGame onBack={() => setGame(null)} />;
+  if (game === "impiccato") return <HangmanGame onBack={() => setGame(null)} />;
   if (game === "quiz") return (
     <div>
       <button onClick={() => setGame(null)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
@@ -49,11 +50,12 @@ export function GamesView() {
   );
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {[
         { id: "memoria", emoji: "🧠", title: "Memoria", it: "gioco di memoria", desc: "Encuentra las parejas italiano–español. Menos movimientos = más puntos.", icon: Grid3x3 },
         { id: "ordinare", emoji: "🔤", title: "Ordina la frase", it: "metti in ordine", desc: "Construye frases italianas reales tocando las palabras en orden.", icon: ListOrdered },
         { id: "quiz", emoji: "⚡", title: "Quiz lampo", it: "quiz relámpago", desc: "Ocho preguntas rápidas: correcto pulsa verde, error pulsa rojo.", icon: Sparkles },
+        { id: "impiccato", emoji: "🎯", title: "L'impiccato", it: "il gioco dell'impiccato", desc: "Adivina la palabra italiana letra a letra antes de completar el muñeco.", icon: Gamepad2 },
       ].map((g, i) => (
         <motion.button
           key={g.id}
@@ -300,6 +302,180 @@ function OrderGame({ onBack }: { onBack: () => void }) {
           </motion.div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ── Juego del ahorcado (L'impiccato) · v1.1 ── */
+const HANG_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "z",
+  "à", "è", "é", "ì", "ò", "ù"];
+
+function HangmanGame({ onBack }: { onBack: () => void }) {
+  // palabras de una sola pieza, sin espacios ni apóstrofos, entre 4 y 12 letras
+  const pool = useMemo(
+    () => VOCAB.filter((w) => {
+      const it = w.it.toLowerCase();
+      return it.length >= 4 && it.length <= 12 && /^[a-zàèéìòù]+$/.test(it);
+    }),
+    []
+  );
+  const [target, setTarget] = useState(() => pool[0]);
+  const [guessed, setGuessed] = useState<Set<string>>(new Set());
+  const [status, setStatus] = useState<"playing" | "won" | "lost">("playing");
+  const [hintUsed, setHintUsed] = useState(false);
+  const [round, setRound] = useState(1);
+  const [wins, setWins] = useState(0);
+  const addXp = useLms((s) => s.addXp);
+  const recordCorrect = useLms((s) => s.recordCorrect);
+  const recordError = useLms((s) => s.recordError);
+
+  const letters = useMemo(() => Array.from(new Set(target.it.toLowerCase().split(""))), [target]);
+  const wrong = Array.from(guessed).filter((l) => !letters.includes(l));
+  const MAX_ERR = 7;
+  const lost = wrong.length >= MAX_ERR;
+  const won = letters.every((l) => guessed.has(l));
+
+  useEffect(() => {
+    if (status !== "playing") return;
+    if (won) {
+      setStatus("won");
+      setWins((w) => w + 1);
+      addXp(hintUsed ? 8 : 14, "vocabolario");
+      recordCorrect("vocabolario");
+    } else if (lost) {
+      setStatus("lost");
+      recordError("vocabolario");
+    }
+  }, [won, lost, status, hintUsed, addXp, recordCorrect, recordError]);
+
+  const next = useCallback(() => {
+    const other = pool.filter((w) => w.id !== target.id);
+    setTarget(other[Math.floor(Math.random() * other.length)] ?? pool[0]);
+    setGuessed(new Set());
+    setStatus("playing");
+    setHintUsed(false);
+    setRound((r) => r + 1);
+  }, [pool, target]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (status !== "playing") return;
+      const k = e.key.toLowerCase();
+      if (HANG_KEYS.includes(k)) setGuessed((g) => new Set(g).add(k));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [status]);
+
+  // muñeco SVG progresivo (7 errores)
+  const gallows = (
+    <svg viewBox="0 0 120 140" className="mx-auto h-44 w-44" aria-hidden="true">
+      <line x1="10" y1="130" x2="90" y2="130" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+      <line x1="30" y1="130" x2="30" y2="12" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+      <line x1="30" y1="12" x2="82" y2="12" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+      <line x1="82" y1="12" x2="82" y2="28" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+      {wrong.length > 0 && <circle cx="82" cy="42" r="14" fill="none" stroke="currentColor" strokeWidth="4" />}
+      {wrong.length > 1 && <line x1="82" y1="56" x2="82" y2="92" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />}
+      {wrong.length > 2 && <line x1="82" y1="64" x2="66" y2="80" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />}
+      {wrong.length > 3 && <line x1="82" y1="64" x2="98" y2="80" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />}
+      {wrong.length > 4 && <line x1="82" y1="92" x2="66" y2="114" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />}
+      {wrong.length > 5 && <line x1="82" y1="92" x2="98" y2="114" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />}
+      {wrong.length > 6 && (
+        <g>
+          <circle cx="76" cy="38" r="1.8" fill="currentColor" />
+          <circle cx="88" cy="38" r="1.8" fill="currentColor" />
+          <path d="M76 47 Q82 42 88 47" fill="none" stroke="currentColor" strokeWidth="2" />
+        </g>
+      )}
+    </svg>
+  );
+
+  return (
+    <div className="mx-auto max-w-2xl">
+      <button onClick={onBack} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">← Tutti i giochi</button>
+
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-display text-2xl font-semibold">L'impiccato 🎯</h2>
+        <div className="flex items-center gap-3 text-xs font-bold">
+          <span className="rounded-full bg-verde-tenue px-3 py-1.5 text-verde-scuro dark:text-verde">partita {round} · vinte {wins}</span>
+          <span className={cn("rounded-full px-3 py-1.5", wrong.length >= 5 ? "bg-rosso-tenue text-rosso-scuro dark:text-rosso" : "bg-oro-tenue text-oro-scuro")}>
+            errori {wrong.length}/{MAX_ERR}
+          </span>
+        </div>
+      </div>
+
+      <div className={cn(
+        "rounded-3xl border-2 p-6 transition-colors sm:p-8",
+        status === "won" ? "border-verde bg-verde-tenue quiz-correct" : status === "lost" ? "border-rosso bg-rosso-tenue quiz-wrong" : "border-soft bg-surface"
+      )}>
+        <div className="grid items-center gap-6 sm:grid-cols-2">
+          <div className="text-inchiostro/70">{gallows}</div>
+          <div className="text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-it">Indovina la parola</p>
+            <p className="mt-4 flex flex-wrap justify-center gap-1.5">
+              {target.it.toLowerCase().split("").map((l, i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    "flex h-11 w-8 items-end justify-center border-b-2 pb-1 font-mono text-2xl font-bold",
+                    guessed.has(l) || status === "lost" ? "border-verde text-inchiostro" : "border-soft text-transparent"
+                  )}
+                >
+                  {(guessed.has(l) || status === "lost") ? l : "•"}
+                </span>
+              ))}
+            </p>
+            {hintUsed && status === "playing" && (
+              <p className="mt-3 text-xs text-muted-it">💡 Pista: <b>{target.es}</b> · categoría {CATEGORY_META[target.cat].es}</p>
+            )}
+            {status === "playing" && !hintUsed && (
+              <button onClick={() => setHintUsed(true)} className="mt-4 min-h-9 rounded-lg border border-oro/50 bg-oro-tenue px-3 py-1.5 text-xs font-bold text-oro-scuro">
+                💡 Pista (−6 XP)
+              </button>
+            )}
+          </div>
+        </div>
+
+        {status === "playing" && (
+          <div className="mt-6 flex flex-wrap justify-center gap-1.5">
+            {HANG_KEYS.map((k) => {
+              const used = guessed.has(k);
+              const hit = used && letters.includes(k);
+              return (
+                <button
+                  key={k}
+                  onClick={() => setGuessed((g) => new Set(g).add(k))}
+                  disabled={used}
+                  aria-label={`Letra ${k}`}
+                  className={cn(
+                    "h-10 w-9 rounded-lg border text-sm font-bold transition-all",
+                    used ? (hit ? "border-verde bg-verde text-white" : "border-rosso/50 bg-rosso-tenue text-rosso-scuro dark:text-rosso opacity-70") : "border-soft bg-crema hover:-translate-y-0.5 hover:border-verde/50"
+                  )}
+                >
+                  {k}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {status !== "playing" && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-6 text-center">
+            <p className={cn("rounded-2xl p-4 font-bold", status === "won" ? "bg-verde-tenue text-verde-scuro dark:text-verde" : "bg-rosso-tenue text-rosso-scuro dark:text-rosso")}>
+              {status === "won"
+                ? `🎉 Bravo! «${target.it}» = ${target.es}${hintUsed ? " (con pista)" : ""} +${hintUsed ? 8 : 14} XP`
+                : `La parola era «${target.it}» = ${target.es}`}
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <AudioButton text={target.it} variant="full" label="Escucha la palabra" />
+              <button onClick={next} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-inchiostro px-5 py-2.5 text-sm font-bold text-crema transition-all hover:scale-105 dark:bg-verde dark:text-inchiostro">
+                Parola successiva →
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </div>
+      <p className="mt-4 text-center text-xs text-muted-it">Nivel {target.level} · teclado físico activo (solo letras del alfabeto italiano + vocales acentuadas).</p>
     </div>
   );
 }

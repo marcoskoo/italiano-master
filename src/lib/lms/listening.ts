@@ -1,4 +1,5 @@
 import type { ListeningTask } from "./types";
+import { LISTENING_EXTRA } from "./extra/listening-extra";
 
 /* ── Escucha · tareas con TTS ─────────────────────────────────────── */
 
@@ -70,3 +71,6 @@ export const LISTENING: ListeningTask[] = [
     questions: ["ex-b1-010", "ex-b1-009"],
   },
 ];
+
+/* # Paquete de expansión v1.1: +6 tareas de escucha */
+LISTENING.push(...LISTENING_EXTRA);

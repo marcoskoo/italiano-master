@@ -163,6 +163,36 @@ export function SettingsTab({ onSaved }: { onSaved: () => void }) {
             label="Plan semanal premium"
             hint="Agenda de estudio de 7 días generada según nivel y repaso."
           />
+          <Toggle
+            checked={config.features.numberLab}
+            onChange={(v) => set("features", { ...config.features, numberLab: v })}
+            label="Numeri lab"
+            hint="Conversor de números/hora a italiano + práctica con XP."
+          />
+          <Toggle
+            checked={config.features.verbDrill}
+            onChange={(v) => set("features", { ...config.features, verbDrill: v })}
+            label="Allenamento verbi"
+            hint="Drill de conjugación contrarreloj con rachas."
+          />
+          <Toggle
+            checked={config.features.planner}
+            onChange={(v) => set("features", { ...config.features, planner: v })}
+            label="Piano settimanale (planificador)"
+            hint="Generador de plan semanal personalizado por nivel, días y minutos."
+          />
+          <Toggle
+            checked={config.features.analyzer}
+            onChange={(v) => set("features", { ...config.features, analyzer: v })}
+            label="Analizzatore di frasi"
+            hint="Análisis palabra por palabra con traducción y nivel estimado."
+          />
+          <Toggle
+            checked={config.features.printables}
+            onChange={(v) => set("features", { ...config.features, printables: v })}
+            label="Schede di studio (imprimibles)"
+            hint="Hojas de vocabulario, verbos y gramática para imprimir o PDF."
+          />
         </div>
       </section>
 

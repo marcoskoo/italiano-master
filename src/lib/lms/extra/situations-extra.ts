@@ -1,0 +1,127 @@
+import type { Situation } from "../types";
+
+/* ── Situaciones EXTRA · paquete de expansión v1.1 ─────────────────── */
+
+export const SITUATIONS_EXTRA: Situation[] = [
+  {
+    id: "sit-farmacia", emoji: "💊", title: "En la farmacia", titleIt: "In farmacia", level: "A2",
+    intro: "No todo son museums y trattorie: tarde o temprano necesitarás algo para la tos o el sol. La farmacia italiana (con la cruz verde luminosa) es tu aliada.",
+    vocab: [
+      { it: "Ho mal di testa", es: "Me duele la cabeza" },
+      { it: "Qualcosa per la tosse", es: "Algo para la tos" },
+      { it: "Serve la ricetta?", es: "¿Se necesita receta?" },
+      { it: "Quante volte al giorno?", es: "¿Cuántas veces al día?" },
+      { it: "Prima o dopo i pasti?", es: "¿Antes o después de las comidas?" },
+    ],
+    dialogue: [
+      { speaker: "Farmacista", it: "Buongiorno, dica pure!", es: "Buenos días, ¡dígame!" },
+      { speaker: "Turista", it: "Buongiorno, ho mal di gola e un po' di febbre. Ha qualcosa?", es: "Buenos días, me duele la garganta y tengo algo de fiebre. ¿Tiene algo?" },
+      { speaker: "Farmacista", it: "Per la gola consiglio queste pasticche. Per la febbre, va bene il paracetamolo.", es: "Para la garganta recomiendo estas pastillas. Para la fiebre, va bien el paracetamol." },
+      { speaker: "Turista", it: "Quante volte al giorno?", es: "¿Cuántas veces al día?" },
+      { speaker: "Farmacista", it: "Una pasticca ogni sei ore. Se in tre giorni non passa, vada dal medico!", es: "Una pastilla cada seis horas. ¡Si en tres días no pasa, vaya al médico!" },
+    ],
+    exerciseIds: ["ex-a2-031"],
+    roleplay: { it: "Io sono il farmacista: descrivi i tuoi sintomi e chiedi consiglio.", es: "Yo soy el farmacéutico: describe tus síntomas y pide consejo." },
+  },
+  {
+    id: "sit-noleggio", emoji: "🚗", title: "Alquilar un coche", titleIt: "Noleggiare un'auto", level: "B1",
+    intro: "El mostrador del alquiler de coches: garantías, seguros y franquicias. Con estas frases no firmarás nada sin entender.",
+    vocab: [
+      { it: "il noleggio", es: "el alquiler" },
+      { it: "la franchigia", es: "la franquicia (del seguro)" },
+      { it: "la copertura completa", es: "la cobertura total" },
+      { it: "il pieno di benzina", es: "el tanque lleno" },
+      { it: "il conducente aggiuntivo", es: "el conductor adicional" },
+    ],
+    dialogue: [
+      { speaker: "Impiegato", it: "Buongiorno, ha una prenotazione?", es: "Buenos días, ¿tiene una reserva?" },
+      { speaker: "Cliente", it: "Sì, a nome Rossi. Vorrei anche la copertura completa, senza franchigia.", es: "Sí, a nombre Rossi. Querría también la cobertura total, sin franquicia." },
+      { speaker: "Impiegato", it: "Perfetto. Restituisce il veicolo con il pieno?", es: "Perfecto. ¿Devuelve el vehículo con el tanque lleno?" },
+      { speaker: "Cliente", it: "Sì, con il pieno. È possibile aggiungere un secondo conducente?", es: "Sí, con el tanque lleno. ¿Es posible añadir un segundo conductor?" },
+      { speaker: "Impiegato", it: "Certo, sono 10 euro al giorno in più. Firmi qui, per favore.", es: "Claro, son 10 euros al día más. Firme aquí, por favor." },
+    ],
+    exerciseIds: ["ex-a2-029", "ex-b1-017"],
+    roleplay: { it: "Sei al banco del noleggio: negozi assicurazione e secondo conducente.", es: "Estás en el mostrador del alquiler: negocia seguro y segundo conductor." },
+  },
+  {
+    id: "sit-oggetti", emoji: "🎒", title: "Objetos perdidos", titleIt: "Oggetti smarriti", level: "B1",
+    intro: "Perdiste la mochila en el tren. Ufficio oggetti smarriti de la estación: descripciones, contenido y datos de contacto.",
+    vocab: [
+      { it: "ho perso / ho smarrito", es: "he perdido" },
+      { it: "l'ufficio oggetti smarriti", es: "la oficina de objetos perdidos" },
+      { it: "di colore scuro", es: "de color oscuro" },
+      { it: "conteneva…", es: "contenía…" },
+      { it: "lasci un numero", es: "deje un número" },
+    ],
+    dialogue: [
+      { speaker: "Impiegato", it: "Ufficio oggetti smarriti, dica.", es: "Oficina de objetos perdidos, diga." },
+      { speaker: "Turista", it: "Buongiorno, credo di aver dimenticato uno zaino sul treno da Firenze.", es: "Buenos días, creo que olvidé una mochila en el tren de Florencia." },
+      { speaker: "Impiegato", it: "Com'è fatto lo zaino?", es: "¿Cómo es la mochila?" },
+      { speaker: "Turista", it: "È grigio, con una tasca rossa. Dentro c'erano un libro e il computer portatile.", es: "Es gris, con un bolsillo rojo. Dentro había un libro y el portátil." },
+      { speaker: "Impiegato", it: "Controliamo con il personale. Lasci un numero: la chiamiamo entro stasera.", es: "Revisamos con el personal. Deje un número: le llamamos antes de esta noche." },
+    ],
+    exerciseIds: ["ex-a2-028", "ex-b1-016"],
+    roleplay: { it: "Descrivi un oggetto perso: colore, contenuto, dove e quando.", es: "Describe un objeto perdido: color, contenido, dónde y cuándo." },
+  },
+  {
+    id: "sit-negozio", emoji: "👗", title: "Probadores y tallas", titleIt: "Nel negozio di vestiti", level: "A2",
+    intro: "Camisería y probadores: pedir talla, tocar la tela y ese momento de verdad frente al espejo.",
+    vocab: [
+      { it: "Che taglia porta?", es: "¿Qué talla usa?" },
+      { it: "Posso provare…?", es: "¿Puedo probarme…?" },
+      { it: "Il camerino", es: "El probador" },
+      { it: "È stretto / largo", es: "Está estrecho / ancho" },
+      { it: "Lo prendo!", es: "¡Me lo llevo!" },
+    ],
+    dialogue: [
+      { speaker: "Commessa", it: "Buongiorno! Posso aiutarla?", es: "¡Buenos días! ¿Puedo ayudarla?" },
+      { speaker: "Cliente", it: "Sì, cerco una camicia bianca. Che taglie avete?", es: "Sí, busco una camisa blanca. ¿Qué tallas tienen?" },
+      { speaker: "Commessa", it: "Abbiamo dalla S alla XL. Che taglia porta?", es: "Tenemos de la S a la XL. ¿Qué talla usa?" },
+      { speaker: "Cliente", it: "La M, di solito. Posso provarla?", es: "La M, normalmente. ¿Puedo probármela?" },
+      { speaker: "Commessa", it: "Certo, il camerino è in fondo a destra.", es: "Claro, el probador está al fondo a la derecha." },
+      { speaker: "Cliente", it: "Perfetta! La prendo. Accettate la carta?", es: "¡Perfecta! Me la llevo. ¿Aceptan tarjeta?" },
+    ],
+    exerciseIds: ["ex-a1-038", "ex-a2-030"],
+    roleplay: { it: "Sei in un negozio: chiedi la taglia, prova e compra.", es: "Estás en una tienda: pide la talla, pruébate y compra." },
+  },
+  {
+    id: "sit-palestra", emoji: "🏋️", title: "Apuntarse al gimnasio", titleIt: "Iscriversi in palestra", level: "B1",
+    intro: "Inscripción en el gimnasio: tipos de abono, horarios y clases. Mucho condicional de cortesía y números.",
+    vocab: [
+      { it: "l'abbonamento mensile", es: "el abono mensual" },
+      { it: "il corso di yoga / spinning", es: "la clase de yoga / spinning" },
+      { it: "la tessera", es: "el carnet" },
+      { it: "l'orario di apertura", es: "el horario de apertura" },
+      { it: "c'è una prova gratuita?", es: "¿hay una prueba gratuita?" },
+    ],
+    dialogue: [
+      { speaker: "Segretaria", it: "Benvenuto! Desidera informazioni?", es: "¡Bienvenido! ¿Desea información?" },
+      { speaker: "Cliente", it: "Sì, vorrei iscrivermi. Quanto costa l'abbonamento mensile?", es: "Sí, querría inscribirme. ¿Cuánto cuesta el abono mensual?" },
+      { speaker: "Segretaria", it: "Cinquantanove euro, con corsi inclusi. C'è anche la formula trimestrale.", es: "Cincuenta y nueve euros, con clases incluidas. También hay fórmula trimestral." },
+      { speaker: "Cliente", it: "E se volessi solo la sala pesi?", es: "¿Y si quisiera solo la sala de pesas?" },
+      { speaker: "Segretaria", it: "Trentanove euro. Le offrirei una prova gratuita oggi, se ha le scarpe giuste!", es: "Treinta y nueve euros. Le ofrecería una prueba gratuita hoy, ¡si tiene las zapatillas adecuadas!" },
+    ],
+    exerciseIds: ["ex-a2-026", "ex-num-004"],
+    roleplay: { it: "Chiedi prezzi, corsi e una prova gratuita in palestra.", es: "Pregunta precios, clases y una prueba gratuita en el gimnasio." },
+  },
+  {
+    id: "sit-cena", emoji: "🍷", title: "La sobremesa", titleIt: "La sobremesa", level: "B1",
+    intro: "La sobremesa italiana: sobremesas con vino, historias y el ritual del amaro. Aquí se hace (y se rompen) amistades.",
+    vocab: [
+      { it: "Il conto, possiamo dividere?", es: "La cuenta, ¿podemos dividirla?" },
+      { it: "Offro io! / Facciamo a metà", es: "¡Invito yo! / Hacemos a medias" },
+      { it: "Un amaro, per favore", es: "Un amaro, por favor" },
+      { it: "Allegra la serata", es: "Animó la velada" },
+      { it: "Si è fatto tardi!", es: "¡Se ha hecho tarde!" },
+    ],
+    dialogue: [
+      { speaker: "Amico 1", it: "Che bella serata! Il conto, possiamo dividerlo?", es: "¡Qué buena velada! ¿La cuenta, podemos dividirla?" },
+      { speaker: "Amico 2", it: "No, stasera offro io: è il mio compleanno!", es: "No, esta noche invito yo: ¡es mi cumpleaños!" },
+      { speaker: "Amico 1", it: "Allora il prossimo amaro lo pago io!", es: "¡Entonces el próximo amaro lo pago yo!" },
+      { speaker: "Amico 2", it: "Affare fatto. Ma si è fatto tardi, domani lavoro…", es: "Trato hecho. Pero se ha hecho tarde, mañana trabajo…" },
+      { speaker: "Amico 1", it: "Un ultimo caffè e andiamo. Alla salute!", es: "Un último café y nos vamos. ¡Salud!" },
+    ],
+    exerciseIds: ["ex-a1-036", "ex-a2-026"],
+    roleplay: { it: "Siamo a cena: proponi di dividere il conto e ordina un amaro.", es: "Estamos cenando: propón dividir la cuenta y pide un amaro." },
+  },
+];

@@ -22,6 +22,11 @@ import { ReviewView } from "@/components/lms/views/review";
 import { ExamsView, CertificatesView, SettingsView } from "@/components/lms/views/exams";
 import { PricingView } from "@/components/lms/views/pricing";
 import { AdminView } from "@/components/lms/views/admin";
+import { NumberLabView } from "@/components/lms/views/numberlab";
+import { VerbDrillView } from "@/components/lms/views/verbdrill";
+import { PlannerView } from "@/components/lms/views/planner";
+import { AnalyzerView } from "@/components/lms/views/analyzer";
+import { PrintablesView } from "@/components/lms/views/printables";
 
 /* ── Italiano Master · LMS completo de italiano (SPA) ─────────────── */
 
@@ -217,6 +222,11 @@ export default function Home() {
         {view === "impostazioni" && <SettingsView />}
         {view === "piani" && <PricingView />}
         {view === "admin" && <AdminView />}
+        {view === "numerilab" && <NumberLabView />}
+        {view === "verbidrill" && <VerbDrillView />}
+        {view === "pianosettimanale" && <PlannerView />}
+        {view === "analizzatore" && <AnalyzerView />}
+        {view === "schede" && <PrintablesView />}
       </div>
     </AppShell>
   );

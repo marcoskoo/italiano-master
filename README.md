@@ -23,16 +23,26 @@
 | 📜 **Soluciones paso a paso reveladas línea por línea** | `Gramática`, modelos de `Escritura` |
 
 ### LMS completo (21 secciones)
-- **Niveles MCER A1 → C2 + modo «Desde cero»**: 7 cursos, 45+ lecciones con pipeline completo *objetivos → explicación → ejemplos con audio → vocabulario → práctica → conversación → evaluación*.
-- **Las 4 destrezas**: Escucha (diálogos con TTS y velocidades), Lectura (textos graduados con glosario), Escritura (corrección IA + modelo revelado), Conversación (role-play con el tutor).
-- **Vocabulario**: 25 categorías, ~150 palabras con pronunciación, ejemplos, sinónimos/antónimos y flashcards SRS (algoritmo SM-2).
-- **Gramática**: 22 temas A1→C2 con explicación en español y problemas resueltos paso a paso.
-- **Herramientas**: Conjugador (~60 verbos, 7 tiempos, irregulares en rojo) y Diccionario IT↔ES.
-- **Situaciones reales** (aeropuerto, hotel, restaurante, médico…), **Cultura italiana**, **Juegos** (memoria, ordenar frases), **Test de nivel** (20 preguntas), **Exámenes** con certificados descargables.
+- **Niveles MCER A1 → C2 + modo «Desde cero»**: 7 cursos, **77 lecciones en 29 unidades** con pipeline completo *objetivos → explicación → ejemplos con audio → vocabulario → práctica → conversación → evaluación*.
+- **Las 4 destrezas**: Escucha (**14 tareas** con TTS y velocidades), Lectura (**14 textos graduados** con glosario), Escritura (**10 consignas** con corrección IA + modelo revelado), Conversación (**12 escenarios** de role-play con el tutor).
+- **Vocabulario**: **31 categorías, ~280 palabras** con pronunciación, ejemplos, sinónimos/antónimos y flashcards SRS (algoritmo SM-2).
+- **Gramática**: **30 temas A1→C2** con explicación en español y problemas resueltos paso a paso.
+- **Herramientas**: Conjugador (~60 verbos, 7 tiempos, irregulares en rojo), Diccionario IT↔ES, **Numeri lab**, **Allenamento verbi**, **Analizzatore di frasi** y **Schede di estudio** (ver plugins).
+- **Situaciones reales** (14: aeropuerto, hotel, restaurante, médico, farmacia, tren, objetos perdidos, gimnasio…), **Cultura italiana** (15 artículos), **Juegos** (memoria, ordenar frases, quiz relámpago, **impiccato**), **Test de nivel** (20 preguntas), **Exámenes** con certificados descargables.
 - **Gamificación**: XP con rangos (Principiante → Gran Maestro), racha diaria, misiones, insignias.
 - **Motor adaptativo**: los errores se registran por tema y generan «refuerzos dirigidos» y recomendaciones.
 - **Planes FREE · PRO · PREMIUM · PLATINUM** con gating real de funciones y checkout demo.
 - **Accesibilidad**: modo oscuro, 3 tamaños de letra, navegación por teclado, `prefers-reduced-motion`, responsive móvil.
+
+### 🧩 Plugins y artefactos interactivos (v1.1)
+| Plugin | Qué hace | Dónde |
+|---|---|---|
+| 🔢 **Numeri lab** | Conversor número→italiano (0–999.999.999) con ordinales, laboratorio de la hora (*e un quarto, meno un quarto, mezzogiorno*) y práctica con XP y comparación tolerante a acentos | Herramientas → Numeri lab |
+| ⚡ **Allenamento verbi** | Drill de conjugación contrarreloj (60 s): ~57 verbos × 7 tiempos × 6 personas, rachas con bonus de XP, historial de formas y audio | Herramientas → Allenamento verbi |
+| 📅 **Piano settimanale** | Generador de plan semanal personalizado: nivel × días × minutos → sesiones navegables con lecciones concretas, práctica por destreza, día de consolidación y examen final | Tu ruta → Piano settimanale |
+| 🔬 **Analizzatore di frasi** | Pega una frase italiana y obtén el análisis palabra por palabra (traducción, formas verbales detectadas por índice inverso, nivel MCER estimado, cobertura) | Herramientas → Analizzatore |
+| 🖨️ **Schede di studio** | Hojas imprimibles / PDF: vocabulario por categoría (con pronunciación y ejemplos), tablas de conjugación completas y chuleta de gramática (30 temas) | Herramientas → Schede |
+| 🎯 **L'impiccato** | Ahorcado con las palabras del diccionario: teclado italiano (con vocales acentuadas), muñeco SVG progresivo, pistas opcionales y XP | Giochi → L'impiccato |
 
 ### 🛡️ Panel de administración (control total)
 Accesible desde `Sistema → Panel Admin` o el botón «Accedi» del header:
@@ -40,7 +50,7 @@ Accesible desde `Sistema → Panel Admin` o el botón «Accedi» del header:
 - **Panorámica**: KPIs, actividad de 7 días, distribución por nivel/plan, top estudiantes, modo mantenimiento.
 - **Usuarios**: CRUD completo (crear, editar XP/nivel/plan/racha, reset de contraseña, desactivar, eliminar). La cuenta `Mkoo` está protegida contra eliminación.
 - **Contenido**: editor de vocabulario (palabras custom, ocultar/restaurar palabras base), lecciones (desactivar, crear lecciones custom con constructor de preguntas), ejercicios custom.
-- **Impostazioni**: identidad de la app, mantenimiento con mensaje personalizado, activar/desactivar funciones (tutor, juegos, exámenes, planes, certificados), niveles disponibles, defaults forzables, precios.
+- **Impostazioni**: identidad de la app, mantenimiento con mensaje personalizado, activar/desactivar funciones (tutor, juegos, exámenes, planes, certificados, **Numeri lab, Allenamento verbi, Piano settimanale, Analizzatore, Schede**), niveles disponibles, defaults forzables, precios.
 - **Actividad**: telemetría filtrable por tipo.
 - **Datos**: export JSON completo, seed de datos demo, reset por zonas.
 
