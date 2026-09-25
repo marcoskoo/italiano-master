@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -40,6 +40,18 @@ export const metadata: Metadata = {
     siteName: "Italiano Master",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  /* el teclado virtual redimensiona el layout (p. ej. el chat del tutor) */
+  interactiveWidget: "resizes-content",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf6ee" },
+    { media: "(prefers-color-scheme: dark)", color: "#1b1814" },
+  ],
 };
 
 export default function RootLayout({

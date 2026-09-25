@@ -662,7 +662,7 @@ export function ContentTab() {
           </div>
 
           <div className="overflow-hidden rounded-2xl border border-soft bg-surface">
-            <div className="max-h-[560px] overflow-y-auto scrollbar-thin">
+            <div className="max-h-[560px] overflow-auto scrollbar-thin">
               <table className="w-full min-w-[680px] text-left text-xs">
                 <thead className="sticky top-0 bg-crema-scura text-[10px] uppercase tracking-wide text-muted-it dark:bg-inchiostro/20">
                   <tr>

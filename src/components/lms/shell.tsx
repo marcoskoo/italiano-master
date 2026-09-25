@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
 import { useLms, rankFor } from "@/lib/lms/store";
+import { dueCards } from "@/lib/lms/srs";
 import { PlanChip, UpgradeCta } from "./plan-badge";
 import { loginRequest, setAdminToken, logoutRequest, getAdminToken } from "@/lib/lms/remote";
 import { cn } from "@/lib/utils";
@@ -122,6 +123,30 @@ function NavItem({ id, label, icon: Icon, onNav, active }: { id: ViewId; label: 
   );
 }
 
+/* ── Pestaña de la barra inferior móvil ───────────────────────────── */
+function BottomNavItem({ label, icon: Icon, active, onClick, badge }: { label: string; icon: typeof Home; active?: boolean; onClick: () => void; badge?: number }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
+      className="relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 px-1"
+    >
+      <span className={cn(
+        "relative flex h-7 w-12 items-center justify-center rounded-full transition-colors",
+        active ? "bg-verde-tenue text-verde-scuro dark:bg-verde/25 dark:text-verde" : "text-inchiostro/55"
+      )}>
+        <Icon className="h-5 w-5" aria-hidden="true" />
+        {badge != null && badge > 0 && (
+          <span className="absolute -right-0.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rosso px-1 text-[9px] font-bold leading-none text-white shadow-sm" aria-label={`${badge} tarjetas por repasar`}>
+            {badge > 99 ? "99+" : badge}
+          </span>
+        )}
+      </span>
+      <span className={cn("text-[10px] font-bold leading-none", active ? "text-verde-scuro dark:text-verde" : "text-inchiostro/55")}>{label}</span>
+    </button>
+  );
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const view = useLms((s) => s.view);
   const navigate = useLms((s) => s.navigate);
@@ -136,6 +161,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const loginAccount = useLms((s) => s.loginAccount);
   const logoutAccount = useLms((s) => s.logoutAccount);
   const remoteConfig = useLms((s) => s.remoteConfig);
+  const srs = useLms((s) => s.srs);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -147,9 +173,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const rank = rankFor(xp);
   const meta = VIEW_TITLES[view];
   const appName = remoteConfig?.appName || "Italiano Master";
+  const dueCount = useMemo(() => dueCards(srs).length, [srs]);
 
   // features activables/desactivables desde el Panel Admin
   const features = remoteConfig?.features ?? { plans: true, tutor: true, games: true, certificates: true, weeklyPlan: true };
+
+  // pestaña contextual de la barra inferior: tutor → juegos → gramática
+  const extraTab = features.tutor
+    ? { id: "tutor" as ViewId, label: "Tutor IA", icon: Sparkles }
+    : features.games
+      ? { id: "giochi" as ViewId, label: "Juegos", icon: Gamepad2 }
+      : { id: "grammatica" as ViewId, label: "Gramática", icon: Brain };
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -194,6 +228,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [view]);
+
+  // drawer abierto: bloquea el scroll de fondo y cierra con Escape
+  useEffect(() => {
+    if (!menuOpen) return;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   const sidebar = useMemo(
     () => (
@@ -241,16 +289,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-crema font-sans text-inchiostro">
       {/* ── header ── */}
-      <header className="sticky top-0 z-40 border-b border-soft bg-crema/90 backdrop-blur-md">
-        <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
-          <button
-            onClick={() => setMenuOpen(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-soft lg:hidden"
-            aria-label="Abrir menú de navegación"
-          >
-            <Menu className="h-5 w-5" aria-hidden="true" />
-          </button>
-
+      <header className="sticky top-0 z-40 border-b border-soft bg-crema/90 backdrop-blur-md pt-safe">
+        <div className="flex h-16 items-center gap-2 px-3 sm:gap-3 sm:px-6">
           <button onClick={() => navigate("inicio")} className="flex items-center gap-2.5" aria-label="Ir al inicio">
             <span className={cn(
               "flex h-9 w-9 items-center justify-center rounded-xl p-[1.5px] transition-all",
@@ -271,11 +311,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-oro-tenue px-3 py-1.5 text-xs font-bold text-oro-scuro dark:text-oro" title="Puntos de experiencia">
+            <span className="inline-flex items-center gap-1 rounded-full bg-oro-tenue px-2.5 py-1.5 text-[11px] font-bold text-oro-scuro sm:gap-1.5 sm:px-3 sm:text-xs dark:text-oro" title="Puntos de experiencia">
               <Zap className="h-3.5 w-3.5" aria-hidden="true" />
-              {xp} XP
+              {xp}
+              <span className="hidden sm:inline">XP</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-rosso-tenue px-3 py-1.5 text-xs font-bold text-rosso-scuro dark:text-rosso" title="Racha de estudio">
+            <span className="inline-flex items-center gap-1 rounded-full bg-rosso-tenue px-2.5 py-1.5 text-[11px] font-bold text-rosso-scuro sm:gap-1.5 sm:px-3 sm:text-xs dark:text-rosso" title="Racha de estudio">
               <Flame className="h-3.5 w-3.5" aria-hidden="true" />
               {streak}
             </span>
@@ -331,8 +372,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         {/* móvil: título */}
-        <div className="border-t border-soft px-4 py-2 md:hidden">
-          <p className="text-sm font-semibold">{meta.title}</p>
+        <div className="border-t border-soft px-3 py-1.5 md:hidden sm:px-6">
+          <p className="truncate text-sm font-semibold">{meta.title}</p>
         </div>
       </header>
 
@@ -345,17 +386,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* ── drawer móvil ── */}
         {menuOpen && (
           <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menú de navegación">
-            <div className="absolute inset-0 bg-inchiostro/50 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
-            <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-2xl">
-              <div className="flex h-16 items-center justify-between border-b border-soft px-4">
-                <p className="font-display text-lg font-semibold">
+            <div className="fade-overlay absolute inset-0 bg-inchiostro/50 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
+            <div className="drawer-panel absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-2xl">
+              <div className="flex h-16 shrink-0 items-center justify-between border-b border-soft px-4">
+                <p className="truncate font-display text-lg font-semibold">
                   Ciao, {userName.split(" ")[0]} 👋
                 </p>
-                <button onClick={() => setMenuOpen(false)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-soft" aria-label="Cerrar menú">
+                <button onClick={() => setMenuOpen(false)} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-soft" aria-label="Cerrar menú">
                   <X className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
-              <div className="flex-1">{sidebar}</div>
+              <div className="min-h-0 flex-1">{sidebar}</div>
             </div>
           </div>
         )}
@@ -373,7 +414,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <p className="font-mono">A1 → A2 → B1 → B2 → C1 → C2</p>
             </div>
           </footer>
+          {/* espaciador para que la barra inferior no tape el footer (solo móvil) */}
+          <div className="h-24 lg:hidden" aria-hidden="true" />
         </main>
+
+        {/* ── barra inferior móvil ── */}
+        <nav
+          aria-label="Navegación rápida"
+          className="bottom-nav-in bottom-safe fixed inset-x-0 bottom-0 z-40 border-t border-soft bg-crema/95 backdrop-blur-md lg:hidden dark:bg-inchiostro/95"
+        >
+          <div className="mx-auto flex max-w-md items-stretch px-1.5">
+            <BottomNavItem label="Inicio" icon={Home} active={view === "inicio"} onClick={() => navigate("inicio")} />
+            <BottomNavItem label="Cursos" icon={GraduationCap} active={view === "cursos"} onClick={() => navigate("cursos")} />
+            <BottomNavItem label="Repaso" icon={RefreshCcw} active={view === "repaso"} onClick={() => navigate("repaso")} badge={dueCount} />
+            <BottomNavItem label={extraTab.label} icon={extraTab.icon} active={view === extraTab.id} onClick={() => navigate(extraTab.id)} />
+            <BottomNavItem label="Más" icon={Menu} active={menuOpen} onClick={() => setMenuOpen(true)} />
+          </div>
+        </nav>
         {/* ── modal de acceso ── */}
         {loginOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Iniciar sesión">

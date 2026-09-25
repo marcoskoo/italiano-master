@@ -187,11 +187,22 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     scroll-behavior: smooth;
+    /* móvil: sin zoom automático del sistema al rotar */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* móvil: elimina el flash gris al tocar y el scroll horizontal accidental */
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: clip;
+  }
+  /* contenedores con scroll: el scroll no se "fuga" al fondo */
+  .scrollbar-thin,
+  [data-slot="scroll-area-viewport"] {
+    overscroll-behavior: contain;
   }
   ::selection {
     background: #128a54;
@@ -210,6 +221,21 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     background: #c3b8a1;
+  }
+}
+
+/* ── Móvil: controles táctiles más cómodos ────────────────────────── */
+@media (pointer: coarse) {
+  /* thumbs de slider más grandes para el dedo (16px → 22px) */
+  [data-slot="slider-thumb"] {
+    width: 22px !important;
+    height: 22px !important;
+    border-width: 2px !important;
+  }
+  /* áreas de scroll interno: scroll con impulso siempre disponible */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
   }
 }
 
@@ -270,7 +296,10 @@
   .card-flash-bad,
   .animate-float,
   .animate-dot-breathe,
-  .animate-eq {
+  .animate-eq,
+  .drawer-panel,
+  .fade-overlay,
+  .bottom-nav-in {
     animation: none !important;
   }
   html {
@@ -281,6 +310,31 @@
 /* ── Italiano Master LMS utilities ───────────────────────────────── */
 html[data-textsize="lg"] { font-size: 17px; }
 html[data-textsize="xl"] { font-size: 18.5px; }
+
+/* ── Móvil: drawer lateral y barra inferior ──────────────────────── */
+@keyframes drawer-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes bar-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@layer utilities {
+  .drawer-panel { animation: drawer-in 0.28s cubic-bezier(0.32, 0.72, 0.24, 1) both; }
+  .fade-overlay { animation: fade-in 0.2s ease-out both; }
+  .bottom-nav-in { animation: bar-up 0.32s cubic-bezier(0.32, 0.72, 0.24, 1) both; }
+  /* huecos de iPhone (notch / home indicator) */
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .bottom-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+  }
+}
 
 @layer utilities {
   .bg-surface { background-color: var(--surface); }

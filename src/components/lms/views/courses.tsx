@@ -281,7 +281,7 @@ function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void
       </header>
 
       {/* pestañas del pipeline */}
-      <div className="sticky top-16 z-30 -mx-4 mt-6 overflow-x-auto border-b border-soft bg-crema/90 px-4 py-2.5 backdrop-blur-md sm:-mx-6 sm:px-6">
+      <div className="sticky top-[98px] z-30 -mx-4 mt-6 overflow-x-auto border-b border-soft bg-crema/90 px-4 py-2.5 backdrop-blur-md sm:-mx-6 sm:px-6 md:top-16">
         <div className="flex gap-1.5" role="tablist" aria-label="Etapas de la lección">
           {STAGES.map((s, i) => (
             <button

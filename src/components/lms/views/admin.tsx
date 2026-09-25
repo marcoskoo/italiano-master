@@ -369,8 +369,8 @@ function ActivityTab() {
 
       {events && (
         <div className="overflow-hidden rounded-2xl border border-soft bg-surface">
-          <div className="max-h-[560px] overflow-y-auto scrollbar-thin">
-            <table className="w-full text-left text-xs">
+          <div className="max-h-[560px] overflow-auto scrollbar-thin">
+            <table className="w-full min-w-[560px] text-left text-xs">
               <thead className="sticky top-0 bg-crema-scura text-[10px] uppercase tracking-wide text-muted-it dark:bg-inchiostro/20">
                 <tr>
                   <th className="px-3 py-2.5 font-bold">Cuando</th>
