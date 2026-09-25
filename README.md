@@ -21,9 +21,10 @@
 | 🎚️ **Gráficas controladas por deslizadores** — contorno de entonación + intensidad en tiempo real, y simulador de la curva del olvido | `Pronunciación → Estudio de entonación`, `Repaso inteligente` |
 | 💚❤️ **Feedback de quiz con pulso de color** (verde correcto / rojo + shake incorrecto) | Motor de ejercicios en toda la app |
 | 📜 **Soluciones paso a paso reveladas línea por línea** | `Gramática`, modelos de `Escritura` |
+| 🏋️ **Rinforzo post-lección** (estilo Duolingo): quiz con vidas, escucha, pronunciación con micrófono y escritura — auto-generado del contenido de cada lección | Etapa 8 de cada lección: `Cursos → lección → Refuerzo` |
 
 ### LMS completo (21 secciones)
-- **Niveles MCER A1 → C2 + modo «Desde cero»**: 7 cursos, **77 lecciones en 29 unidades** con pipeline completo *objetivos → explicación → ejemplos con audio → vocabulario → práctica → conversación → evaluación*.
+- **Niveles MCER A1 → C2 + modo «Desde cero»**: 7 cursos, **77 lecciones en 29 unidades** con pipeline completo *objetivos → explicación → ejemplos con audio → vocabulario → práctica → conversación → evaluación → **refuerzo***. Cada lección termina con un bloque de **rinforzo estilo Duolingo**: quiz con 3 vidas y barra de progreso, escucha TTS, pronunciación con reconocimiento de voz (Web Speech API, con autoevaluación de respaldo) y escritura breve con palabras obligatorias — todo generado automáticamente del vocabulario y ejemplos de la lección.
 - **Las 4 destrezas**: Escucha (**14 tareas** con TTS y velocidades), Lectura (**14 textos graduados** con glosario), Escritura (**10 consignas** con corrección IA + modelo revelado), Conversación (**12 escenarios** de role-play con el tutor).
 - **Vocabulario**: **31 categorías, ~280 palabras** con pronunciación, ejemplos, sinónimos/antónimos y flashcards SRS (algoritmo SM-2).
 - **Gramática**: **30 temas A1→C2** con explicación en español y problemas resueltos paso a paso.

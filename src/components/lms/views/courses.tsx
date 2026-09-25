@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Circle, Ear, GraduationCap, Languages,
+  ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Circle, Dumbbell, Ear, GraduationCap, Languages,
   Library, ListChecks, Sparkles, Target, Volume2,
 } from "lucide-react";
 import { COURSES, findLesson, totalLessons } from "@/lib/lms/courses";
@@ -13,6 +13,7 @@ import { useLms } from "@/lib/lms/store";
 import { newCard } from "@/lib/lms/srs";
 import { levelAllowed, requiredPlanForLevel, PLANS } from "@/lib/lms/plans";
 import { QuizEngine } from "../quiz-engine";
+import { LessonReinforcement } from "../reinforcement";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
 import type { CefrLevel } from "@/lib/lms/types";
@@ -190,6 +191,7 @@ const STAGES = [
   { id: "pratica", label: "Práctica", icon: ListChecks },
   { id: "conversazione", label: "Conversación", icon: Languages },
   { id: "valutazione", label: "Evaluación", icon: GraduationCap },
+  { id: "rinforzo", label: "Refuerzo", icon: Dumbbell },
 ] as const;
 
 function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void }) {
@@ -204,6 +206,7 @@ function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void
 
   const [stage, setStage] = useState(0);
   const [evalPassed, setEvalPassed] = useState(false);
+  const [rinforzoDone, setRinforzoDone] = useState(false);
 
   const data = findLesson(lessonId);
   const practiceExercises = useMemo(() => getExercises(data?.lesson.exerciseIds ?? []), [data?.lesson.exerciseIds]);
@@ -474,7 +477,10 @@ function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void
                   {isExamLesson ? "+200 XP · ¡Nivel completado! Pasa por Exámenes para obtener tu certificado." : "+80 XP · La lección quedó registrada en tu progreso."}
                 </p>
                 <div className="mt-6 flex flex-wrap justify-center gap-3">
-                  <button onClick={onBack} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-[1.02]">
+                  <button onClick={() => setStage(7)} className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 text-sm font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.02]">
+                    <Dumbbell className="h-4 w-4" aria-hidden="true" /> Fai il rinforzo · quiz, escucha, pronunciación y escritura
+                  </button>
+                  <button onClick={onBack} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-soft px-5 py-2.5 text-sm font-bold transition-all hover:border-verde/40">
                     Continúa con otras lecciones <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
@@ -507,6 +513,21 @@ function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void
                 )}
               </div>
             )}
+          </div>
+        )}
+        {/* 8 · REFUERZO (quiz duolingo + escucha + pronunciación + escritura) */}
+        {stage === 7 && (
+          <div>
+            {rinforzoDone && (
+              <p className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-verde px-3 py-1.5 text-xs font-bold text-white">
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Rinforzo completato · puedes repetirlo cuando quieras
+              </p>
+            )}
+            <LessonReinforcement
+              key={`${lesson.id}-${rinforzoDone ? "done" : "new"}`}
+              lesson={lesson}
+              onDone={() => setRinforzoDone(true)}
+            />
           </div>
         )}
       </motion.main>
