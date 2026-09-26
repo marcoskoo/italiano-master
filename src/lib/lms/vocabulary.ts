@@ -1,5 +1,6 @@
 import type { VocabWord, WordCategory } from "./types";
 import { VOCAB_EXTRA } from "./extra/vocabulary-extra";
+import { DICT_PACKS } from "./dict";
 
 /* ── Vocabolario · learning dictionary (IT→ES) ────────────────────── */
 
@@ -7,7 +8,7 @@ const W = (
   id: string, it: string, es: string, pron: string,
   type: VocabWord["type"], cat: WordCategory, level: VocabWord["level"],
   example: { it: string; es: string },
-  extra?: Partial<Pick<VocabWord, "gender" | "plural" | "syn" | "ant" | "related">>
+  extra?: Partial<Omit<VocabWord, "id" | "it" | "es" | "pron" | "type" | "cat" | "level" | "example">>
 ): VocabWord => ({ id, it, es, pron, type, cat, level, example, ...extra });
 
 export const VOCAB: VocabWord[] = [
@@ -52,7 +53,7 @@ export const VOCAB: VocabWord[] = [
   W("w-vino", "vino", "vino", "víno", "sostantivo", "alimentazione", "A1", { it: "Un bicchiere di vino rosso.", es: "Una copa de vino tinto." }, { gender: "m", plural: "vini" }),
   W("w-frutta", "frutta", "fruta", "frútta", "sostantivo", "alimentazione", "A1", { it: "Mangio frutta ogni giorno.", es: "Como fruta cada día." }, { gender: "f" }),
   W("w-carne", "carne", "carne", "kárne", "sostantivo", "alimentazione", "A2", { it: "Non mangio carne.", es: "No como carne." }, { gender: "f" }),
-  W("w-pesce", "pesce", "pescado", "péshе", "sostantivo", "alimentazione", "A2", { it: "Il pesce fresco del mercato.", es: "El pescado fresco del mercado." }, { gender: "m", plural: "pesci" }),
+  W("w-pesce", "pesce", "pescado", "péshe", "sostantivo", "alimentazione", "A2", { it: "Il pesce fresco del mercato.", es: "El pescado fresco del mercado." }, { gender: "m", plural: "pesci" }),
 
   /* ristorante */
   W("w-ristorante", "ristorante", "restaurante", "ristoránte", "sostantivo", "ristorante", "A1", { it: "Prenoto un tavolo al ristorante.", es: "Reservo una mesa en el restaurante." }, { gender: "m", plural: "ristoranti" }),
@@ -221,6 +222,11 @@ export const VOCAB: VocabWord[] = [
 /* Paquete de expansión v1.1: +96 palabras (6 categorías nuevas) */
 VOCAB.push(...VOCAB_EXTRA);
 
+/* Dizionario didattico v2.0 · estándares internacionales de enseñanza
+   de lenguas (MCER/CEFR A1–C2, IPA, bandas de frecuencia tipo De Mauro,
+   registro, colocaciones, notas contrastivas y falsos amigos IT–ES). */
+VOCAB.push(...DICT_PACKS);
+
 export const VOCAB_BY_ID: Record<string, VocabWord> = Object.fromEntries(VOCAB.map((w) => [w.id, w]));
 
 export const VOCAB_CATEGORIES = Object.keys(
@@ -231,13 +237,28 @@ export function wordsByCategory(cat: WordCategory): VocabWord[] {
   return VOCAB.filter((w) => w.cat === cat);
 }
 
+/* Normalización para búsqueda insensible a acentos (citta → città). */
+export function normalizeSearch(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
 export function searchVocab(query: string): VocabWord[] {
-  const q = query.trim().toLowerCase();
+  const q = normalizeSearch(query);
   if (!q) return [];
   return VOCAB.filter(
     (w) =>
-      w.it.toLowerCase().includes(q) ||
-      w.es.toLowerCase().includes(q) ||
-      w.example.it.toLowerCase().includes(q)
+      normalizeSearch(w.it).includes(q) ||
+      normalizeSearch(w.es).includes(q) ||
+      normalizeSearch(w.example.it).includes(q) ||
+      (w.ipa ? normalizeSearch(w.ipa).includes(q) : false) ||
+      (w.note ? normalizeSearch(w.note).includes(q) : false) ||
+      (w.collocations ? w.collocations.some((c) => normalizeSearch(c).includes(q)) : false) ||
+      (w.syn ? w.syn.some((s) => normalizeSearch(s).includes(q)) : false) ||
+      (w.ant ? w.ant.some((s) => normalizeSearch(s).includes(q)) : false) ||
+      (w.alt ? w.alt.some((s) => normalizeSearch(s).includes(q)) : false)
   );
 }

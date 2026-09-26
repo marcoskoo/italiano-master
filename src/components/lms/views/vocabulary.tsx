@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Library, Play, Sparkles } from "lucide-react";
-import { VOCAB, VOCAB_BY_ID, wordsByCategory } from "@/lib/lms/vocabulary";
+import { VOCAB, VOCAB_BY_ID, normalizeSearch, wordsByCategory } from "@/lib/lms/vocabulary";
 import { CATEGORY_META, type WordCategory } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { newCard } from "@/lib/lms/srs";
@@ -30,7 +30,9 @@ export function VocabularyView() {
   }, []);
 
   const searchResults = useMemo(
-    () => (search.trim() ? VOCAB.filter((w) => w.it.toLowerCase().includes(search.toLowerCase()) || w.es.toLowerCase().includes(search.toLowerCase())).slice(0, 24) : []),
+    () => (search.trim()
+      ? VOCAB.filter((w) => normalizeSearch(w.it).includes(normalizeSearch(search)) || normalizeSearch(w.es).includes(normalizeSearch(search))).slice(0, 24)
+      : []),
     [search]
   );
 

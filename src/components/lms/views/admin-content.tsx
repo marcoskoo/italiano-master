@@ -16,7 +16,10 @@ import { cn } from "@/lib/utils";
 type VocabOvr = Record<string, VocabOverrideEntry>;
 type LessonOvr = Record<string, LessonOverrideEntry>;
 
-const WORD_TYPES: WordType[] = ["sostantivo", "verbo", "aggettivo", "avverbio", "espressione"];
+const WORD_TYPES: WordType[] = [
+  "sostantivo", "verbo", "aggettivo", "avverbio", "espressione",
+  "pronome", "preposizione", "congiunzione", "articolo", "numerale", "interiezione", "locuzione",
+];
 const LEVELS: (CefrLevel | "zero")[] = ["zero", ...CEFR_LEVELS];
 
 function inputCls() {

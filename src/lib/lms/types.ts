@@ -17,7 +17,9 @@ export type WordCategory =
   | "viaggi" | "hotel" | "salud" | "lavoro" | "studi" | "citta" | "clima"
   | "ropa" | "tecnologia" | "sport" | "musica" | "cinema" | "relazioni"
   | "finanze" | "ristorante" | "professioni" | "attualita" | "scienza" | "letteratura"
-  | "colori" | "corpo" | "animali" | "natura" | "tempo" | "svago";
+  | "colori" | "corpo" | "animali" | "natura" | "tempo" | "svago"
+  /* dominios MCER ampliados (v2.0) */
+  | "emozioni" | "comunicazione" | "istituzioni" | "connettivi" | "astratto";
 
 export const CATEGORY_META: Record<WordCategory, { es: string; emoji: string }> = {
   saluti: { es: "Saludos", emoji: "👋" },
@@ -51,15 +53,26 @@ export const CATEGORY_META: Record<WordCategory, { es: string; emoji: string }> 
   natura: { es: "Naturaleza", emoji: "🌿" },
   tempo: { es: "Tiempo y fechas", emoji: "🗓️" },
   svago: { es: "Tiempo libre", emoji: "🎲" },
+  /* dominios MCER ampliados (v2.0) */
+  emozioni: { es: "Emociones y carácter", emoji: "😊" },
+  comunicazione: { es: "Comunicación y medios", emoji: "📣" },
+  istituzioni: { es: "Instituciones y sociedad", emoji: "🏛️" },
+  connettivi: { es: "Conectores del discurso", emoji: "🔗" },
+  astratto: { es: "Conceptos abstractos", emoji: "💭" },
 };
 
-export type WordType = "sostantivo" | "verbo" | "aggettivo" | "avverbio" | "espressione";
+/* Categorías gramaticales según la lexicografía didáctica internacional
+   (Dizionario per stranieri di base – DIB; GRADIT; DVX – Dizionario di base). */
+export type WordType =
+  | "sostantivo" | "verbo" | "aggettivo" | "avverbio" | "espressione"
+  | "pronome" | "preposizione" | "congiunzione" | "articolo"
+  | "numerale" | "interiezione" | "locuzione";
 
 export interface VocabWord {
   id: string;
   it: string;
   es: string;
-  pron: string;          // pronunciation hint
+  pron: string;          // transcripción (simplificada o IPA)
   type: WordType;
   gender?: "m" | "f";
   plural?: string;       // for nouns
@@ -69,6 +82,14 @@ export interface VocabWord {
   syn?: string[];
   ant?: string[];
   related?: string[];
+  /* ── Campos lexicográficos v2.0 (estándares internacionales) ── */
+  ipa?: string;            // transcripción fonética IPA (AFI)
+  freq?: 1 | 2 | 3 | 4 | 5; // banda de frecuencia (1 = muy alta … 5 = rara; cf. De Mauro)
+  register?: "informale" | "neutro" | "formale" | "colloquiale" | "letterario" | "tecnico";
+  collocations?: string[]; // colocaciones típicas
+  note?: string;           // nota de uso contrastivo para hispanohablantes
+  ff?: boolean;            // falso amigo IT–ES
+  alt?: string[];          // formas alternativas / variantes
 }
 
 /* Exercises */

@@ -6,7 +6,7 @@ const W = (
   id: string, it: string, es: string, pron: string,
   type: VocabWord["type"], cat: WordCategory, level: VocabWord["level"],
   example: { it: string; es: string },
-  extra?: Partial<Pick<VocabWord, "gender" | "plural" | "syn" | "ant" | "related">>
+  extra?: Partial<Omit<VocabWord, "id" | "it" | "es" | "pron" | "type" | "cat" | "level" | "example">>
 ): VocabWord => ({ id, it, es, pron, type, cat, level, example, ...extra });
 
 export const VOCAB_EXTRA: VocabWord[] = [

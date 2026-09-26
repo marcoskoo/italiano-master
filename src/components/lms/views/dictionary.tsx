@@ -1,0 +1,387 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { AlertTriangle, ArrowLeft, ArrowRight, BookA, Gauge, Info, Link2, Search, Sparkles, Waves } from "lucide-react";
+import {
+  CEFR_VOCAB_TARGETS, DICT_STATS, DICTIONARY, FALSI_AMICI, FREQ_LABELS,
+  REGISTER_LABELS, cefrCoverage, searchDictionary,
+} from "@/lib/lms/dict/dictionary";
+import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
+import { CATEGORY_META, CEFR_LEVELS, type VocabWord } from "@/lib/lms/types";
+import { useLms } from "@/lib/lms/store";
+import { newCard } from "@/lib/lms/srs";
+import { AudioButton } from "../audio-button";
+import { cn } from "@/lib/utils";
+
+/* ════════ Vista: DICCIONARIO (Dizionario didattico v2.0) ════════
+   Cumple estándares internacionales de lexicografía didáctica:
+   · MCER/CEFR A1–C2 con metas de cobertura por nivel
+   · IPA (Alfabeto Fonético Internacional)
+   · Bandas de frecuencia (cf. De Mauro, DIB)
+   · Registro, colocaciones y variantes
+   · Lexicografía contrastiva IT–ES (falsos amigos y notas de uso) */
+
+const TYPE_LABELS: Record<string, string> = {
+  sostantivo: "sustantivo", verbo: "verbo", aggettivo: "adjetivo", avverbio: "adverbio",
+  espressione: "expresión", pronome: "pronombre", preposizione: "preposición",
+  congiunzione: "conjunción", articolo: "artículo", numerale: "numeral",
+  interiezione: "interjección", locuzione: "locución",
+};
+
+const ALL_TYPES = Object.keys(TYPE_LABELS);
+const PAGE = 60;
+
+export function DictionaryView() {
+  const [query, setQuery] = useState("");
+  const [levelFilter, setLevelFilter] = useState<string>("all");
+  const [catFilter, setCatFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [ffOnly, setFfOnly] = useState(false);
+  const [hfOnly, setHfOnly] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [limit, setLimit] = useState(PAGE);
+  const [statsOpen, setStatsOpen] = useState(true);
+
+  const srs = useLms((s) => s.srs);
+  const upsertSrs = useLms((s) => s.upsertSrs);
+  const addXp = useLms((s) => s.addXp);
+
+  const results = useMemo(() => {
+    let list = query.trim() ? searchDictionary(query) : DICTIONARY;
+    if (levelFilter !== "all") list = list.filter((w) => w.level === levelFilter);
+    if (catFilter !== "all") list = list.filter((w) => w.cat === catFilter);
+    if (typeFilter !== "all") list = list.filter((w) => w.type === typeFilter);
+    if (ffOnly) list = list.filter((w) => w.ff);
+    if (hfOnly) list = list.filter((w) => (w.freq ?? 3) <= 2);
+    const levelIdx = (lv: string) => CEFR_LEVELS.indexOf(lv as VocabWord["level"]);
+    if (!query.trim()) list = [...list].sort((a, b) => levelIdx(a.level) - levelIdx(b.level) || a.it.localeCompare(b.it, "it"));
+    return list;
+  }, [query, levelFilter, catFilter, typeFilter, ffOnly, hfOnly]);
+
+  const visible = results.slice(0, limit);
+  const word = selected ? VOCAB_BY_ID[selected] : undefined;
+
+  /* ── entrada completa ── */
+  if (word) {
+    const related = (word.related ?? [])
+      .map((r) => DICTIONARY.find((v) => v.it === r))
+      .filter(Boolean) as VocabWord[];
+    return (
+      <div>
+        <button onClick={() => setSelected(null)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Torna al dizionario
+        </button>
+
+        <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-3">
+                <h2 className="font-display text-4xl font-semibold sm:text-5xl">{word.it}</h2>
+                <AudioButton text={word.it} size="lg" />
+                {word.ff && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-rosso-tenue px-3 py-1.5 text-xs font-bold text-rosso-scuro dark:text-rosso">
+                    <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" /> falso amigo
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 font-mono text-lg text-muted-it">
+                {word.ipa ? "/" + word.ipa + "/" : "/" + word.pron + "/"}
+              </p>
+              <p className="mt-3 text-2xl text-verde-scuro dark:text-verde">{word.es}</p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <span className="rounded-full bg-verde-tenue px-3 py-1.5 text-xs font-bold text-verde-scuro dark:text-verde">{word.level} · MCER</span>
+              {word.freq && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-soft px-3 py-1.5 text-xs font-bold text-muted-it" title={FREQ_LABELS[word.freq].desc}>
+                  <Gauge className="h-3.5 w-3.5" aria-hidden="true" /> freq. {FREQ_LABELS[word.freq].label}
+                </span>
+              )}
+              {word.register && word.register !== "neutro" && (
+                <span className="rounded-full bg-oro-tenue px-3 py-1.5 text-xs font-bold text-oro-scuro dark:text-oro">registro {REGISTER_LABELS[word.register]}</span>
+              )}
+              <button
+                onClick={() => { if (!srs[word.id]) { upsertSrs(word.id, newCard(word.id)); addXp(2, "vocabolario"); } }}
+                disabled={!!srs[word.id]}
+                className={cn(
+                  "rounded-xl border-2 px-4 py-2.5 text-xs font-bold transition-all",
+                  srs[word.id] ? "border-verde/40 bg-verde-tenue text-verde-scuro dark:text-verde" : "border-oro/50 bg-oro-tenue text-oro-scuro hover:scale-105 dark:text-oro"
+                )}
+              >
+                {srs[word.id] ? "✓ nel ripasso" : "+ aggiungi al ripasso"}
+              </button>
+            </div>
+          </div>
+
+          {word.ff && (
+            <div className="mt-5 flex items-start gap-3 rounded-2xl border-2 border-rosso/40 bg-rosso-tenue/60 p-4 dark:bg-rosso-tenue/25">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rosso-scuro dark:text-rosso" aria-hidden="true" />
+              <div>
+                <p className="font-display text-lg font-semibold text-rosso-scuro dark:text-rosso">Attenzione: falso amigo IT–ES</p>
+                <p className="mt-1 text-sm leading-relaxed">{word.note}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl bg-crema-scura p-5 dark:bg-inchiostro/10">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-it">Categoría gramatical</p>
+              <p className="mt-2 text-lg font-semibold">
+                {TYPE_LABELS[word.type] ?? word.type}
+                {word.gender && <span className={cn("ml-2 text-sm", word.gender === "m" ? "noun-m" : "noun-f")}>({word.gender === "m" ? "masculino" : "femenino"})</span>}
+                {word.plural && <span className="ml-2 font-mono text-sm text-muted-it">· pl. {word.plural}</span>}
+              </p>
+              {word.alt && word.alt.length > 0 && (
+                <p className="mt-2 font-mono text-sm text-muted-it">variantes: {word.alt.join(" · ")}</p>
+              )}
+              <p className="mt-3 text-xs font-bold uppercase tracking-widest text-muted-it">Categoría temática</p>
+              <p className="mt-1.5 text-lg">{CATEGORY_META[word.cat].emoji} {CATEGORY_META[word.cat].es}</p>
+            </div>
+            <div className="rounded-2xl bg-crema-scura p-5 dark:bg-inchiostro/10">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-it">Esempio</p>
+              <p className="mt-2 font-display text-xl italic leading-snug">“{word.example.it}”</p>
+              <p className="mt-1.5 text-sm text-muted-it">{word.example.es}</p>
+            </div>
+          </div>
+
+          {word.collocations && word.collocations.length > 0 && (
+            <div className="mt-4 rounded-2xl border border-verde/25 bg-verde-tenue/50 p-4 dark:bg-verde-tenue/20">
+              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-verde-scuro dark:text-verde">
+                <Link2 className="h-3.5 w-3.5" aria-hidden="true" /> Colocaciones típicas
+              </p>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {word.collocations.map((c, i) => (
+                  <li key={i} className="rounded-full border border-verde/30 bg-surface px-3 py-1 text-sm font-semibold">{c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {word.note && !word.ff && (
+            <div className="mt-4 flex items-start gap-3 rounded-2xl border border-oro/30 bg-oro-tenue p-4 dark:bg-oro-tenue/25">
+              <Info className="mt-0.5 h-4.5 w-4.5 shrink-0 text-oro-scuro dark:text-oro" aria-hidden="true" />
+              <p className="text-sm leading-relaxed"><strong>Nota de uso (IT–ES):</strong> {word.note}</p>
+            </div>
+          )}
+
+          {(word.syn || word.ant || related.length > 0) && (
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {word.syn && (
+                <div className="rounded-2xl border border-verde/25 bg-verde-tenue/50 p-4 dark:bg-verde-tenue/20">
+                  <p className="text-xs font-bold uppercase tracking-widest text-verde-scuro dark:text-verde">Sinonimi</p>
+                  <ul className="mt-2 space-y-1 text-sm font-semibold">
+                    {word.syn.map((s, i) => <li key={i}>≈ {s}</li>)}
+                  </ul>
+                </div>
+              )}
+              {word.ant && (
+                <div className="rounded-2xl border border-rosso/25 bg-rosso-tenue/50 p-4 dark:bg-rosso-tenue/20">
+                  <p className="text-xs font-bold uppercase tracking-widest text-rosso-scuro dark:text-rosso">Contrari</p>
+                  <ul className="mt-2 space-y-1 text-sm font-semibold">
+                    {word.ant.map((s, i) => <li key={i}>≠ {s}</li>)}
+                  </ul>
+                </div>
+              )}
+              {related.length > 0 && (
+                <div className="rounded-2xl border border-oro/25 bg-oro-tenue/50 p-4 dark:bg-oro-tenue/20">
+                  <p className="text-xs font-bold uppercase tracking-widest text-oro-scuro dark:text-oro">Correlati</p>
+                  <ul className="mt-2 space-y-1 text-sm font-semibold">
+                    {related.map((r, i) => (
+                      <li key={i}>
+                        <button onClick={() => setSelected(r.id)} className="underline decoration-dotted underline-offset-2 hover:text-verde">
+                          {r.it} <span className="font-normal text-muted-it">({r.es})</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </motion.article>
+      </div>
+    );
+  }
+
+  /* ── listado + filtros + panel MCER ── */
+  const ipaPct = Math.round((DICT_STATS.withIpa / DICT_STATS.total) * 100);
+
+  return (
+    <div className="space-y-5">
+      {/* panel de estándares MCER */}
+      <div className="rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue to-surface p-5 dark:from-verde-tenue/25 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display text-2xl font-semibold sm:text-3xl">Dizionario didattico v2.0</h2>
+            <p className="mt-1 text-sm text-muted-it">
+              {DICT_STATS.total} voci · MCER A1–C2 · IPA · frequenza · registro · colocaciones · notas IT–ES
+            </p>
+          </div>
+          <button
+            onClick={() => setStatsOpen(!statsOpen)}
+            aria-expanded={statsOpen}
+            className="min-h-10 rounded-xl border-2 border-soft bg-surface px-4 py-2 text-xs font-bold text-muted-it transition-colors hover:border-verde/40"
+          >
+            {statsOpen ? "Nascondi statistiche" : "Mostra statistiche MCER"}
+          </button>
+        </div>
+
+        {statsOpen && (
+          <div className="mt-5 space-y-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {CEFR_LEVELS.map((lv) => {
+                const cov = cefrCoverage(lv);
+                return (
+                  <div key={lv} className="rounded-2xl border border-soft bg-surface p-3">
+                    <p className="flex items-baseline justify-between">
+                      <span className="font-display text-lg font-bold">{lv}</span>
+                      <span className="text-xs font-bold text-muted-it">{DICT_STATS.byLevel[lv]} voci</span>
+                    </p>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-inchiostro/10 dark:bg-inchiostro/25">
+                      <div className="h-full rounded-full bg-verde" style={{ width: cov + "%" }} />
+                    </div>
+                    <p className="mt-1.5 text-[10px] leading-tight text-muted-it">
+                      {cov}% de la meta MCER ({CEFR_VOCAB_TARGETS[lv]} ac. acumuladas)
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="rounded-full border border-verde/30 bg-verde-tenue px-3 py-1.5 font-bold text-verde-scuro dark:text-verde">🔊 {ipaPct}% con IPA</span>
+              <span className="rounded-full border border-verde/30 bg-verde-tenue px-3 py-1.5 font-bold text-verde-scuro dark:text-verde"><Gauge className="mr-1 inline h-3.5 w-3.5" aria-hidden />{DICT_STATS.withFreq} con frecuencia</span>
+              <span className="rounded-full border border-oro/30 bg-oro-tenue px-3 py-1.5 font-bold text-oro-scuro dark:text-oro"><Link2 className="mr-1 inline h-3.5 w-3.5" aria-hidden />{DICT_STATS.withCollocations} con colocaciones</span>
+              <span className="rounded-full border border-oro/30 bg-oro-tenue px-3 py-1.5 font-bold text-oro-scuro dark:text-oro">💡 {DICT_STATS.withNotes} notas de uso</span>
+              <button
+                onClick={() => { setFfOnly(!ffOnly); setQuery(""); }}
+                aria-pressed={ffOnly}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-bold transition-colors",
+                  ffOnly ? "border-rosso bg-rosso-tenue text-rosso-scuro dark:text-rosso" : "border-rosso/30 bg-rosso-tenue/60 text-rosso-scuro hover:bg-rosso-tenue dark:text-rosso"
+                )}
+              >
+                <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" /> {FALSI_AMICI.length} falsos amigos
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* buscador */}
+      <div className="relative">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setLimit(PAGE); }}
+          placeholder="Cerca in italiano o spagnolo… (citta→città, burro, guardare, “salsa”…)"
+          aria-label="Buscar en el diccionario"
+          className="min-h-12 w-full rounded-2xl border-2 border-soft bg-surface pl-11 pr-4 text-base outline-none transition-colors focus:border-verde"
+        />
+        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-it" aria-hidden="true" />
+      </div>
+
+      {/* filtros */}
+      <div className="space-y-2.5">
+        <div className="flex flex-wrap gap-2">
+          {["all", ...CEFR_LEVELS].map((lv) => (
+            <button
+              key={lv}
+              onClick={() => { setLevelFilter(lv); setLimit(PAGE); }}
+              aria-pressed={levelFilter === lv}
+              className={cn("min-h-10 rounded-xl border-2 px-3.5 py-2 text-xs font-bold transition-all", levelFilter === lv ? "border-verde bg-verde-tenue text-verde-scuro dark:text-verde" : "border-soft text-muted-it hover:border-verde/40")}
+            >
+              {lv === "all" ? "Tutti i livelli" : lv}
+            </button>
+          ))}
+          <button
+            onClick={() => { setHfOnly(!hfOnly); setLimit(PAGE); }}
+            aria-pressed={hfOnly}
+            className={cn("inline-flex min-h-10 items-center gap-1.5 rounded-xl border-2 px-3.5 py-2 text-xs font-bold transition-all", hfOnly ? "border-verde bg-verde-tenue text-verde-scuro dark:text-verde" : "border-soft text-muted-it hover:border-verde/40")}
+          >
+            <Waves className="h-3.5 w-3.5" aria-hidden="true" /> alta frecuencia
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <select
+            value={catFilter}
+            onChange={(e) => { setCatFilter(e.target.value); setLimit(PAGE); }}
+            aria-label="Filtrar por categoría temática"
+            className="min-h-10 rounded-xl border-2 border-soft bg-surface px-3 text-sm font-semibold outline-none focus:border-verde"
+          >
+            <option value="all">Tutte le categorie</option>
+            {Object.entries(CATEGORY_META).map(([k, v]) => (
+              <option key={k} value={k}>{v.emoji} {v.es}</option>
+            ))}
+          </select>
+          <select
+            value={typeFilter}
+            onChange={(e) => { setTypeFilter(e.target.value); setLimit(PAGE); }}
+            aria-label="Filtrar por categoría gramatical"
+            className="min-h-10 rounded-xl border-2 border-soft bg-surface px-3 text-sm font-semibold outline-none focus:border-verde"
+          >
+            <option value="all">Tutte le parti del discorso</option>
+            {ALL_TYPES.map((t) => (
+              <option key={t} value={t}>{TYPE_LABELS[t]}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <p className="text-xs text-muted-it">
+        {results.length} risultati{query && " per “" + query + "”"}
+        {ffOnly && " · solo falsi amigos"}
+        {hfOnly && " · alta frecuencia"}
+      </p>
+
+      {/* resultados */}
+      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+        {results.length === 0 && (
+          <div className="col-span-full rounded-3xl border border-soft bg-surface p-8 text-center">
+            <BookA className="mx-auto h-8 w-8 text-muted-it" aria-hidden="true" />
+            <p className="mt-3 font-display text-xl font-semibold">Nessun risultato</p>
+            <p className="mt-1.5 text-sm text-muted-it">
+              Prueba con otra grafía: la búsqueda ignora acentos (citta → città) y también busca en notas y colocaciones ({DICTIONARY.length} voci).
+            </p>
+          </div>
+        )}
+        {visible.map((w, i) => (
+          <motion.button
+            key={w.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: Math.min(i * 0.02, 0.3) }}
+            onClick={() => setSelected(w.id)}
+            className="group flex items-center gap-3 rounded-2xl border border-soft bg-surface p-4 text-left transition-all hover:-translate-y-0.5 hover:border-verde/40 hover:shadow-md"
+          >
+            <AudioButton text={w.it} size="sm" />
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2 font-display text-lg font-semibold leading-tight">
+                {w.it}
+                {w.gender && <span className={cn("text-[10px] font-sans font-bold", w.gender === "m" ? "noun-m" : "noun-f")}>{w.gender === "m" ? "m" : "f"}</span>}
+                {w.ff && <AlertTriangle className="h-3.5 w-3.5 text-rosso-scuro dark:text-rosso" aria-label="falso amigo" />}
+              </span>
+              <span className="mt-0.5 block truncate text-sm text-muted-it">{w.es}</span>
+              <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-bold uppercase text-muted-it">
+                <span className="rounded-full bg-inchiostro/5 px-1.5 py-0.5 dark:bg-inchiostro/15">{w.level}</span>
+                <span>{CATEGORY_META[w.cat].emoji}</span>
+                {(w.freq ?? 3) <= 2 && <span className="rounded-full bg-verde-tenue px-1.5 py-0.5 text-verde-scuro dark:text-verde">freq. alta</span>}
+                {w.register && w.register !== "neutro" && <span className="rounded-full bg-oro-tenue px-1.5 py-0.5 text-oro-scuro dark:text-oro">{REGISTER_LABELS[w.register]}</span>}
+                {srs[w.id] && <span className="text-verde-scuro dark:text-verde">· ✓ ripasso</span>}
+              </span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-it opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" />
+          </motion.button>
+        ))}
+      </div>
+
+      {results.length > visible.length && (
+        <button
+          onClick={() => setLimit(limit + PAGE)}
+          className="mx-auto flex min-h-12 items-center gap-2 rounded-2xl border-2 border-verde/40 bg-surface px-6 py-3 text-sm font-bold text-verde-scuro transition-all hover:border-verde hover:shadow-lg dark:text-verde"
+        >
+          <Sparkles className="h-4 w-4" aria-hidden="true" /> Carica altre {Math.min(PAGE, results.length - visible.length)} voci ({visible.length}/{results.length})
+        </button>
+      )}
+    </div>
+  );
+}
