@@ -19,7 +19,9 @@ export type WordCategory =
   | "finanze" | "ristorante" | "professioni" | "attualita" | "scienza" | "letteratura"
   | "colori" | "corpo" | "animali" | "natura" | "tempo" | "svago"
   /* dominios MCER ampliados (v2.0) */
-  | "emozioni" | "comunicazione" | "istituzioni" | "connettivi" | "astratto";
+  | "emozioni" | "comunicazione" | "istituzioni" | "connettivi" | "astratto"
+  /* v3.0 */
+  | "arte";
 
 export const CATEGORY_META: Record<WordCategory, { es: string; emoji: string }> = {
   saluti: { es: "Saludos", emoji: "👋" },
@@ -59,6 +61,7 @@ export const CATEGORY_META: Record<WordCategory, { es: string; emoji: string }> 
   istituzioni: { es: "Instituciones y sociedad", emoji: "🏛️" },
   connettivi: { es: "Conectores del discurso", emoji: "🔗" },
   astratto: { es: "Conceptos abstractos", emoji: "💭" },
+  arte: { es: "Arte y arquitectura", emoji: "🏛️" },
 };
 
 /* Categorías gramaticales según la lexicografía didáctica internacional
@@ -124,6 +127,12 @@ export interface GrammarProblem {
   steps: string[]; // revealed line by line
   conclusion: string;
 }
+export interface GrammarTable {
+  title: string;      // IT/ES caption
+  headers: string[];  // column labels
+  rows: string[][];   // paradigm cells
+  note?: string;      // contrastive footnote (ES)
+}
 export interface GrammarTopic {
   id: string;
   level: CefrLevel;
@@ -134,6 +143,7 @@ export interface GrammarTopic {
   examples: { it: string; es: string }[];
   problems: GrammarProblem[];
   exerciseIds: string[];
+  tables?: GrammarTable[]; // v3.0 · paradigmi e tavole
 }
 
 /* Courses */

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Brain, ChevronDown, ListChecks, Volume2 } from "lucide-react";
+import { BookOpen, Brain, ChevronDown, ListChecks, Search, Table2, Volume2 } from "lucide-react";
 import { GRAMMAR } from "@/lib/lms/grammar";
 import { getExercises } from "@/lib/lms/exercises";
 import { CEFR_LEVELS } from "@/lib/lms/types";
@@ -17,10 +17,20 @@ import { cn } from "@/lib/utils";
 export function GrammarView() {
   const userLevel = useLms((s) => s.level);
   const [levelFilter, setLevelFilter] = useState<string>(userLevel ?? "A1");
+  const [query, setQuery] = useState("");
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [practiceTopic, setPracticeTopic] = useState<string | null>(null);
 
-  const topics = useMemo(() => GRAMMAR.filter((g) => g.level === levelFilter), [levelFilter]);
+  const q = query.trim().toLowerCase();
+  const topics = useMemo(
+    () =>
+      GRAMMAR.filter((g) => g.level === levelFilter).filter((g) =>
+        q
+          ? (g.title + " " + g.titleIt + " " + g.summary + " " + g.explanation.join(" ")).toLowerCase().includes(q)
+          : true
+      ),
+    [levelFilter, q]
+  );
 
   const practicing = practiceTopic ? GRAMMAR.find((g) => g.id === practiceTopic) : undefined;
 
@@ -63,6 +73,25 @@ export function GrammarView() {
         ))}
       </div>
 
+      {/* buscador de temas */}
+      <div className="relative">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Cerca un argomento… (p. ej. “congiuntivo”, “pronombres”, “si impersonale”)"
+          aria-label="Buscar tema de gramática"
+          className="min-h-12 w-full rounded-2xl border-2 border-soft bg-surface pl-11 pr-4 text-base outline-none transition-colors focus:border-verde"
+        />
+        <Search className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-muted-it" aria-hidden="true" />
+      </div>
+
+      {topics.length === 0 && (
+        <p className="rounded-2xl border border-soft bg-surface p-6 text-center text-sm text-muted-it">
+          Nessun argomento trovato per «{query}». Prova con un'altra parola.
+        </p>
+      )}
+
       {/* lista de temas */}
       <div className="space-y-3">
         {topics.map((t, i) => {
@@ -98,6 +127,36 @@ export function GrammarView() {
                     <p key={j} className="leading-[1.8] text-inchiostro/90">{p}</p>
                   ))}
 
+                  {/* tavole paradigmáticas (v3.0) */}
+                  {t.tables?.map((tb, k) => (
+                    <div key={k} className="overflow-hidden rounded-2xl border-2 border-soft">
+                      <p className="flex items-center gap-2 border-b border-soft bg-verde-tenue px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-verde-scuro dark:text-verde">
+                        <Table2 className="h-3.5 w-3.5" aria-hidden="true" /> {tb.title}
+                      </p>
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[420px] border-collapse text-sm">
+                          <thead>
+                            <tr className="bg-surface">
+                              {tb.headers.map((h, hi) => (
+                                <th key={hi} scope="col" className="whitespace-nowrap px-3 py-2 text-left font-display text-xs font-bold text-muted-it">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {tb.rows.map((row, ri) => (
+                              <tr key={ri} className={cn("border-t border-soft", ri % 2 === 0 ? "bg-surface" : "bg-crema-scura/60 dark:bg-inchiostro/5")}>
+                                {row.map((cell, ci) => (
+                                  <td key={ci} className={cn("px-3 py-2", ci === 0 ? "font-semibold text-inchiostro" : "font-mono text-[13px] text-inchiostro/90")}>{cell}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {tb.note && <p className="border-t border-soft bg-oro-tenue px-4 py-2 text-xs leading-relaxed text-oro-scuro dark:text-oro">💡 {tb.note}</p>}
+                    </div>
+                  ))}
+
                   {/* ejemplos */}
                   <div className="rounded-2xl bg-crema-scura p-5 dark:bg-inchiostro/10">
                     <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-it">
@@ -117,24 +176,26 @@ export function GrammarView() {
                   </div>
 
                   {/* problemas paso a paso */}
-                  <div>
-                    <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-it">
-                      <BookOpen className="h-3.5 w-3.5" aria-hidden="true" /> Soluzione passo a passo
-                    </p>
-                    <div className="grid gap-3 lg:grid-cols-2">
-                      {t.problems.map((p, j) => (
-                        <StepReveal
-                          key={j}
-                          title={p.title}
-                          question={p.question}
-                          steps={p.steps}
-                          conclusion={p.conclusion}
-                          accent={j % 2 === 0 ? "verde" : "oro"}
-                          compact
-                        />
-                      ))}
+                  {t.problems.length > 0 && (
+                    <div>
+                      <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-it">
+                        <BookOpen className="h-3.5 w-3.5" aria-hidden="true" /> Soluzione passo a passo
+                      </p>
+                      <div className="grid gap-3 lg:grid-cols-2">
+                        {t.problems.map((p, j) => (
+                          <StepReveal
+                            key={j}
+                            title={p.title}
+                            question={p.question}
+                            steps={p.steps}
+                            conclusion={p.conclusion}
+                            accent={j % 2 === 0 ? "verde" : "oro"}
+                            compact
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* practicar */}
                   {t.exerciseIds.length > 0 && (

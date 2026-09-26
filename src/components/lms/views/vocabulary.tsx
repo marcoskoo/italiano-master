@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Library, Play, Sparkles } from "lucide-react";
 import { VOCAB, VOCAB_BY_ID, normalizeSearch, wordsByCategory } from "@/lib/lms/vocabulary";
@@ -23,6 +23,9 @@ export function VocabularyView() {
   const [openCat, setOpenCat] = useState<WordCategory | null>(navParams.category ?? null);
   const [session, setSession] = useState<string[] | null>(null);
   const [search, setSearch] = useState("");
+  const [visible, setVisible] = useState(60);
+
+  useEffect(() => setVisible(60), [openCat]);
 
   const categories = useMemo(() => {
     const cats: WordCategory[] = Array.from(new Set(VOCAB.map((w) => w.cat)));
@@ -48,9 +51,11 @@ export function VocabularyView() {
   }
 
   const startCategorySession = (cat: WordCategory) => {
-    const ids = wordsByCategory(cat).map((w) => w.id);
-    ids.forEach((id) => { if (!srs[id]) upsertSrs(id, newCard(id)); });
-    setSession(ids);
+    /* sesión de repaso: máximo 120 tarjetas (muestra determinista) */
+    const ids = wordsByCategory(cat).slice(0, 240).map((w) => w.id);
+    const selected = ids.filter((_, i) => i % Math.ceil(ids.length / 120) === 0).slice(0, 120);
+    selected.forEach((id) => { if (!srs[id]) upsertSrs(id, newCard(id)); });
+    setSession(selected);
   };
 
   const searchOpen = search.trim().length > 0;
@@ -106,7 +111,7 @@ export function VocabularyView() {
           </div>
 
           <div className="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-            {wordsByCategory(openCat).map((w, i) => (
+            {wordsByCategory(openCat).slice(0, visible).map((w, i) => (
               <motion.div
                 key={w.id}
                 initial={{ opacity: 0, y: 10 }}
@@ -118,6 +123,14 @@ export function VocabularyView() {
               </motion.div>
             ))}
           </div>
+          {wordsByCategory(openCat).length > visible && (
+            <button
+              onClick={() => setVisible((v) => v + 60)}
+              className="mt-4 min-h-12 w-full rounded-2xl border-2 border-soft bg-surface px-6 py-3 font-bold text-muted-it transition-all hover:border-verde/40 hover:text-verde-scuro dark:hover:text-verde"
+            >
+              Mostra altre parole ({wordsByCategory(openCat).length - visible} rimanenti)
+            </button>
+          )}
         </div>
       ) : (
         /* grid de categorías */

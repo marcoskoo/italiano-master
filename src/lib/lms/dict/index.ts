@@ -5,16 +5,44 @@ import { PACK_B1 } from "./pack-b1";
 import { PACK_B2 } from "./pack-b2";
 import { PACK_C1 } from "./pack-c1";
 import { PACK_C2 } from "./pack-c2";
+import { PACK_KA1 } from "./pack-ka1";
+import { PACK_KA1B } from "./pack-ka1b";
+import { PACK_KA2 } from "./pack-ka2";
+import { PACK_KA2B } from "./pack-ka2b";
+import { PACK_KB1 } from "./pack-kb1";
+import { PACK_KB1B } from "./pack-kb1b";
+import { PACK_KB1C } from "./pack-kb1c";
+import { PACK_KB2 } from "./pack-kb2";
+import { PACK_KB2B } from "./pack-kb2b";
+import { PACK_KC1 } from "./pack-kc1";
+import { PACK_KC1B } from "./pack-kc1b";
+import { PACK_KC2 } from "./pack-kc2";
+import { PACK_KC2B } from "./pack-kc2b";
+import { PACK_KX1 } from "./pack-kx1";
+import { PACK_KX2 } from "./pack-kx2";
+import { PACK_KX3 } from "./pack-kx3";
+import { PACK_KX4 } from "./pack-kx4";
+import { PACK_KX5 } from "./pack-kx5";
+import { PACK_KX6 } from "./pack-kx6";
+import { PACK_KX7 } from "./pack-kx7";
+import { PACK_KX8 } from "./pack-kx8";
+import { PACK_KX9 } from "./pack-kx9";
+import { PACK_KX10 } from "./pack-kx10";
 
-/* ── Dizionario didattico v2.0 · paquetes MCER A1→C2 ──
-   +~670 entradas nuevas con IPA, frecuencia, registro, colocaciones
-   y notas contrastivas IT–ES. */
+/* ── Dizionario didattico v3.0 · paquetes MCER A1→C2 ──────────────────
+   v2.0: packs D (DIB/De Mauro, IPA, frecuencia, registro, colocaciones)
+   v3.0: packs K compactos — expansión masiva con la misma calidad
+   lexicográfica (género/plural automáticos, validación por script). */
 
 export const DICT_PACKS: VocabWord[] = [
-  ...PACK_A1, // ~170 · inventario fundamental
-  ...PACK_A2, // ~120 · vida cotidiana
-  ...PACK_B1, // ~110 · sociedad y opinión
-  ...PACK_B2, // ~105 · abstracción y argumentación
-  ...PACK_C1, // ~85 · registro formal y académico
-  ...PACK_C2, // ~55 · literario y especializado
+  ...PACK_A1, ...PACK_A2, ...PACK_B1, ...PACK_B2, ...PACK_C1, ...PACK_C2,
+  /* ── v3.0 · expansión compacta ── */
+  ...PACK_KA1, ...PACK_KA1B,    // A1: concreto + función
+  ...PACK_KA2, ...PACK_KA2B,    // A2: vida diaria + verbi/aggettivi
+  ...PACK_KB1, ...PACK_KB1B, ...PACK_KB1C, // B1: sociedad + conectores + vida concreta
+  ...PACK_KB2, ...PACK_KB2B,    // B2: argumentación + ciencia/cultura
+  ...PACK_KC1, ...PACK_KC1B,    // C1: registro formal + ambiente/política/medios
+  ...PACK_KC2, ...PACK_KC2B,    // C2: literario + coloquial/regional
+  ...PACK_KX1, ...PACK_KX2, ...PACK_KX3, ...PACK_KX4, ...PACK_KX5, ...PACK_KX6, // reposición + idiomi + musica/cinema
+  ...PACK_KX7, ...PACK_KX8, ...PACK_KX9, ...PACK_KX10, // materiales + formale + salute + cotidiano
 ];

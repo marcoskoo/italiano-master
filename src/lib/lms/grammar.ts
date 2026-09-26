@@ -625,4 +625,11 @@ export const GRAMMAR: GrammarTopic[] = [
 /* # Paquete de expansión v1.1: +8 temas con problemas paso a paso */
 GRAMMAR.push(...GRAMMAR_EXTRA);
 
+/* # Grammatica completa v3.0: +45 temas (bloques A/B/C) con tavole
+   paradigmáticas, contraste IT–ES y cobertura MCER total */
+import { GRAMMAR_FULL_A } from "./extra/grammar-full-a";
+import { GRAMMAR_FULL_B } from "./extra/grammar-full-b";
+import { GRAMMAR_FULL_C } from "./extra/grammar-full-c";
+GRAMMAR.push(...GRAMMAR_FULL_A, ...GRAMMAR_FULL_B, ...GRAMMAR_FULL_C);
+
 export const GRAMMAR_BY_LEVEL = (level: string) => GRAMMAR.filter((g) => g.level === level);
