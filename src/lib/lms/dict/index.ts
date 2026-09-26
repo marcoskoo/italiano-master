@@ -28,6 +28,9 @@ import { PACK_KX7 } from "./pack-kx7";
 import { PACK_KX8 } from "./pack-kx8";
 import { PACK_KX9 } from "./pack-kx9";
 import { PACK_KX10 } from "./pack-kx10";
+import { PACK_KX11 } from "./pack-kx11";
+import { PACK_KX12 } from "./pack-kx12";
+import { PACK_KX13 } from "./pack-kx13";
 
 /* ── Dizionario didattico v3.0 · paquetes MCER A1→C2 ──────────────────
    v2.0: packs D (DIB/De Mauro, IPA, frecuencia, registro, colocaciones)
@@ -45,4 +48,5 @@ export const DICT_PACKS: VocabWord[] = [
   ...PACK_KC2, ...PACK_KC2B,    // C2: literario + coloquial/regional
   ...PACK_KX1, ...PACK_KX2, ...PACK_KX3, ...PACK_KX4, ...PACK_KX5, ...PACK_KX6, // reposición + idiomi + musica/cinema
   ...PACK_KX7, ...PACK_KX8, ...PACK_KX9, ...PACK_KX10, // materiales + formale + salute + cotidiano
+  ...PACK_KX11, ...PACK_KX12, ...PACK_KX13, // adjective/cucina/feste/bagno/sentimenti
 ];
