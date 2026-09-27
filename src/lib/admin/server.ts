@@ -29,9 +29,19 @@ export async function setSetting(key: string, value: unknown): Promise<void> {
   await db.setting.upsert({ where: { key }, update: { value: json }, create: { key, value: json } });
 }
 
-/* ── Token de sesión admin (bearer) ─────────────────────────────────── */
+/* ── Tokens de sesión admin (multi-dispositivo + renovación deslizante) ──
+   Diseño v5.1: hasta MAX_ADMIN_SESSIONS sesiones concurrentes (una por
+   dispositivo/navegador), TTL configurable desde el Panel (15 min – 30 días,
+   por defecto 7 días) y renovación automática mientras el admin esté activo:
+   una sesión solo caduca si el panel NO se usa durante todo el TTL.
+   El logout revoca únicamente el token del dispositivo que lo pide.       */
 
-const TOKEN_TTL_MS = 12 * 3600 * 1000; // 12 h por defecto (antes: 7 días)
+const DEFAULT_TOKEN_TTL_MS = 7 * 24 * 3600 * 1000; // 7 días de inactividad
+const MAX_ADMIN_SESSIONS = 8;
+
+interface AdminSession { token: string; createdAt: string; expiresAt: string; }
+
+export const KEY_ADMIN_TOKENS = "adminTokens";
 
 async function adminTtlMs(): Promise<number> {
   try {
@@ -43,37 +53,86 @@ async function adminTtlMs(): Promise<number> {
   } catch {
     /* configuración no disponible: TTL por defecto */
   }
-  return TOKEN_TTL_MS;
+  return DEFAULT_TOKEN_TTL_MS;
+}
+
+/** Lee las sesiones válidas, poda las caducadas y acepta el token único
+ *  heredado de v5.0 (migración sin re-login forzado). */
+async function readSessions(): Promise<AdminSession[]> {
+  const now = Date.now();
+  const list = await getSetting<{ sessions?: AdminSession[] } | null>(KEY_ADMIN_TOKENS, null);
+  const sessions = (list?.sessions ?? []).filter((s) => s.token && new Date(s.expiresAt).getTime() > now);
+  const legacy = await getSetting<{ token: string; expiresAt: string } | null>(KEY_ADMIN_TOKEN, null);
+  if (legacy?.token && new Date(legacy.expiresAt).getTime() > now && !sessions.some((s) => s.token === legacy.token)) {
+    sessions.push({ token: legacy.token, createdAt: new Date().toISOString(), expiresAt: legacy.expiresAt });
+  }
+  return sessions;
+}
+
+/** Persiste la lista conservando las sesiones más recientes. */
+async function writeSessions(sessions: AdminSession[]): Promise<void> {
+  const trimmed = [...sessions]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, MAX_ADMIN_SESSIONS);
+  await setSetting(KEY_ADMIN_TOKENS, { sessions: trimmed });
+}
+
+function newToken(): string {
+  return `${randomUUID()}${randomUUID().replace(/-/g, "").slice(0, 16)}`;
 }
 
 export async function issueAdminToken(): Promise<string> {
-  const token = `${randomUUID()}${randomUUID().replace(/-/g, "").slice(0, 16)}`;
-  await setSetting(KEY_ADMIN_TOKEN, { token, expiresAt: new Date(Date.now() + (await adminTtlMs())).toISOString() });
+  const token = newToken();
+  const sessions = await readSessions();
+  sessions.push({ token, createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + (await adminTtlMs())).toISOString() });
+  await writeSessions(sessions);
   return token;
 }
 
+/** Revoca UN token concreto: el logout de un dispositivo no expulsa al resto. */
+export async function revokeAdminToken(token: string): Promise<void> {
+  if (!token) return;
+  const sessions = await readSessions();
+  const next = sessions.filter((s) => !constantTimeEqual(s.token, token));
+  const legacy = await getSetting<{ token: string } | null>(KEY_ADMIN_TOKEN, null);
+  const legacyHit = Boolean(legacy?.token) && constantTimeEqual(legacy!.token, token);
+  if (next.length !== sessions.length || legacyHit) {
+    await writeSessions(next);
+    if (legacyHit) await setSetting(KEY_ADMIN_TOKEN, { token: "", expiresAt: new Date(0).toISOString() });
+  }
+}
+
+/** Revoca TODAS las sesiones admin (emergencias / rotación total). */
 export async function clearAdminToken(): Promise<void> {
+  await setSetting(KEY_ADMIN_TOKENS, { sessions: [] });
   await setSetting(KEY_ADMIN_TOKEN, { token: "", expiresAt: new Date(0).toISOString() });
 }
 
 export type AdminGuard = { ok: true } | { ok: false; res: NextResponse };
 
-/** Indica si el token corresponde a la sesión admin activa (tiempo constante). */
+/** Indica si el token corresponde a alguna sesión admin activa (tiempo constante). */
 export async function isAdminToken(token: string): Promise<boolean> {
   if (!token) return false;
-  const stored = await getSetting<{ token: string; expiresAt: string } | null>(KEY_ADMIN_TOKEN, null);
-  if (!stored?.token || new Date(stored.expiresAt).getTime() < Date.now()) return false;
-  return constantTimeEqual(stored.token, token);
+  const sessions = await readSessions();
+  return sessions.some((s) => constantTimeEqual(s.token, token));
 }
 
 export async function requireAdmin(req: Request): Promise<AdminGuard> {
   const header = req.headers.get("authorization");
   const token = header?.startsWith("Bearer ") ? header.slice(7).trim() : "";
   if (!token) return { ok: false, res: NextResponse.json({ error: "Non autorizzato" }, { status: 401 }) };
-  const stored = await getSetting<{ token: string; expiresAt: string } | null>(KEY_ADMIN_TOKEN, null);
-  if (!stored?.token || !constantTimeEqual(stored.token, token) || new Date(stored.expiresAt).getTime() < Date.now()) {
+  const sessions = await readSessions();
+  const idx = sessions.findIndex((s) => constantTimeEqual(s.token, token));
+  if (idx === -1) {
     await logEvent("admin-panel", null, "admin_auth_failed"); // auditoría de intentos fallidos
     return { ok: false, res: NextResponse.json({ error: "Sessione scaduta, riaccedi" }, { status: 401 }) };
+  }
+  // renovación deslizante: la sesión solo caduca si el panel no se usa durante todo el TTL
+  const ttl = await adminTtlMs();
+  const remaining = new Date(sessions[idx].expiresAt).getTime() - Date.now();
+  if (remaining < ttl / 2) {
+    sessions[idx] = { ...sessions[idx], expiresAt: new Date(Date.now() + ttl).toISOString() };
+    await writeSessions(sessions);
   }
   return { ok: true };
 }

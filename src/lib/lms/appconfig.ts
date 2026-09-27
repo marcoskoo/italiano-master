@@ -98,7 +98,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
     instructions: "Transferencia internacional SWIFT: el remitente necesita el nombre del banco, la dirección, el código SWIFT/BIC, el titular y el número de cuenta. Indica la referencia de pago en el concepto de la transferencia. La activación se completa al recibir el comprobante.",
   },
   security: {
-    adminSessionMinutes: 720, // 12 h
+    adminSessionMinutes: 10080, // 7 días de INACTIVIDAD (la sesión se renueva sola mientras el admin esté activo)
     loginMaxAttempts: 5,
     loginLockMinutes: 10,
     telemetryEnabled: true,

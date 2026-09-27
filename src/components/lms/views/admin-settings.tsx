@@ -458,15 +458,15 @@ export function SettingsTab({ onSaved }: { onSaved: () => void }) {
       <section className="rounded-2xl border-2 border-verde/40 bg-verde-tenue/20 p-5">
         <p className="mb-1 flex items-center gap-2 text-sm font-bold"><ShieldAlert className="h-4 w-4 text-verde-scuro dark:text-verde" aria-hidden="true" /> Seguridad extrema</p>
         <p className="mb-3 text-[11px] leading-relaxed text-muted-it">
-          Endurecimiento activo: límites de intentos de acceso, duración de las sesiones y auditoría.
-          Los cambios se aplican al guardar el formulario.
+          Endurecimiento activo: límites de intentos de acceso, caducidad de sesión por inactividad y auditoría.
+          Los cambios se aplican al guardar el formulario. La sesión se renueva automáticamente mientras estés activo.
         </p>
 
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
             <label htmlFor="s-sess" className={labelCls()}>Sesión admin (minutos)</label>
-            <input id="s-sess" type="number" min={15} max={43200} step={15} value={config.security.adminSessionMinutes} onChange={(e) => set("security", { ...config.security, adminSessionMinutes: Math.max(15, Math.min(43200, Number(e.target.value) || 720)) })} className={inputCls()} />
-            <p className="mt-1 text-[10px] text-muted-it">15 min (máximo rigor) – 43 200 (30 días)</p>
+            <input id="s-sess" type="number" min={15} max={43200} step={15} value={config.security.adminSessionMinutes} onChange={(e) => set("security", { ...config.security, adminSessionMinutes: Math.max(15, Math.min(43200, Number(e.target.value) || 10080)) })} className={inputCls()} />
+            <p className="mt-1 text-[10px] text-muted-it">Caducidad por INACTIVIDAD (15 min – 43 200 = 30 días). Mientras uses el panel, la sesión se renueva sola. Varias sesiones simultáneas (máx. 8 dispositivos).</p>
           </div>
           <div>
             <label htmlFor="s-maxatt" className={labelCls()}>Intentos de login máx.</label>
