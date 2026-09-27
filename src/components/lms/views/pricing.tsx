@@ -70,6 +70,7 @@ export function PricingView() {
 
   /* configuración de pagos del Panel Admin (con fallback demo) */
   const billingCfg: AppConfig["billing"] | null = remoteConfig?.billing ?? null;
+  const cur = CURRENCY_SYMBOL[billingCfg?.currency ?? "EUR"] ?? "€"; // símbolo según moneda configurada
   const paymentsEnabled = Boolean(billingCfg?.enabled);
   const methods: { id: PayMethod; label: string; icon: typeof Landmark; hint: string }[] = [];
   if (billingCfg?.bank?.enabled && (billingCfg.bank.iban || billingCfg.bank.accountNumber)) {
@@ -332,15 +333,15 @@ export function PricingView() {
                         {checkoutDef.monthly === 0
                           ? "Gratuito per sempre"
                           : billing === "monthly"
-                            ? `${checkoutDef.monthly.toFixed(2).replace(".", ",")} €/mese`
-                            : `${(checkoutDef.yearly / 12).toFixed(2).replace(".", ",")} €/mese`}
+                            ? `${checkoutDef.monthly.toFixed(2).replace(".", ",")} ${cur}/mese`
+                            : `${(checkoutDef.yearly / 12).toFixed(2).replace(".", ",")} ${cur}/mese`}
                       </dd>
                     </div>
                     {checkoutDef.monthly > 0 && (
                       <div className="flex justify-between">
                         <dt className="text-muted-it">Totale {billing === "yearly" ? "annuale" : "al mese"}</dt>
                         <dd className="font-bold text-verde-scuro dark:text-verde">
-                          {billing === "yearly" ? `${checkoutDef.yearly} €/anno` : `${checkoutDef.monthly.toFixed(2).replace(".", ",")} €`}
+                          {billing === "yearly" ? `${checkoutDef.yearly} ${cur}/anno` : `${checkoutDef.monthly.toFixed(2).replace(".", ",")} ${cur}`}
                         </dd>
                       </div>
                     )}
@@ -359,7 +360,9 @@ export function PricingView() {
                   </ul>
 
                   <p className="mt-4 rounded-xl bg-oro-tenue px-3.5 py-2.5 text-[11px] leading-relaxed text-oro-scuro dark:text-oro">
-                    ⚠️ Demo: nessun pagamento reale, nessun dato richiesto. Attivazione istantanea.
+                    {paymentsEnabled && methods.length > 0
+                      ? "Al prossimo passo scegli il metodo di pagamento (bonifico internazionale, PayPal o carta). La referencia de pago es única per ogni acquisto."
+                      : "⚠️ Demo: nessun pagamento reale, nessun dato richiesto. Attivazione istantanea."}
                   </p>
 
                   <div className="mt-5 flex gap-2.5">
@@ -589,6 +592,7 @@ function PlanCard({
   const price = def.monthly === 0 ? 0 : billing === "monthly" ? def.monthly : Math.round((def.yearly / 12) * 100) / 100;
   const isPlatinum = def.id === "platinum";
   const isPremium = def.id === "premium";
+  const cur = CURRENCY_SYMBOL[useLms((s) => s.remoteConfig)?.billing?.currency ?? "EUR"] ?? "€";
 
   return (
     <motion.article
@@ -627,16 +631,16 @@ function PlanCard({
 
       <div className="mt-5">
         <p className={cn("font-display text-4xl font-bold leading-none", isPlatinum ? "text-inchiostro" : "text-inchiostro")}>
-          {price === 0 ? "0 €" : `${price.toFixed(2).replace(".", ",")} €`}
+          {price === 0 ? `0 ${cur}` : `${price.toFixed(2).replace(".", ",")} ${cur}`}
           <span className={cn("ml-1.5 font-sans text-sm font-semibold", isPlatinum ? "text-inchiostro/60" : "text-muted-it")}>/mese</span>
         </p>
         {def.monthly > 0 && billing === "yearly" && (
           <p className={cn("mt-1 text-xs font-semibold", isPlatinum ? "text-inchiostro/70" : "text-verde-scuro dark:text-verde")}>
-            {def.yearly} €/anno · risparmia il 20%
+            {def.yearly} {cur}/anno · risparmia il 20%
           </p>
         )}
         {def.monthly > 0 && billing === "monthly" && (
-          <p className={cn("mt-1 text-xs", isPlatinum ? "text-inchiostro/60" : "text-muted-it")}>oppure {def.yearly} €/anno con il 20% di sconto</p>
+          <p className={cn("mt-1 text-xs", isPlatinum ? "text-inchiostro/60" : "text-muted-it")}>oppure {def.yearly} {cur}/anno con il 20% di sconto</p>
         )}
       </div>
 
