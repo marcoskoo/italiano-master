@@ -1,10 +1,11 @@
 import type { Proverb, CefrLevel } from "./types";
+import { PROVERBS_EXTRA } from "./extra/proverbs-extra";
 
-/* ── Proverbi e modi di dire · plugin v4.0 ──────────────────────────
-   64 entradas seleccionadas de la tradición paremiológica italiana
-   (recuerdos escolares, sabiduría campesina, uso coloquial actual),
-   cada una con traducción literal, equivalente español y contexto
-   de uso. Niveles MCER orientativos por complejidad léxica. */
+/* ── Proverbi e modi di dire · plugin v4.0 → v5.0 ───────────────────
+   Colección base (73) + pack v5.0 (121): proverbios clásicos,
+   modos de decir cotidianos y locuciones latinas vivas.
+   Cada entrada con traducción literal, equivalente español y
+   contexto de uso. Niveles MCER orientativos.                      */
 
 const P = (
   id: string, it: string, literal: string, es: string, meaning: string,
@@ -12,7 +13,7 @@ const P = (
   exIt?: string, exEs?: string
 ): Proverb => ({ id, it, literal, es, meaning, level, kind, example: exIt && exEs ? { it: exIt, es: exEs } : undefined });
 
-export const PROVERBS: Proverb[] = [
+const PROVERBS_BASE: Proverb[] = [
   /* ═══ A1–A2 · modi di dire esenciales ═══ */
   P("pv-001", "In bocca al lupo", "En la boca del lobo", "¡Mucha mierda! / ¡Suerte!", "Augurio de buena suerte antes de un examen o un reto. Se responde: crepi! (¡que reviente!). Nunca digas grazie: anula la suerte.", "A1", "modo di dire", "Domani ho l'esame di italiano. — In bocca al lupo!", "Mañana tengo el examen de italiano. — ¡Mucha suerte!"),
   P("pv-002", "Non vedo l'ora", "No veo la hora", "No veo la hora / estoy deseando", "Expresa ilusión por algo que va a pasar. Se construye con di + infinitivo o che + congiuntivo: non vedo l'ora che arrivi sabato.", "A1", "modo di dire", "Non vedo l'ora di andare in vacanza!", "¡No veo la hora de irme de vacaciones!"),
@@ -97,9 +98,24 @@ export const PROVERBS: Proverb[] = [
   P("pv-112", "Oltre il danno, le beffe", "Además del daño, las burlas", "Sobre el daño, la burla / añadir injuria al insulto", "Cuando a la desgracia se suma la humillación: en inglés adding insult to injury.", "C2", "modo di dire"),
 ];
 
+export const PROVERBS: Proverb[] = (() => {
+  const seen = new Set<string>();
+  const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/['’]/g, "").trim();
+  const out: Proverb[] = [];
+  for (const p of [...PROVERBS_BASE, ...PROVERBS_EXTRA]) {
+    const key = norm(p.it);
+    if (seen.has(p.id) || seen.has(`it:${key}`)) continue; // dedupe por id y lema
+    seen.add(p.id);
+    seen.add(`it:${key}`);
+    out.push(p);
+  }
+  return out;
+})();
+
 export const PROVERB_KIND_LABELS: Record<Proverb["kind"], string> = {
   proverbio: "Proverbio",
   "modo di dire": "Modo di dire",
+  "locuzione latina": "Locuzione latina",
 };
 
 export function proverbsByLevel(level: CefrLevel): Proverb[] {

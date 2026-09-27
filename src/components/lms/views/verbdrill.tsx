@@ -120,6 +120,7 @@ export function VerbDrillView() {
   useEffect(() => {
     if (!running) return;
     if (timeLeft <= 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- fin del tiempo del drill
       setRunning(false);
       setQ(null);
       return;

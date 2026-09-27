@@ -370,6 +370,12 @@ html[data-textsize="xl"] { font-size: 18.5px; }
   0%, 100% { transform: translateY(0) rotate(-3deg); }
   50% { transform: translateY(-8px) rotate(3deg); }
 }
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-7px); }
+  50% { transform: translateX(7px); }
+  75% { transform: translateX(-4px); }
+}
 
 @layer utilities {
   .plan-platinum-bg {

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowRight, BookOpen, Compass, Ear, FileSpreadsheet, Flame, GraduationCap, Keyboard, Library, Quote, RefreshCcw, Sparkles, Target, Trophy, Volume2, Zap } from "lucide-react";
+import { AlertTriangle, ArrowRight, BookOpen, Compass, Dices, Ear, FileSpreadsheet, Flame, GraduationCap, Keyboard, Library, Quote, RefreshCcw, Sparkles, Target, Timer, Trophy, Volume2, Wand2, Zap } from "lucide-react";
 import { MorphingHero } from "@/components/italian/morphing-hero";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { VOCAB, VOCAB_BY_ID } from "@/lib/lms/vocabulary";
@@ -26,10 +26,14 @@ const QUICK: { id: ViewId; label: string; it: string; icon: typeof Ear; desc: st
 ];
 
 const PLUGINS: { id: ViewId; label: string; it: string; icon: typeof Ear; desc: string }[] = [
-  { id: "proverbi", label: "Proverbi", it: "plugin", icon: Quote, desc: "73 proverbios y modismos con su truco" },
+  { id: "proverbi", label: "Proverbi", it: "plugin", icon: Quote, desc: "193 proverbios, modismos y locuciones latinas" },
   { id: "falsiamici", label: "Falsi amici", it: "plugin", icon: AlertTriangle, desc: "87 trampas IT–ES explicadas" },
   { id: "dettato", label: "Dettato", it: "plugin", icon: Ear, desc: "Dictado con corrección palabra a palabra" },
   { id: "ankiexport", label: "Export Anki", it: "plugin", icon: FileSpreadsheet, desc: "Mazos TSV/CSV desde el diccionario o tu SRS" },
+  { id: "parolanascosta", label: "Parola nascosta", it: "gioco", icon: Dices, desc: "Wordle italiano desde el diccionario" },
+  { id: "preposizioni", label: "Preposizioni", it: "drill", icon: Target, desc: "72 frases cloze con regla explicada" },
+  { id: "pomodoro", label: "Pomodoro", it: "focus", icon: Timer, desc: "Sesiones de enfoque con XP" },
+  { id: "muse", label: "Muse", it: "generatore", icon: Wand2, desc: "Retos de escritura por nivel" },
 ];
 
 export function HomeView() {
@@ -295,7 +299,7 @@ export function HomeView() {
       <section>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="font-display text-2xl font-semibold">Estensioni · Plugin</h2>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-it">v4.0 · nuovi</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-it">v5.0 · 8 strumenti</p>
         </div>
         <p className="mt-1.5 text-sm text-muted-it">Herramientas extra que amplían tu aprendizaje más allá de las lecciones.</p>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Crown, Gem, Loader2, ShieldCheck, Sprout, X, Zap } from "lucide-react";
+import { Check, Copy, CreditCard, Crown, Gem, Landmark, Loader2, ShieldCheck, Sprout, Wallet, X, Zap } from "lucide-react";
 import { PLANS, PLAN_ORDER, type PlanId } from "@/lib/lms/plans";
 import { useLms } from "@/lib/lms/store";
+import type { AppConfig } from "@/lib/lms/appconfig";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Piani PRO · PREMIUM · PLATINUM ────────────────────────── */
@@ -32,27 +33,93 @@ const FAQ = [
   { q: "Il piano settimanale si aggiorna da solo?", a: "Sì: PREMIUM e PLATINUM generano ogni settimana un piano di 7 giorni in base al tuo livello MCER, alle flashcard da ripassare e ai temi deboli individuati dal motore adattivo." },
 ];
 
+type PayMethod = "bank" | "paypal" | "card";
+
+type CheckoutStage = "summary" | "payment" | "processing" | "success";
+
+/* Referencia de pago única: IM-2026-4F7K2Q (prefijo admin + año + sufijo aleatorio) */
+function makePaymentRef(prefix: string): string {
+  const clean = (prefix || "IM").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) || "IM";
+  const suffix = Array.from({ length: 6 }, () => "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 31)]).join("");
+  return `${clean}-${new Date().getFullYear()}-${suffix}`;
+}
+
+function formatIbanPretty(iban: string): string {
+  return iban.replace(/\s/g, "").toUpperCase().replace(/(.{4})/g, "$1 ").trim();
+}
+
+const CURRENCY_SYMBOL: Record<string, string> = { EUR: "€", USD: "$", PEN: "S/", MXN: "$", ARS: "$", COP: "$", CLP: "$" };
+
 export function PricingView() {
   const plan = useLms((s) => s.plan);
   const setPlan = useLms((s) => s.setPlan);
   const navigate = useLms((s) => s.navigate);
   const remoteConfig = useLms((s) => s.remoteConfig);
   const userName = useLms((s) => s.userName);
+  const addPayment = useLms((s) => s.addPayment);
 
   const [billing, setBilling] = useState<"monthly" | "yearly">("yearly");
   const [checkout, setCheckout] = useState<PlanId | null>(null);
-  const [stage, setStage] = useState<"summary" | "processing" | "success">("summary");
+  const [stage, setStage] = useState<CheckoutStage>("summary");
+  const [payMethod, setPayMethod] = useState<PayMethod>("bank");
+  const [payRef, setPayRef] = useState("");
+  const [copied, setCopied] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const checkoutDef = checkout ? PLANS[checkout] : null;
 
+  /* configuración de pagos del Panel Admin (con fallback demo) */
+  const billingCfg: AppConfig["billing"] | null = remoteConfig?.billing ?? null;
+  const paymentsEnabled = Boolean(billingCfg?.enabled);
+  const methods: { id: PayMethod; label: string; icon: typeof Landmark; hint: string }[] = [];
+  if (billingCfg?.bank?.enabled && billingCfg.bank.iban) {
+    methods.push({ id: "bank", label: "Transferencia bancaria", icon: Landmark, hint: "IBAN con verificación de recepción" });
+  }
+  if (billingCfg?.paypal?.enabled && billingCfg.paypal.email) {
+    methods.push({ id: "paypal", label: "PayPal", icon: Wallet, hint: billingCfg.paypal.email });
+  }
+  if (billingCfg?.card?.enabled) {
+    methods.push({ id: "card", label: "Tarjeta", icon: CreditCard, hint: billingCfg.card.provider || "Pasarela segura" });
+  }
+
+  const amountDue = checkoutDef
+    ? billing === "yearly"
+      ? checkoutDef.yearly
+      : checkoutDef.monthly
+    : 0;
+  const vatRate = billingCfg?.vatRate ?? 0;
+  const netAmount = vatRate > 0 ? amountDue / (1 + vatRate / 100) : amountDue;
+
+  const copy = async (text: string, tag: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      /* clipboard bloqueado: se puede copiar a mano */
+    }
+    setCopied(tag);
+    setTimeout(() => setCopied(null), 1600);
+  };
+
   const openCheckout = (id: PlanId) => {
     setStage("summary");
+    setPayMethod(methods[0]?.id ?? "bank");
+    setPayRef(makePaymentRef(billingCfg?.invoicePrefix ?? "IM"));
     setCheckout(id);
   };
 
-  const activate = () => {
+  const activate = (method: PayMethod | "demo") => {
     if (!checkout) return;
+    if (method !== "demo") {
+      addPayment({
+        reference: payRef,
+        plan: checkout,
+        billing,
+        method,
+        amount: amountDue,
+        currency: billingCfg?.currency ?? "EUR",
+        status: method === "bank" ? "in attesa" : "completato",
+      });
+    }
     setStage("processing");
     setTimeout(() => {
       setPlan(checkout, billing);
@@ -64,7 +131,6 @@ export function PricingView() {
     setCheckout(null);
     setStage("summary");
   };
-
   // sistema de planes desactivado desde el Panel Admin (tras todos los hooks)
   if (remoteConfig && !remoteConfig.features.plans) {
     return (
@@ -301,14 +367,165 @@ export function PricingView() {
                       Annulla
                     </button>
                     <button
-                      onClick={activate}
+                      onClick={() => {
+                        if (paymentsEnabled && methods.length > 0) setStage("payment");
+                        else activate("demo");
+                      }}
                       className={cn(
                         "min-h-12 flex-[1.6] rounded-xl px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02]",
                         checkoutDef.id === "platinum" ? "plan-gold-bg shadow-oro/40" : checkoutDef.id === "premium" ? "plan-gold-bg shadow-oro/30" : "bg-verde shadow-verde/30 dark:text-inchiostro"
                       )}
                     >
                       <Crown className="mr-1.5 inline h-4 w-4" aria-hidden="true" />
-                      Attiva {checkoutDef.name}
+                      {paymentsEnabled && methods.length > 0 ? "Vai al pagamento →" : `Attiva ${checkoutDef.name}`}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {stage === "payment" && billingCfg && (
+                <div className="p-6 sm:p-7">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-display text-xl font-bold leading-tight">Pagamento · Piano {checkoutDef.name}</p>
+                      <p className="text-xs text-muted-it">Metodo a scelta · attivazione immediata dopo el pago</p>
+                    </div>
+                    <button onClick={() => setStage("summary")} aria-label="Torna al riepilogo" className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-soft transition-colors hover:bg-rosso-tenue hover:text-rosso">
+                      <X className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </div>
+
+                  {/* importo + IVA */}
+                  <dl className="mt-4 space-y-1.5 rounded-2xl bg-crema-scura p-4 text-sm dark:bg-inchiostro/10">
+                    <div className="flex justify-between">
+                      <dt className="text-muted-it">Riferimento pagamento</dt>
+                      <dd className="flex items-center gap-1.5 font-mono font-bold">
+                        {payRef}
+                        <button onClick={() => copy(payRef, "ref")} aria-label="Copia referencia" className="rounded-lg p-1 text-muted-it hover:bg-inchiostro/10">
+                          {copied === "ref" ? <Check className="h-3.5 w-3.5 text-verde" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+                        </button>
+                      </dd>
+                    </div>
+                    {vatRate > 0 && (
+                      <div className="flex justify-between">
+                        <dt className="text-muted-it">Base imponible</dt>
+                        <dd className="font-semibold">{netAmount.toFixed(2).replace(".", ",")} {CURRENCY_SYMBOL[billingCfg.currency] ?? "€"}</dd>
+                      </div>
+                    )}
+                    {vatRate > 0 && (
+                      <div className="flex justify-between">
+                        <dt className="text-muted-it">IVA ({vatRate}%)</dt>
+                        <dd className="font-semibold">{(amountDue - netAmount).toFixed(2).replace(".", ",")} {CURRENCY_SYMBOL[billingCfg.currency] ?? "€"}</dd>
+                      </div>
+                    )}
+                    <div className="flex justify-between border-t border-inchiostro/10 pt-1.5 dark:border-inchiostro/20">
+                      <dt className="font-bold">Totale {billing === "yearly" ? "annuale" : "al mese"}</dt>
+                      <dd className="font-display text-lg font-bold text-verde-scuro dark:text-verde">{amountDue.toFixed(2).replace(".", ",")} {CURRENCY_SYMBOL[billingCfg.currency] ?? "€"}</dd>
+                    </div>
+                  </dl>
+
+                  {/* selección de método */}
+                  <p className="mb-2 mt-4 text-xs font-bold uppercase tracking-wide text-muted-it">Metodo di pagamento</p>
+                  <div className="grid gap-2">
+                    {methods.map((m) => {
+                      const I = m.icon;
+                      const active = payMethod === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => setPayMethod(m.id)}
+                          aria-pressed={active}
+                          className={cn(
+                            "flex min-h-14 items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all",
+                            active ? "border-verde bg-verde-tenue/60" : "border-soft hover:border-inchiostro/25"
+                          )}
+                        >
+                          <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", active ? "bg-verde text-white" : "bg-inchiostro/10 text-inchiostro/60")}>
+                            <I className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-bold">{m.label}</span>
+                            <span className="block truncate text-[11px] text-muted-it">{m.hint}</span>
+                          </span>
+                          <span className={cn("h-5 w-5 shrink-0 rounded-full border-2", active ? "border-verde bg-verde" : "border-inchiostro/25")}>
+                            {active && <Check className="mx-auto my-0.5 h-2.5 w-2.5 text-white" aria-hidden="true" />}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* datos del método elegido */}
+                  {payMethod === "bank" && billingCfg.bank.enabled && (
+                    <div className="mt-4 space-y-2 rounded-2xl border border-soft bg-crema-scura/60 p-4 dark:bg-inchiostro/5">
+                      <p className="text-[11px] font-bold uppercase tracking-wide text-muted-it">Dati per il bonifico</p>
+                      {([
+                        ["Intestatario", billingCfg.bank.holder],
+                        ["Banca", billingCfg.bank.bankName],
+                        ["BIC/SWIFT", billingCfg.bank.bic],
+                      ] as const).filter(([, v]) => v).map(([label, value]) => (
+                        <div key={label} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="shrink-0 text-muted-it">{label}</span>
+                          <span className="truncate font-semibold">{value}</span>
+                        </div>
+                      ))}
+                      <div className="flex items-center justify-between gap-2 text-sm">
+                        <span className="shrink-0 text-muted-it">IBAN</span>
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <span className="truncate font-mono text-[13px] font-bold tracking-wide">{formatIbanPretty(billingCfg.bank.iban)}</span>
+                          <button onClick={() => copy(billingCfg.bank.iban.replace(/\s/g, ""), "iban")} aria-label="Copia IBAN" className="shrink-0 rounded-lg p-1.5 text-muted-it hover:bg-inchiostro/10">
+                            {copied === "iban" ? <Check className="h-3.5 w-3.5 text-verde" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+                          </button>
+                        </span>
+                      </div>
+                      <p className="pt-1 text-[11px] leading-relaxed text-muted-it">
+                        {billingCfg.instructions}
+                      </p>
+                    </div>
+                  )}
+
+                  {payMethod === "paypal" && (
+                    <div className="mt-4 space-y-2 rounded-2xl border border-soft bg-crema-scura/60 p-4 dark:bg-inchiostro/5">
+                      <p className="text-[11px] font-bold uppercase tracking-wide text-muted-it">PayPal</p>
+                      <div className="flex items-center justify-between gap-2 text-sm">
+                        <span className="shrink-0 text-muted-it">Invia a</span>
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <span className="truncate font-semibold">{billingCfg.paypal.email}</span>
+                          <button onClick={() => copy(billingCfg.paypal.email, "pp")} aria-label="Copia email PayPal" className="shrink-0 rounded-lg p-1.5 text-muted-it hover:bg-inchiostro/10">
+                            {copied === "pp" ? <Check className="h-3.5 w-3.5 text-verde" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+                          </button>
+                        </span>
+                      </div>
+                      <p className="pt-1 text-[11px] leading-relaxed text-muted-it">Inserisci la referencia <span className="font-mono font-bold">{payRef}</span> nella nota del pagamento.</p>
+                    </div>
+                  )}
+
+                  {payMethod === "card" && (
+                    <div className="mt-4 rounded-2xl border border-soft bg-crema-scura/60 p-4 dark:bg-inchiostro/5">
+                      <p className="flex items-center gap-2 text-sm font-bold"><CreditCard className="h-4 w-4 text-oro-scuro dark:text-oro" aria-hidden="true" /> {billingCfg.card.provider}</p>
+                      <p className="mt-1.5 text-[11px] leading-relaxed text-muted-it">
+                        Entorno demo: non vengono richiesti né salvati dati di carta. Nessun pagamento reale verrà elaborato.
+                      </p>
+                    </div>
+                  )}
+
+                  <p className="mt-3 rounded-xl bg-oro-tenue px-3.5 py-2.5 text-[11px] leading-relaxed text-oro-scuro dark:text-oro">
+                    ⚠️ Modalità dimostrativa: l'attivazione è immediata e non richiede l'effettivo bonifico.
+                  </p>
+
+                  <div className="mt-5 flex gap-2.5">
+                    <button onClick={() => setStage("summary")} className="min-h-12 flex-1 rounded-xl border-2 border-soft px-4 py-3 text-sm font-bold transition-all hover:border-inchiostro/30">
+                      ← Indietro
+                    </button>
+                    <button
+                      onClick={() => activate(payMethod)}
+                      className={cn(
+                        "min-h-12 flex-[1.6] rounded-xl px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02]",
+                        checkoutDef.id === "platinum" || checkoutDef.id === "premium" ? "plan-gold-bg shadow-oro/35" : "bg-verde shadow-verde/30 dark:text-inchiostro"
+                      )}
+                    >
+                      <ShieldCheck className="mr-1.5 inline h-4 w-4" aria-hidden="true" />
+                      Ho pagato · Attiva {checkoutDef.name}
                     </button>
                   </div>
                 </div>

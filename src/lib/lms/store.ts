@@ -28,6 +28,30 @@ export interface Settings {
 
 export interface StudyDay { date: string; xp: number; }
 
+/* Pago de suscripción registrado localmente (v5.0) */
+export interface PaymentRecord {
+  id: string;
+  reference: string;            // IM-2026-A1B2C3
+  plan: PlanId;
+  billing: "monthly" | "yearly";
+  method: "bank" | "paypal" | "card" | "demo";
+  amount: number;
+  currency: string;
+  date: string;                 // ISO
+  status: "completato" | "in attesa";
+}
+
+/* Seguridad extrema del usuario (v5.0): bloqueo con PIN + privacidad */
+export interface UserSecurity {
+  pinHash: string | null;       // SHA-256(PIN + salt) — nunca el PIN en claro
+  pinSalt: string | null;
+  autoLockMin: number;          // 0 = solo manual
+  lockOnStart: boolean;         // pedir PIN al abrir la app
+  privacyMode: boolean;         // difuminar datos personales en la UI
+  failedAttempts: number;       // intentos fallidos de desbloqueo
+  lockoutUntil: number;         // timestamp ms de fin del bloqueo
+}
+
 interface LmsState {
   /* profile */
   userName: string;
@@ -74,6 +98,11 @@ interface LmsState {
   writingCount: number;
   writingCountDate: string;
 
+  /* pagos + seguridad extrema (v5.0) */
+  payments: PaymentRecord[];
+  security: UserSecurity;
+  locked: boolean;
+
   /* actions */
   navigate: (view: ViewId, params?: NavParams) => void;
   setUserName: (name: string) => void;
@@ -91,6 +120,12 @@ interface LmsState {
   setPlan: (plan: PlanId, billing: "monthly" | "yearly" | null) => void;
   incrementTutor: () => void;
   incrementWriting: () => void;
+  addPayment: (p: Omit<PaymentRecord, "id" | "date">) => void;
+  setSecurity: (partial: Partial<UserSecurity>) => void;
+  activatePin: (pinHash: string, pinSalt: string) => void;
+  clearPin: () => void;
+  lockApp: () => void;
+  attemptUnlock: (pinHash: string) => boolean;
   resetAll: () => void;
   loginAccount: (account: Account, profile?: { displayName?: string; level?: string; plan?: string; xp?: number; streak?: number }) => void;
   adoptServerProgress: (progress: { xp: number; streak: number }) => void;
@@ -111,6 +146,16 @@ const DEFAULT_SETTINGS: Settings = {
   showSubtitles: true,
   dailyGoalXp: 120,
   mode: "adulti",
+};
+
+const DEFAULT_SECURITY: UserSecurity = {
+  pinHash: null,
+  pinSalt: null,
+  autoLockMin: 0,
+  lockOnStart: false,
+  privacyMode: false,
+  failedAttempts: 0,
+  lockoutUntil: 0,
 };
 
 export const useLms = create<LmsState>()(
@@ -152,6 +197,10 @@ export const useLms = create<LmsState>()(
       tutorCountDate: today(),
       writingCount: 0,
       writingCountDate: today(),
+
+      payments: [],
+      security: { ...DEFAULT_SECURITY },
+      locked: false,
 
       navigate: (view, params = {}) => set({ view, navParams: params }),
 
@@ -246,6 +295,56 @@ export const useLms = create<LmsState>()(
         const s = get();
         const t = today();
         set({ writingCount: s.writingCountDate === t ? s.writingCount + 1 : 1, writingCountDate: t });
+      },
+
+      addPayment: (p) => {
+        const record: PaymentRecord = {
+          ...p,
+          id: `pay-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+          date: new Date().toISOString(),
+        };
+        set({ payments: [record, ...get().payments].slice(0, 50) });
+        telemetry("payment_started", { plan: p.plan, method: p.method, reference: p.reference }, get().account?.username);
+      },
+
+      setSecurity: (partial) => set({ security: { ...get().security, ...partial } }),
+
+      activatePin: (pinHash, pinSalt) => {
+        set({ security: { ...get().security, pinHash, pinSalt, failedAttempts: 0, lockoutUntil: 0 } });
+        telemetry("security_pin_enabled", {}, get().account?.username);
+      },
+
+      clearPin: () => {
+        set({ security: { ...get().security, pinHash: null, pinSalt: null, failedAttempts: 0, lockoutUntil: 0 }, locked: false });
+        telemetry("security_pin_disabled", {}, get().account?.username);
+      },
+
+      lockApp: () => {
+        if (!get().security.pinHash) return; // sin PIN no hay bloqueo posible
+        set({ locked: true });
+        telemetry("app_locked", {}, get().account?.username);
+      },
+
+      attemptUnlock: (pinHash) => {
+        const s = get();
+        // bloqueo temporal tras 5 fallos: 30 s adicionales por intento extra
+        if (Date.now() < s.security.lockoutUntil) return false;
+        if (s.security.pinHash && pinHash === s.security.pinHash) {
+          set({ locked: false, security: { ...s.security, failedAttempts: 0, lockoutUntil: 0 } });
+          telemetry("app_unlocked", {}, s.account?.username);
+          return true;
+        }
+        const failed = s.security.failedAttempts + 1;
+        const locked = failed >= 5;
+        set({
+          security: {
+            ...s.security,
+            failedAttempts: failed,
+            lockoutUntil: locked ? Date.now() + Math.min(300, 30 * (failed - 4)) * 1000 : 0,
+          },
+        });
+        if (locked) telemetry("security_lock", { attempts: failed }, s.account?.username);
+        return false;
       },
 
       resetAll: () =>

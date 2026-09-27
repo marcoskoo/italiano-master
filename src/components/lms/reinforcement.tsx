@@ -345,6 +345,7 @@ function QuizPhase({ qs, onXp, onNext }: { qs: QuizQ[]; onXp: (n: number) => voi
   const q = qs[idx];
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset del ejercicio al avanzar de pregunta
     setChoice(null); setTyped(""); setBuilt([]);
     if (q?.kind === "bank") setTiles(q.tiles.map((w) => ({ w, used: false })));
   }, [idx, q]);

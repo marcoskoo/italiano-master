@@ -25,6 +25,7 @@ export function VocabularyView() {
   const [search, setSearch] = useState("");
   const [visible, setVisible] = useState(60);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- reset del límite al cambiar de categoría
   useEffect(() => setVisible(60), [openCat]);
 
   const categories = useMemo(() => {

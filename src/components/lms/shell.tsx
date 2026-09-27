@@ -6,13 +6,14 @@ import {
   Gamepad2, GraduationCap, Hash, Home, Languages, Library, LineChart, MapPin, Medal, Microscope,
   PenLine, Printer, RefreshCcw, ScrollText, Settings, Shield, Sparkles, Timer, Trophy, Volume2,
   X, Zap, Flame, Menu, CalendarDays, Quote, AlertTriangle, Keyboard, FileSpreadsheet,
+  Dices, Target, Wand2,
   LogIn, LogOut,
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { dueCards } from "@/lib/lms/srs";
 import { PlanChip, UpgradeCta } from "./plan-badge";
-import { loginRequest, setAdminToken, logoutRequest, getAdminToken } from "@/lib/lms/remote";
+import { loginRequest, setAdminToken, setSessionToken, logoutRequest, getAdminToken, getSessionToken } from "@/lib/lms/remote";
 import { cn } from "@/lib/utils";
 
 /* ── Shell del LMS: sidebar + header + vista activa ──────────────── */
@@ -66,6 +67,10 @@ const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typ
       { id: "falsiamici", label: "Falsi amici", icon: AlertTriangle },
       { id: "dettato", label: "Dettato (dictado)", icon: Keyboard },
       { id: "ankiexport", label: "Export Anki/CSV", icon: FileSpreadsheet },
+      { id: "parolanascosta", label: "Parola nascosta", icon: Dices },
+      { id: "preposizioni", label: "Preposizioni lab", icon: Target },
+      { id: "pomodoro", label: "Pomodoro studio", icon: Timer },
+      { id: "muse", label: "Muse · generador", icon: Wand2 },
     ],
   },
   {
@@ -114,10 +119,14 @@ const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   pianosettimanale: { title: "Piano settimanale", sub: "Tu semana de estudio en un plan generado a medida" },
   analizzatore: { title: "Analizzatore di frasi", sub: "Analiza frases italianas palabra por palabra con traducción" },
   schede: { title: "Schede di studio", sub: "Hojas de vocabulario, verbos y gramática listas para imprimir" },
-  proverbi: { title: "Proverbi e modi di dire", sub: "73 proverbios y modismos con literal, equivalente y uso real" },
+  proverbi: { title: "Proverbi e modi di dire", sub: "193 proverbios, modismos y locuciones latinas con literal, equivalente y uso real" },
   falsiamici: { title: "Falsi amici", sub: "87 trampas léxicas entre italiano y español, explicadas una a una" },
   dettato: { title: "Dettato", sub: "Dictado con voz TTS y corrección palabra por palabra" },
   ankiexport: { title: "Export Anki/CSV", sub: "Tus mazos de estudio listos para Anki, Quizlet o Sheets" },
+  parolanascosta: { title: "Parola nascosta", sub: "Wordle italiano: adivina la palabra del diccionario en 6 intentos" },
+  preposizioni: { title: "Preposizioni lab", sub: "72 frases de relleno con la regla explicada: la cura contra a/in/di/da" },
+  pomodoro: { title: "Pomodoro studio", sub: "Sesiones de enfoque 25/5 con XP y aviso de voz al cambiar de fase" },
+  muse: { title: "Muse · generador", sub: "Retos de escritura y habla generados por nivel MCER" },
 };
 
 function NavItem({ id, label, icon: Icon, onNav, active }: { id: ViewId; label: string; icon: typeof Home; onNav: () => void; active: boolean }) {
@@ -167,6 +176,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const streak = useLms((s) => s.streakCount);
   const level = useLms((s) => s.level);
   const userName = useLms((s) => s.userName);
+  const privacyMode = useLms((s) => s.security.privacyMode);
   const settings = useLms((s) => s.settings);
   const plan = useLms((s) => s.plan);
   const updateSettings = useLms((s) => s.updateSettings);
@@ -204,7 +214,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setLoginError(null);
     try {
       const { user, token } = await loginRequest(loginUser.trim(), loginPass);
-      if (token) setAdminToken(token);
+      if (token) {
+        // token de sesión separado: admin → panel, estudiante → sincronización de perfil
+        if (user.role === "admin") setAdminToken(token);
+        else setSessionToken(token);
+      }
       loginAccount({ id: user.id, username: user.username, displayName: user.displayName, role: user.role }, {
         displayName: user.displayName,
         level: user.role === "student" ? user.level : undefined,
@@ -224,8 +238,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   async function handleLogout() {
-    await logoutRequest(getAdminToken());
+    await logoutRequest(getAdminToken() ?? getSessionToken());
     setAdminToken(null);
+    setSessionToken(null);
     logoutAccount();
     if (view === "admin") navigate("inicio");
   }
@@ -403,7 +418,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="drawer-panel absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-2xl">
               <div className="flex h-16 shrink-0 items-center justify-between border-b border-soft px-4">
                 <p className="truncate font-display text-lg font-semibold">
-                  Ciao, {userName.split(" ")[0]} 👋
+                  Ciao, {privacyMode ? "•••" : userName.split(" ")[0]} 👋
                 </p>
                 <button onClick={() => setMenuOpen(false)} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-soft" aria-label="Cerrar menú">
                   <X className="h-5 w-5" aria-hidden="true" />

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Award, Crown, Download, GraduationCap, Headphones, ScrollText, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowLeft, Award, Copy, Check, CreditCard, Crown, Download, GraduationCap, Headphones, KeyRound, Landmark, Lock, ScrollText, ShieldCheck, Trophy, Wallet } from "lucide-react";
 import { CEFR_LEVELS, LEVEL_LABELS, type CefrLevel } from "@/lib/lms/types";
 import { exercisesByLevel } from "@/lib/lms/exercises";
 import { COURSES } from "@/lib/lms/courses";
@@ -12,6 +12,24 @@ import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
 import { QuizEngine } from "../quiz-engine";
 import { PlanChip } from "../plan-badge";
 import { cn } from "@/lib/utils";
+
+/* Hash del PIN de bloqueo: SHA-256(PIN + salt) vía WebCrypto (nunca el PIN en claro) */
+async function hashPin(pin: string, salt: string): Promise<string> {
+  const data = new TextEncoder().encode(`im-pin:${salt}:${pin}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function randomSalt(): string {
+  return Array.from({ length: 12 }, () => "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]).join("");
+}
+
+const PAY_METHOD_LABEL: Record<string, string> = {
+  bank: "Transferencia", paypal: "PayPal", card: "Tarjeta", demo: "Demo",
+};
+const PAY_METHOD_ICON: Record<string, typeof Landmark> = {
+  bank: Landmark, paypal: Wallet, card: CreditCard, demo: Crown,
+};
 
 /* ════════ Vista: Exámenes ════════ */
 
@@ -310,9 +328,65 @@ export function SettingsView() {
   const planBilling = useLms((s) => s.planBilling);
   const setPlan = useLms((s) => s.setPlan);
   const srs = useLms((s) => s.srs);
+  const security = useLms((s) => s.security);
+  const payments = useLms((s) => s.payments);
+  const setSecurity = useLms((s) => s.setSecurity);
+  const activatePin = useLms((s) => s.activatePin);
+  const clearPinStore = useLms((s) => s.clearPin);
+  const lockApp = useLms((s) => s.lockApp);
   const [confirmReset, setConfirmReset] = useState(false);
   const [confirmDowngrade, setConfirmDowngrade] = useState(false);
   const [nameDraft, setNameDraft] = useState(userName);
+
+  /* PIN flow (create/change/remove) */
+  const [pinMode, setPinMode] = useState<"none" | "create" | "change" | "remove">("none");
+  const [pinCurrent, setPinCurrent] = useState("");
+  const [pinDraft, setPinDraft] = useState("");
+  const [pinConfirm, setPinConfirm] = useState("");
+  const [pinMsg, setPinMsg] = useState<string | null>(null);
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [pinBusy, setPinBusy] = useState(false);
+  const [copiedRef, setCopiedRef] = useState<string | null>(null);
+
+  const pinValid = /^\d{4,6}$/.test(pinDraft) && pinDraft === pinConfirm;
+
+  async function submitPin() {
+    setPinError(null);
+    setPinMsg(null);
+    setPinBusy(true);
+    try {
+      if (pinMode === "create") {
+        if (!pinValid) throw new Error("El PIN debe tener 4-6 dígitos y coincidir en ambos campos.");
+        const salt = randomSalt();
+        const hash = await hashPin(pinDraft, salt);
+        activatePin(hash, salt);
+        setPinMsg("PIN activado: la app se bloqueará con este código.");
+      } else if (pinMode === "change") {
+        if (!security.pinHash || !security.pinSalt) throw new Error("No hay PIN activo.");
+        const currentHash = await hashPin(pinCurrent, security.pinSalt);
+        if (currentHash !== security.pinHash) throw new Error("El PIN actual no es correcto.");
+        if (!pinValid) throw new Error("El nuevo PIN debe tener 4-6 dígitos y coincidir.");
+        const salt = randomSalt();
+        const hash = await hashPin(pinDraft, salt);
+        activatePin(hash, salt);
+        setPinMsg("PIN actualizado correctamente.");
+      } else if (pinMode === "remove") {
+        if (!security.pinHash || !security.pinSalt) throw new Error("No hay PIN activo.");
+        const currentHash = await hashPin(pinCurrent, security.pinSalt);
+        if (currentHash !== security.pinHash) throw new Error("El PIN actual no es correcto.");
+        clearPinStore();
+        setPinMsg("PIN desactivado.");
+      }
+      setPinMode("none");
+      setPinCurrent("");
+      setPinDraft("");
+      setPinConfirm("");
+    } catch (err) {
+      setPinError(err instanceof Error ? err.message : "Error");
+    } finally {
+      setPinBusy(false);
+    }
+  }
 
   const planDef = PLANS[plan];
 
@@ -404,6 +478,182 @@ export function SettingsView() {
               <p className="mt-0.5 text-xs leading-relaxed text-muted-it">Come utente PLATINUM le tue richieste hanno risposta media in meno di 2 ore (demo).</p>
             </div>
           </div>
+        )}
+      </section>
+
+      {/* ── sicurezza estrema (v5.0) ── */}
+      <section className="rounded-3xl border-2 border-verde/40 bg-verde-tenue/20 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 font-display text-xl font-semibold"><ShieldCheck className="h-5 w-5 text-verde-scuro dark:text-verde" aria-hidden="true" /> Sicurezza estrema</h2>
+          {security.pinHash ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-verde px-3 py-1 text-[11px] font-bold text-white">
+              <Lock className="h-3 w-3" aria-hidden="true" /> PIN attivo
+            </span>
+          ) : (
+            <span className="rounded-full bg-inchiostro/10 px-3 py-1 text-[11px] font-bold text-muted-it">nessun PIN</span>
+          )}
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-muted-it">
+          Bloquea la app con un PIN de 4-6 dígitos: tus datos de progreso quedan protegidos aunque alguien tome tu dispositivo.
+          El PIN se guarda solo como hash SHA-256 con sal — nunca en texto claro — y tras 5 intentos fallidos se activa un bloqueo temporal.
+        </p>
+
+        {security.pinHash ? (
+          <div className="mt-4 space-y-3">
+            <div className="flex flex-wrap gap-2.5">
+              <button onClick={() => { setPinMode("change"); setPinError(null); setPinMsg(null); }} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-verde/40 bg-verde-tenue px-4 py-2.5 text-sm font-bold text-verde-scuro transition-all hover:scale-105 dark:text-verde">
+                <KeyRound className="h-4 w-4" aria-hidden="true" /> Cambia PIN
+              </button>
+              <button onClick={() => { setPinMode("remove"); setPinError(null); setPinMsg(null); }} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-rosso/40 bg-rosso-tenue px-4 py-2.5 text-sm font-bold text-rosso-scuro transition-all hover:scale-105 dark:text-rosso">
+                Desactiva PIN
+              </button>
+              <button onClick={lockApp} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-inchiostro px-4 py-2.5 text-sm font-bold text-crema transition-all hover:scale-105">
+                <Lock className="h-4 w-4" aria-hidden="true" /> Bloquea ora
+              </button>
+            </div>
+
+            {pinMode === "change" && (
+              <div className="grid gap-3 rounded-2xl border border-soft bg-surface p-4 sm:grid-cols-3">
+                <label className="">
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">PIN attuale</span>
+                  <input type="password" inputMode="numeric" value={pinCurrent} onChange={(e) => setPinCurrent(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label="PIN actual" />
+                </label>
+                <label>
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Nuovo PIN</span>
+                  <input type="password" inputMode="numeric" value={pinDraft} onChange={(e) => setPinDraft(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label="Nuevo PIN" />
+                </label>
+                <label>
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Ripeti</span>
+                  <input type="password" inputMode="numeric" value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label="Repite nuevo PIN" />
+                </label>
+                <div className="sm:col-span-3 flex justify-end">
+                  <button onClick={submitPin} disabled={pinBusy} className="min-h-11 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-105 disabled:opacity-50 dark:text-inchiostro">
+                    {pinBusy ? "Verificando…" : "Guarda nuovo PIN"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {pinMode === "remove" && (
+              <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-rosso/30 bg-rosso-tenue/30 p-4">
+                <label className="min-w-40 flex-1">
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-rosso-scuro dark:text-rosso">PIN attuale per conferma</span>
+                  <input type="password" inputMode="numeric" value={pinCurrent} onChange={(e) => setPinCurrent(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-rosso/30 bg-surface px-4 font-mono tracking-[0.3em] outline-none focus:border-rosso" aria-label="PIN actual para confirmar" />
+                </label>
+                <button onClick={submitPin} disabled={pinBusy} className="min-h-11 rounded-xl bg-rosso px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-105 disabled:opacity-50">
+                  {pinBusy ? "Verificando…" : "Disattiva"}
+                </button>
+              </div>
+            )}
+
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-it">Blocco automatico dopo inattività</p>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  { v: 0, l: "Mai" },
+                  { v: 1, l: "1 min" },
+                  { v: 5, l: "5 min" },
+                  { v: 15, l: "15 min" },
+                ] as const).map((o) => (
+                  <button
+                    key={o.v}
+                    onClick={() => setSecurity({ autoLockMin: o.v })}
+                    aria-pressed={security.autoLockMin === o.v}
+                    className={cn("min-h-11 flex-1 rounded-xl border-2 px-3 py-2.5 text-sm font-bold transition-all", security.autoLockMin === o.v ? "border-verde bg-verde-tenue text-verde-scuro dark:text-verde" : "border-soft")}
+                  >
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <label className="flex items-center justify-between gap-3 rounded-xl bg-crema-scura px-4 py-3.5 dark:bg-inchiostro/10">
+              <span className="text-sm font-semibold">Richiedi il PIN a ogni avvio dell'app</span>
+              <input type="checkbox" checked={security.lockOnStart} onChange={(e) => setSecurity({ lockOnStart: e.target.checked })} className="h-5 w-5 accent-[var(--verde)]" />
+            </label>
+          </div>
+        ) : pinMode === "create" ? (
+          <div className="mt-4 grid gap-3 rounded-2xl border border-soft bg-surface p-4 sm:grid-cols-2">
+            <label>
+              <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Nuovo PIN (4-6 cifre)</span>
+              <input type="password" inputMode="numeric" value={pinDraft} onChange={(e) => setPinDraft(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label="Nuevo PIN" />
+            </label>
+            <label>
+              <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Ripeti PIN</span>
+              <input type="password" inputMode="numeric" value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label="Repite PIN" />
+            </label>
+            <div className="sm:col-span-2 flex justify-end gap-2">
+              <button onClick={() => setPinMode("none")} className="min-h-11 rounded-xl border-2 border-soft px-4 py-2.5 text-sm font-bold">Annulla</button>
+              <button onClick={submitPin} disabled={pinBusy} className="min-h-11 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-105 disabled:opacity-50 dark:text-inchiostro">
+                {pinBusy ? "Attivando…" : "Attiva PIN"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={() => { setPinMode("create"); setPinError(null); setPinMsg(null); }} className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-verde px-5 py-3 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-105 dark:text-inchiostro">
+            <KeyRound className="h-4 w-4" aria-hidden="true" /> Attiva blocco con PIN
+          </button>
+        )}
+
+        {pinError && <p role="alert" className="mt-3 rounded-xl bg-rosso-tenue px-3 py-2 text-xs font-semibold text-rosso-scuro dark:text-rosso">{pinError}</p>}
+        {pinMsg && <p role="status" className="mt-3 rounded-xl bg-verde-tenue px-3 py-2 text-xs font-semibold text-verde-scuro dark:text-verde">{pinMsg}</p>}
+
+        <label className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-crema-scura px-4 py-3.5 dark:bg-inchiostro/10">
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold">Modalità privacy</span>
+            <span className="block text-[11px] text-muted-it">Nasconde nombre y estadísticas en la interfaz (hombros ajenos, capturas)</span>
+          </span>
+          <input type="checkbox" checked={security.privacyMode} onChange={(e) => setSecurity({ privacyMode: e.target.checked })} className="h-5 w-5 accent-[var(--verde)]" />
+        </label>
+      </section>
+
+      {/* ── pagamenti (v5.0) ── */}
+      <section className="rounded-3xl border border-soft bg-surface p-6">
+        <h2 className="flex items-center gap-2 font-display text-xl font-semibold"><Landmark className="h-5 w-5 text-oro-scuro dark:text-oro" aria-hidden="true" /> Pagamenti e fatturazione</h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
+          Historial de pagos de tus suscripciones con su referencia única. La configuración de la
+          cuenta bancaria (IBAN, PayPal, tarjeta) la gestiona la administración desde el Panel Admin.
+        </p>
+        {payments.length === 0 ? (
+          <p className="mt-4 rounded-2xl border-2 border-dashed border-soft px-4 py-6 text-center text-sm text-muted-it">
+            Nessun pagamento registrato. Attiva un piano da «Piani PRO» per vedere qui le tue ricevute.
+          </p>
+        ) : (
+          <ul className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1 scrollbar-thin">
+            {payments.map((p) => {
+              const M = PAY_METHOD_ICON[p.method] ?? Crown;
+              return (
+                <li key={p.id} className="flex items-center gap-3 rounded-2xl border border-soft bg-crema-scura/50 p-3.5 dark:bg-inchiostro/5">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-inchiostro/10 text-inchiostro/70 dark:bg-inchiostro/20">
+                    <M className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="flex flex-wrap items-center gap-2 text-sm font-bold">
+                      {PLANS[p.plan].name} · {p.billing === "yearly" ? "Annuale" : "Mensile"}
+                      <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", p.status === "completato" ? "bg-verde-tenue text-verde-scuro dark:text-verde" : "bg-oro-tenue text-oro-scuro dark:text-oro")}>
+                        {p.status === "completato" ? "completato" : "in attesa"}
+                      </span>
+                    </p>
+                    <p className="truncate text-[11px] text-muted-it">
+                      {new Date(p.date).toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" })} · {PAY_METHOD_LABEL[p.method]} · {p.amount.toFixed(2).replace(".", ",")} {p.currency}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      void navigator.clipboard.writeText(p.reference).catch(() => undefined);
+                      setCopiedRef(p.id);
+                      setTimeout(() => setCopiedRef(null), 1500);
+                    }}
+                    title="Copia referencia"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-soft px-2.5 py-2 font-mono text-[11px] font-bold text-muted-it transition-colors hover:text-verde"
+                  >
+                    {p.reference}
+                    {copiedRef === p.id ? <Check className="h-3 w-3 text-verde" aria-hidden="true" /> : <Copy className="h-3 w-3" aria-hidden="true" />}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </section>
 

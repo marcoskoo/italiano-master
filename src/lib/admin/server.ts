@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/admin/store";
 import { DEFAULT_APP_CONFIG, type AppConfig } from "@/lib/lms/appconfig";
+import { constantTimeEqual } from "@/lib/admin/security";
 
 export { hashPassword } from "./store";
 
@@ -30,11 +31,24 @@ export async function setSetting(key: string, value: unknown): Promise<void> {
 
 /* ── Token de sesión admin (bearer) ─────────────────────────────────── */
 
-const TOKEN_TTL_MS = 7 * 24 * 3600 * 1000;
+const TOKEN_TTL_MS = 12 * 3600 * 1000; // 12 h por defecto (antes: 7 días)
+
+async function adminTtlMs(): Promise<number> {
+  try {
+    const cfg = await getAppConfig();
+    const minutes = cfg.security?.adminSessionMinutes;
+    if (typeof minutes === "number" && minutes >= 15 && minutes <= 60 * 24 * 30) {
+      return minutes * 60 * 1000;
+    }
+  } catch {
+    /* configuración no disponible: TTL por defecto */
+  }
+  return TOKEN_TTL_MS;
+}
 
 export async function issueAdminToken(): Promise<string> {
-  const token = randomUUID();
-  await setSetting(KEY_ADMIN_TOKEN, { token, expiresAt: new Date(Date.now() + TOKEN_TTL_MS).toISOString() });
+  const token = `${randomUUID()}${randomUUID().replace(/-/g, "").slice(0, 16)}`;
+  await setSetting(KEY_ADMIN_TOKEN, { token, expiresAt: new Date(Date.now() + (await adminTtlMs())).toISOString() });
   return token;
 }
 
@@ -44,12 +58,21 @@ export async function clearAdminToken(): Promise<void> {
 
 export type AdminGuard = { ok: true } | { ok: false; res: NextResponse };
 
+/** Indica si el token corresponde a la sesión admin activa (tiempo constante). */
+export async function isAdminToken(token: string): Promise<boolean> {
+  if (!token) return false;
+  const stored = await getSetting<{ token: string; expiresAt: string } | null>(KEY_ADMIN_TOKEN, null);
+  if (!stored?.token || new Date(stored.expiresAt).getTime() < Date.now()) return false;
+  return constantTimeEqual(stored.token, token);
+}
+
 export async function requireAdmin(req: Request): Promise<AdminGuard> {
   const header = req.headers.get("authorization");
   const token = header?.startsWith("Bearer ") ? header.slice(7).trim() : "";
   if (!token) return { ok: false, res: NextResponse.json({ error: "Non autorizzato" }, { status: 401 }) };
   const stored = await getSetting<{ token: string; expiresAt: string } | null>(KEY_ADMIN_TOKEN, null);
-  if (!stored?.token || stored.token !== token || new Date(stored.expiresAt).getTime() < Date.now()) {
+  if (!stored?.token || !constantTimeEqual(stored.token, token) || new Date(stored.expiresAt).getTime() < Date.now()) {
+    await logEvent("admin-panel", null, "admin_auth_failed"); // auditoría de intentos fallidos
     return { ok: false, res: NextResponse.json({ error: "Sessione scaduta, riaccedi" }, { status: 401 }) };
   }
   return { ok: true };
@@ -68,6 +91,8 @@ export async function getAppConfig(): Promise<AppConfig> {
     defaults: { ...DEFAULT_APP_CONFIG.defaults, ...(stored.defaults ?? {}) },
     levels: { ...DEFAULT_APP_CONFIG.levels, ...(stored.levels ?? {}) },
     pricing: { ...DEFAULT_APP_CONFIG.pricing, ...(stored.pricing ?? {}) },
+    billing: { ...DEFAULT_APP_CONFIG.billing, ...(stored.billing ?? {}) },
+    security: { ...DEFAULT_APP_CONFIG.security, ...(stored.security ?? {}) },
   };
 }
 
@@ -81,6 +106,8 @@ export async function saveAppConfig(patch: Partial<AppConfig>): Promise<AppConfi
     defaults: { ...current.defaults, ...(patch.defaults ?? {}) },
     levels: { ...current.levels, ...(patch.levels ?? {}) },
     pricing: { ...current.pricing, ...(patch.pricing ?? {}) },
+    billing: { ...current.billing, ...(patch.billing ?? {}) },
+    security: { ...current.security, ...(patch.security ?? {}) },
     updatedAt: new Date().toISOString(),
   };
   await setSetting(KEY_CONFIG, next);

@@ -6,7 +6,7 @@ import {
   AlertTriangle, ArrowLeft, BookMarked, ChevronDown, Download, Ear, FileSpreadsheet,
   Keyboard, Quote, RefreshCcw, Search, Send, Sparkles, Volume2, X,
 } from "lucide-react";
-import { PROVERBS } from "@/lib/lms/proverbs";
+import { PROVERBS, PROVERB_KIND_LABELS } from "@/lib/lms/proverbs";
 import { FALSE_FRIENDS } from "@/lib/lms/falsefriends";
 import { VOCAB, VOCAB_CATEGORIES } from "@/lib/lms/vocabulary";
 import type { CefrLevel, WordCategory } from "@/lib/lms/types";
@@ -80,7 +80,7 @@ function SearchInput({ value, onChange, placeholder }: { value: string; onChange
 export function ProverbiView() {
   const [q, setQ] = useState("");
   const [level, setLevel] = useState<CefrLevel | "tutti">("tutti");
-  const [kind, setKind] = useState<"tutti" | "proverbio" | "modo di dire">("tutti");
+  const [kind, setKind] = useState<"tutti" | "proverbio" | "modo di dire" | "locuzione latina">("tutti");
 
   const filtered = useMemo(() => {
     const nq = norm(q);
@@ -110,8 +110,8 @@ export function ProverbiView() {
           <SearchInput value={q} onChange={setQ} placeholder="Cerca: lupo, palle, magari…" />
           <div className="flex flex-wrap items-center justify-between gap-3">
             <LevelChips value={level} onChange={setLevel} />
-            <div className="flex gap-1.5" role="group" aria-label="Filtrar por tipo">
-              {(["tutti", "modo di dire", "proverbio"] as const).map((k) => (
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filtrar por tipo">
+              {(["tutti", "modo di dire", "proverbio", "locuzione latina"] as const).map((k) => (
                 <button
                   key={k}
                   onClick={() => setKind(k)}
@@ -120,7 +120,7 @@ export function ProverbiView() {
                     kind === k ? "bg-rosso text-white" : "border border-soft bg-surface text-muted-it hover:text-rosso"
                   )}
                 >
-                  {k === "tutti" ? "Tutti" : k === "proverbio" ? "Proverbi" : "Modi di dire"}
+                  {k === "tutti" ? "Tutti" : k === "proverbio" ? "Proverbi" : k === "modo di dire" ? "Modi di dire" : "Latino"}
                 </button>
               ))}
             </div>
@@ -163,7 +163,7 @@ export function ProverbiView() {
             <div className="mt-3 flex items-center gap-2">
               <span className="rounded-full bg-verde-tenue px-2.5 py-1 text-[10px] font-bold text-verde-scuro dark:text-verde">{p.level}</span>
               <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 text-[10px] font-bold text-muted-it">
-                {p.kind === "proverbio" ? "Proverbio" : "Modo di dire"}
+                {PROVERB_KIND_LABELS[p.kind]}
               </span>
             </div>
           </motion.article>

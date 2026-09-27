@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { hashPassword, logAdminAction, requireAdmin } from "@/lib/admin/server";
+import { logAdminAction, requireAdmin } from "@/lib/admin/server";
 import { db } from "@/lib/admin/store";
+import { passwordIssues, scryptHash } from "@/lib/admin/security";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,13 +38,19 @@ export async function POST(req: Request) {
     if (!username || !body.password || !body.displayName?.trim()) {
       return NextResponse.json({ error: "Usuario, contraseña y nombre son obligatorios" }, { status: 400 });
     }
+    if (body.role === "admin") {
+      const issues = passwordIssues(body.password, username);
+      if (issues.length > 0) {
+        return NextResponse.json({ error: `Contraseña débil para administrador: ${issues.join(" · ")}` }, { status: 400 });
+      }
+    }
     const exists = await db.user.findUnique({ where: { username } });
     if (exists) return NextResponse.json({ error: `El usuario "${username}" ya existe` }, { status: 409 });
 
     const user = await db.user.create({
       data: {
         username,
-        passwordHash: hashPassword(username, body.password),
+        passwordHash: scryptHash(body.password), // v5.0: scrypt con sal aleatoria
         displayName: body.displayName.trim(),
         role: body.role === "admin" ? "admin" : "student",
         level: body.level ?? "A1",
@@ -80,7 +87,7 @@ export async function PATCH(req: Request) {
     if (typeof body.xp === "number") data.xp = Math.max(0, Math.round(body.xp));
     if (typeof body.streak === "number") data.streak = Math.max(0, Math.round(body.streak));
     if (typeof body.active === "boolean") data.active = body.active;
-    if (body.password) data.passwordHash = hashPassword(user.username, body.password);
+    if (body.password) data.passwordHash = scryptHash(body.password); // v5.0: scrypt al cambiar contraseña
 
     const updated = await db.user.update({ where: { id }, data });
     await logAdminAction(req, "user_update", { username: updated.username, fields: Object.keys(data) });

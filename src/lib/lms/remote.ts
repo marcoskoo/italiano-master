@@ -27,6 +27,18 @@ export function setAdminToken(token: string | null): void {
   else window.localStorage.removeItem(ADMIN_TOKEN_KEY);
 }
 
+/* Token de sesión del estudiante (sincronización de perfil · v5.0) */
+const SESSION_TOKEN_KEY = "im-session-token";
+export function getSessionToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(SESSION_TOKEN_KEY);
+}
+export function setSessionToken(token: string | null): void {
+  if (typeof window === "undefined") return;
+  if (token) window.localStorage.setItem(SESSION_TOKEN_KEY, token);
+  else window.localStorage.removeItem(SESSION_TOKEN_KEY);
+}
+
 /* ── Config + overrides ────────────────────────────────────────────── */
 
 export async function fetchAppConfig(): Promise<AppConfigBundle> {
@@ -96,7 +108,11 @@ export interface ProfileSyncPayload {
 
 export async function fetchServerProgress(userId: string): Promise<{ xp: number; streak: number } | null> {
   try {
-    const res = await fetch(`/api/auth/profile?userId=${encodeURIComponent(userId)}`, { cache: "no-store" });
+    const token = getSessionToken() ?? getAdminToken();
+    const res = await fetch(`/api/auth/profile?userId=${encodeURIComponent(userId)}`, {
+      cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
     if (!res.ok) return null;
     const data = (await res.json()) as { xp?: number; streak?: number };
     return { xp: data.xp ?? 0, streak: data.streak ?? 0 };
@@ -107,9 +123,13 @@ export async function fetchServerProgress(userId: string): Promise<{ xp: number;
 
 export async function syncProfileRequest(userId: string, payload: ProfileSyncPayload): Promise<void> {
   try {
+    const token = getSessionToken() ?? getAdminToken();
     await fetch("/api/auth/profile", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ userId, ...payload }),
     });
   } catch {

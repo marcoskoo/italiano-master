@@ -29,6 +29,8 @@ import { PlannerView } from "@/components/lms/views/planner";
 import { AnalyzerView } from "@/components/lms/views/analyzer";
 import { PrintablesView } from "@/components/lms/views/printables";
 import { ProverbiView, FalsiAmiciView, DettatoView, AnkiExportView } from "@/components/lms/views/plugins";
+import { ParolaNascostaView, PreposizioniView, PomodoroView, MuseView } from "@/components/lms/views/plugins2";
+import { LockScreen } from "@/components/lms/lock-screen";
 
 /* ── Italiano Master · LMS completo de italiano (SPA) ─────────────── */
 
@@ -89,12 +91,40 @@ export default function Home() {
   const remoteConfig = useLms((s) => s.remoteConfig);
   const configVersion = useLms((s) => s.configVersion);
   const applyRemoteConfig = useLms((s) => s.applyRemoteConfig);
+  const locked = useLms((s) => s.locked);
+  const pinHash = useLms((s) => s.security.pinHash);
+  const lockOnStart = useLms((s) => s.security.lockOnStart);
+  const autoLockMin = useLms((s) => s.security.autoLockMin);
+  const lockApp = useLms((s) => s.lockApp);
   // mounted sin setState-in-effect: snapshot del servidor = false, del cliente = true
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   useEffect(() => {
     initVoices();
   }, []);
+
+  /* ── seguridad extrema: bloqueo al arrancar + auto-bloqueo por inactividad ── */
+  useEffect(() => {
+    if (pinHash && lockOnStart) lockApp();
+  }, []);
+
+  useEffect(() => {
+    if (!pinHash || autoLockMin <= 0) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const arm = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        lockApp();
+      }, autoLockMin * 60 * 1000);
+    };
+    const events: (keyof WindowEventMap)[] = ["mousemove", "keydown", "click", "scroll", "touchstart", "visibilitychange"];
+    events.forEach((ev) => window.addEventListener(ev, arm, { passive: true }));
+    arm();
+    return () => {
+      if (timer) clearTimeout(timer);
+      events.forEach((ev) => window.removeEventListener(ev, arm));
+    };
+  }, [pinHash, autoLockMin, lockApp]);
 
   /* config remota: carga inicial + refetch al volver a la pestaña (máx. 1/min) */
   useEffect(() => {
@@ -179,6 +209,11 @@ export default function Home() {
     );
   }
 
+  /* bloqueo con PIN: cubre TODO (incluido el modo mantenimiento) */
+  if (locked && pinHash) {
+    return <LockScreen />;
+  }
+
   /* modo mantenimiento: solo el admin sigue dentro */
   if (remoteConfig?.maintenance.enabled && account?.role !== "admin") {
     const adminLogin = async (username: string, password: string): Promise<string | null> => {
@@ -233,6 +268,10 @@ export default function Home() {
         {view === "falsiamici" && <FalsiAmiciView />}
         {view === "dettato" && <DettatoView />}
         {view === "ankiexport" && <AnkiExportView />}
+        {view === "parolanascosta" && <ParolaNascostaView />}
+        {view === "preposizioni" && <PreposizioniView />}
+        {view === "pomodoro" && <PomodoroView />}
+        {view === "muse" && <MuseView />}
       </div>
     </AppShell>
   );

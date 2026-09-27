@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { logAdminAction, requireAdmin } from "@/lib/admin/server";
 import { db } from "@/lib/admin/store";
+import { maskIban } from "@/lib/admin/security";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/* GET /api/admin/export → dump completo de la plataforma en JSON */
+/* GET /api/admin/export → dump completo de la plataforma en JSON.
+   v5.0: datos sensibles enmascarados también en el backup (hashes
+   truncados, IBAN parcial, tokens de sesión eliminados).            */
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -18,11 +21,25 @@ export async function GET(req: Request) {
 
   await logAdminAction(req, "data_export");
 
+  // claves cuyo contenido nunca debe salir completo del servidor
+  const SENSITIVE_KEYS = new Set(["adminToken", "studentTokens"]);
+
   const dump = {
     exportedAt: new Date().toISOString(),
     platform: "Italiano Master",
     users: users.map((u) => ({ ...u, passwordHash: `(${u.passwordHash.slice(0, 8)}…)` })), // hash truncado por seguridad
-    settings: settings.map((s) => ({ key: s.key, value: JSON.parse(s.value) })),
+    settings: settings.map((s) => {
+      if (SENSITIVE_KEYS.has(s.key)) return { key: s.key, value: "[protegido]" };
+      try {
+        const parsed = JSON.parse(s.value) as { billing?: { bank?: { iban?: string } } };
+        if (parsed?.billing?.bank?.iban) {
+          parsed.billing.bank.iban = maskIban(parsed.billing.bank.iban); // IBAN enmascarado
+        }
+        return { key: s.key, value: parsed };
+      } catch {
+        return { key: s.key, value: "[no serializable]" };
+      }
+    }),
     telemetryEvents: events,
   };
 

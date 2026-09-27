@@ -225,7 +225,7 @@ export interface Proverb {
   es: string;              // equivalente español natural
   meaning: string;         // cuándo se usa y qué significa (ES)
   level: CefrLevel;
-  kind: "proverbio" | "modo di dire";
+  kind: "proverbio" | "modo di dire" | "locuzione latina";
   example?: { it: string; es: string };
 }
 
@@ -268,7 +268,8 @@ export type ViewId =
   | "coniugatore" | "dizionario" | "situazioni" | "cultura" | "tutor" | "giochi"
   | "repaso" | "esami" | "certificati" | "impostazioni" | "piani" | "admin"
   | "numerilab" | "verbidrill" | "pianosettimanale" | "analizzatore" | "schede"
-  | "proverbi" | "falsiamici" | "dettato" | "ankiexport";
+  | "proverbi" | "falsiamici" | "dettato" | "ankiexport"
+  | "parolanascosta" | "preposizioni" | "pomodoro" | "muse";
 
 export interface NavParams {
   level?: CefrLevel | "zero";

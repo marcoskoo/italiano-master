@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/admin/store";
+import { isAdminToken } from "@/lib/admin/server";
+import { requireSession } from "@/lib/admin/security";
 
 export const runtime = "nodejs";
 
@@ -9,11 +11,20 @@ interface ProfilePatch {
   lessonsDone?: number; wordsInSrs?: number;
 }
 
-/* GET /api/auth/profile?userId=… → progreso del estudiante en el servidor */
+/* GET /api/auth/profile?userId=… → progreso del estudiante en el servidor.
+   FIX v5.0 (IDOR): antes cualquier cliente podía leer el perfil de
+   cualquier usuario. Ahora se exige token de sesión válido
+   (estudiante → solo su perfil; admin → cualquiera). */
 export async function GET(req: Request) {
   try {
     const userId = new URL(req.url).searchParams.get("userId");
     if (!userId) return NextResponse.json({ error: "userId requerido" }, { status: 400 });
+
+    const session = await requireSession(req, userId, isAdminToken);
+    if (!session.ok) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
     const user = await db.user.findUnique({ where: { id: userId } });
     if (!user) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     return NextResponse.json({
@@ -27,11 +38,17 @@ export async function GET(req: Request) {
 }
 
 /* PATCH /api/auth/profile → sincroniza el progreso local con el servidor.
-   El XP es monotónico: nunca baja (protege contra dispositivos con datos viejos). */
+   El XP es monotónico: nunca baja (protege contra dispositivos con datos viejos).
+   FIX v5.0 (IDOR): se exige token de sesión del propio usuario o del admin. */
 export async function PATCH(req: Request) {
   try {
     const body = (await req.json()) as ProfilePatch;
     if (!body.userId) return NextResponse.json({ error: "userId requerido" }, { status: 400 });
+
+    const session = await requireSession(req, body.userId, isAdminToken);
+    if (!session.ok) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
 
     const user = await db.user.findUnique({ where: { id: body.userId } });
     if (!user) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
@@ -42,7 +59,9 @@ export async function PATCH(req: Request) {
     if (typeof body.lessonsDone === "number") data.lessonsDone = Math.max(0, Math.round(body.lessonsDone));
     if (typeof body.wordsInSrs === "number") data.wordsInSrs = Math.max(0, Math.round(body.wordsInSrs));
     if (body.level && user.role !== "admin") data.level = body.level;
-    if (body.plan && user.role !== "admin") data.plan = body.plan;
+    // el plan es estado de pago: solo el admin puede modificarlo en el servidor
+    // (un estudiante no puede auto-otorgarse PLATINUM sincronizando su perfil)
+    if (body.plan && session.role === "admin" && user.role !== "admin") data.plan = body.plan;
 
     const updated = await db.user.update({ where: { id: user.id }, data });
     return NextResponse.json({

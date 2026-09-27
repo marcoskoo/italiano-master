@@ -338,6 +338,7 @@ function HangmanGame({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     if (status !== "playing") return;
     if (won) {
+// eslint-disable-next-line react-hooks/set-state-in-effect -- victoria detectada desde el tablero
       setStatus("won");
       setWins((w) => w + 1);
       addXp(hintUsed ? 8 : 14, "vocabolario");
