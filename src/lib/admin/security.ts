@@ -179,12 +179,12 @@ export function normalizeBic(bic: string): string {
   return (bic ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
-/** Valida formato SWIFT/BIC ISO 9362: 6 alfanuméricos (banco) + 2 letras
+/** Valida formato SWIFT/BIC ISO 9362: 4 alfanuméricos (banco) + 2 letras
  *  (país) + 2 alfanuméricos (localización) + 3 opcionales (sucursal).
- *  Ejemplo válido: BCPLPEPL (Banco de Crédito del Perú). */
+ *  8 o 11 caracteres. Ejemplo válido: BCPLPEPL (Banco de Crédito del Perú). */
 export function isValidBic(raw: string): boolean {
   const bic = normalizeBic(raw);
-  return /^[A-Z0-9]{6}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic);
+  return /^[A-Z0-9]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic);
 }
 
 /** Enmascara un número de cuenta no IBAN: `19198476543210` → `••••••••••3210`. */

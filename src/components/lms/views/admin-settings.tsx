@@ -24,10 +24,10 @@ function formatIbanClient(raw: string): string {
   return raw.replace(/[\s-]/g, "").toUpperCase().replace(/(.{4})/g, "$1 ").trim();
 }
 
-/* Validación SWIFT/BIC en el cliente (ISO 9362): 6 alfanum + 2 letras país + 2 alfanum + 3 opcionales */
+/* Validación SWIFT/BIC en el cliente (ISO 9362): 4 alfanum (banco) + 2 letras país + 2 alfanum + 3 opcionales */
 function isValidBicClient(raw: string): boolean {
   const bic = (raw ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
-  return /^[A-Z0-9]{6}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic);
+  return /^[A-Z0-9]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic);
 }
 
 function inputCls() {
