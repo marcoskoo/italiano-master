@@ -24,6 +24,12 @@ function formatIbanClient(raw: string): string {
   return raw.replace(/[\s-]/g, "").toUpperCase().replace(/(.{4})/g, "$1 ").trim();
 }
 
+/* Validación SWIFT/BIC en el cliente (ISO 9362): 6 alfanum + 2 letras país + 2 alfanum + 3 opcionales */
+function isValidBicClient(raw: string): boolean {
+  const bic = (raw ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return /^[A-Z0-9]{6}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic);
+}
+
 function inputCls() {
   return "w-full rounded-xl border border-soft bg-crema px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-verde/40 dark:bg-inchiostro/10";
 }
@@ -80,8 +86,17 @@ export function SettingsTab({ onSaved }: { onSaved: () => void }) {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (!config) return;
-    if (config.billing.bank.enabled && config.billing.bank.iban && !isValidIbanClient(config.billing.bank.iban)) {
+    const bank = config.billing.bank;
+    if (bank.enabled && bank.iban && !isValidIbanClient(bank.iban)) {
       setError("El IBAN configurado no es válido (checksum mod-97). Corrígelo antes de guardar.");
+      return;
+    }
+    if (bank.bic && !isValidBicClient(bank.bic)) {
+      setError("El BIC/SWIFT no es válido: debe tener 8 u 11 caracteres (p. ej. BCPLPEPL).");
+      return;
+    }
+    if (bank.enabled && !bank.iban && !bank.accountNumber) {
+      setError("Para activar la transferencia bancaria indica el número de cuenta (o el IBAN si es una cuenta europea).");
       return;
     }
     setBusy(true);
@@ -138,6 +153,10 @@ export function SettingsTab({ onSaved }: { onSaved: () => void }) {
   }
 
   const ibanOk = !config.billing.bank.iban || isValidIbanClient(config.billing.bank.iban);
+  const bicOk = !config.billing.bank.bic || isValidBicClient(config.billing.bank.bic);
+  const bank = config.billing.bank;
+  const missingHolder = bank.enabled && !bank.holder.trim();
+  const missingAccount = bank.enabled && !bank.iban && !bank.accountNumber;
 
   return (
     <form onSubmit={save} className="flex flex-col gap-5">
@@ -294,7 +313,7 @@ export function SettingsTab({ onSaved }: { onSaved: () => void }) {
         <p className="mb-1 flex items-center gap-2 text-sm font-bold"><Landmark className="h-4 w-4 text-oro-scuro dark:text-oro" aria-hidden="true" /> Pagos y facturación</p>
         <p className="mb-3 text-[11px] leading-relaxed text-muted-it">
           Configura la cuenta bancaria y los métodos de pago que verán los alumnos en el checkout.
-          El IBAN se valida con el checksum internacional mod-97 antes de guardarse.
+          Para transferencias internacionales (p. ej. BCP · Perú) el SWIFT/BIC se valida con formato ISO 9362 y el IBAN es opcional (solo cuentas europeas).
         </p>
 
         <Toggle
@@ -310,43 +329,83 @@ export function SettingsTab({ onSaved }: { onSaved: () => void }) {
             <Toggle
               checked={config.billing.bank.enabled}
               onChange={(v) => set("billing", { ...config.billing, bank: { ...config.billing.bank, enabled: v } })}
-              label="Transferencia bancaria (IBAN)"
-              hint="Los alumnos verán el IBAN completo con botón de copiar y una referencia de pago única."
+              label="Transferencia bancaria (SWIFT internacional o IBAN)"
+              hint="Los alumnos verán todos los datos para el remitente — banco, dirección, SWIFT/BIC, titular y número de cuenta — con botones de copiar."
             />
             {config.billing.bank.enabled && (
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <label htmlFor="s-iban" className={labelCls()}>
-                    IBAN {config.billing.bank.iban && <span className={cn("ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] normal-case", ibanOk ? "bg-verde-tenue text-verde-scuro dark:text-verde" : "bg-rosso-tenue text-rosso-scuro dark:text-rosso")}>{ibanOk ? <><BadgeCheck className="h-3 w-3" aria-hidden="true" /> válido</> : <><Ban className="h-3 w-3" aria-hidden="true" /> checksum inválido</>}</span>}
-                  </label>
-                  <input
-                    id="s-iban"
-                    value={config.billing.bank.iban}
-                    onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, iban: formatIbanClient(e.target.value) } })}
-                    className={cn(inputCls(), "font-mono tracking-wider", !ibanOk && "border-rosso/60")}
-                    placeholder="IT60 X054 2811 1010 0000 0123 456"
-                    inputMode="text"
-                    autoComplete="off"
-                    maxLength={42}
-                  />
+              <>
+                {(missingHolder || missingAccount) && (
+                  <p className="mt-3 flex items-start gap-2 rounded-xl bg-oro-tenue px-3 py-2.5 text-[11px] leading-relaxed text-oro-scuro dark:text-oro">
+                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <span>
+                      Datos incompletos para el remitente:{missingHolder && " falta el titular (nombre completo como figura en la cuenta)"}{missingHolder && missingAccount && ";"}{missingAccount && " falta el número de cuenta (en soles o dólares) o el IBAN"}. Sin estos datos la transferencia bancaria no aparecerá en el checkout.
+                    </span>
+                  </p>
+                )}
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label htmlFor="s-holder" className={labelCls()}>Titular · nombre completo como figura en la cuenta</label>
+                    <input id="s-holder" value={config.billing.bank.holder} onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, holder: e.target.value.slice(0, 80) } })} className={inputCls()} placeholder="Nombre y apellidos del titular de la cuenta" maxLength={80} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label htmlFor="s-bankname" className={labelCls()}>Nombre del banco</label>
+                    <input id="s-bankname" value={config.billing.bank.bankName} onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, bankName: e.target.value.slice(0, 80) } })} className={inputCls()} placeholder="Banco de Crédito del Perú (BCP)" maxLength={80} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label htmlFor="s-bankaddr" className={labelCls()}>Dirección del banco (transferencia internacional)</label>
+                    <input id="s-bankaddr" value={config.billing.bank.bankAddress} onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, bankAddress: e.target.value.slice(0, 140) } })} className={inputCls()} placeholder="Calle Centenario 156, Lima 12, Perú" maxLength={140} />
+                  </div>
+                  <div>
+                    <label htmlFor="s-bic" className={labelCls()}>
+                      Código SWIFT/BIC {config.billing.bank.bic && <span className={cn("ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] normal-case", bicOk ? "bg-verde-tenue text-verde-scuro dark:text-verde" : "bg-rosso-tenue text-rosso-scuro dark:text-rosso")}>{bicOk ? <><BadgeCheck className="h-3 w-3" aria-hidden="true" /> válido</> : <><Ban className="h-3 w-3" aria-hidden="true" /> formato inválido</>}</span>}
+                    </label>
+                    <input id="s-bic" value={config.billing.bank.bic} onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, bic: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 11) } })} className={cn(inputCls(), "font-mono", !bicOk && "border-rosso/60")} placeholder="BCPLPEPL" maxLength={11} />
+                  </div>
+                  <div>
+                    <label htmlFor="s-acccur" className={labelCls()}>Moneda de la cuenta</label>
+                    <select id="s-acccur" value={config.billing.bank.accountCurrency} onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, accountCurrency: e.target.value as AppConfig["billing"]["bank"]["accountCurrency"] } })} className={inputCls()}>
+                      <option value="USD">Dólares (USD)</option>
+                      <option value="PEN">Soles (PEN)</option>
+                      <option value="EUR">Euros (EUR)</option>
+                      <option value="">No especificar</option>
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label htmlFor="s-acc" className={labelCls()}>Número de cuenta (soles o dólares según corresponda)</label>
+                    <input
+                      id="s-acc"
+                      value={config.billing.bank.accountNumber}
+                      onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, accountNumber: e.target.value.replace(/[^0-9A-Za-z-]/g, "").slice(0, 34) } })}
+                      className={cn(inputCls(), "font-mono tracking-wider")}
+                      placeholder="19198476543210"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      maxLength={34}
+                    />
+                    <p className="mt-1.5 text-[10px] leading-snug text-muted-it">Cuenta no IBAN (Perú, LatAm). Se muestra completa en el checkout con botón de copiar.</p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label htmlFor="s-iban" className={labelCls()}>
+                      IBAN · opcional (solo cuentas europeas) {config.billing.bank.iban && <span className={cn("ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] normal-case", ibanOk ? "bg-verde-tenue text-verde-scuro dark:text-verde" : "bg-rosso-tenue text-rosso-scuro dark:text-rosso")}>{ibanOk ? <><BadgeCheck className="h-3 w-3" aria-hidden="true" /> válido</> : <><Ban className="h-3 w-3" aria-hidden="true" /> checksum inválido</>}</span>}
+                    </label>
+                    <input
+                      id="s-iban"
+                      value={config.billing.bank.iban}
+                      onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, iban: formatIbanClient(e.target.value) } })}
+                      className={cn(inputCls(), "font-mono tracking-wider", !ibanOk && "border-rosso/60")}
+                      placeholder="IT60 X054 2811 1010 0000 0123 456"
+                      inputMode="text"
+                      autoComplete="off"
+                      maxLength={42}
+                    />
+                    <p className="mt-1.5 text-[10px] leading-snug text-muted-it">Si la cuenta es europea (IBAN), deja vacío el número de cuenta y rellena este campo. Si es una cuenta peruana, deja el IBAN vacío.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="s-vat" className={labelCls()}>IVA facturación (%)</label>
+                    <input id="s-vat" type="number" min={0} max={40} step={1} value={config.billing.vatRate} onChange={(e) => set("billing", { ...config.billing, vatRate: Number(e.target.value) })} className={inputCls()} />
+                  </div>
                 </div>
-                <div>
-                  <label htmlFor="s-bic" className={labelCls()}>BIC / SWIFT</label>
-                  <input id="s-bic" value={config.billing.bank.bic} onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, bic: e.target.value.toUpperCase().slice(0, 11) } })} className={cn(inputCls(), "font-mono")} placeholder="BCITITMM" maxLength={11} />
-                </div>
-                <div>
-                  <label htmlFor="s-holder" className={labelCls()}>Titular de la cuenta</label>
-                  <input id="s-holder" value={config.billing.bank.holder} onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, holder: e.target.value.slice(0, 80) } })} className={inputCls()} placeholder="Italiano Master S.r.l." maxLength={80} />
-                </div>
-                <div>
-                  <label htmlFor="s-bankname" className={labelCls()}>Entidad bancaria</label>
-                  <input id="s-bankname" value={config.billing.bank.bankName} onChange={(e) => set("billing", { ...config.billing, bank: { ...config.billing.bank, bankName: e.target.value.slice(0, 60) } })} className={inputCls()} placeholder="Intesa Sanpaolo" maxLength={60} />
-                </div>
-                <div>
-                  <label htmlFor="s-vat" className={labelCls()}>IVA facturación (%)</label>
-                  <input id="s-vat" type="number" min={0} max={40} step={1} value={config.billing.vatRate} onChange={(e) => set("billing", { ...config.billing, vatRate: Number(e.target.value) })} className={inputCls()} />
-                </div>
-              </div>
+              </>
             )}
           </div>
 

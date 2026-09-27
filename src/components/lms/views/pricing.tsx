@@ -72,8 +72,8 @@ export function PricingView() {
   const billingCfg: AppConfig["billing"] | null = remoteConfig?.billing ?? null;
   const paymentsEnabled = Boolean(billingCfg?.enabled);
   const methods: { id: PayMethod; label: string; icon: typeof Landmark; hint: string }[] = [];
-  if (billingCfg?.bank?.enabled && billingCfg.bank.iban) {
-    methods.push({ id: "bank", label: "Transferencia bancaria", icon: Landmark, hint: "IBAN con verificación de recepción" });
+  if (billingCfg?.bank?.enabled && (billingCfg.bank.iban || billingCfg.bank.accountNumber)) {
+    methods.push({ id: "bank", label: "Transferencia bancaria", icon: Landmark, hint: billingCfg.bank.iban ? "IBAN · verificación de recepción" : "SWIFT internacional · verificación de recepción" });
   }
   if (billingCfg?.paypal?.enabled && billingCfg.paypal.email) {
     methods.push({ id: "paypal", label: "PayPal", icon: Wallet, hint: billingCfg.paypal.email });
@@ -456,33 +456,41 @@ export function PricingView() {
                   </div>
 
                   {/* datos del método elegido */}
-                  {payMethod === "bank" && billingCfg.bank.enabled && (
-                    <div className="mt-4 space-y-2 rounded-2xl border border-soft bg-crema-scura/60 p-4 dark:bg-inchiostro/5">
-                      <p className="text-[11px] font-bold uppercase tracking-wide text-muted-it">Dati per il bonifico</p>
-                      {([
-                        ["Intestatario", billingCfg.bank.holder],
-                        ["Banca", billingCfg.bank.bankName],
-                        ["BIC/SWIFT", billingCfg.bank.bic],
-                      ] as const).filter(([, v]) => v).map(([label, value]) => (
-                        <div key={label} className="flex items-center justify-between gap-2 text-sm">
-                          <span className="shrink-0 text-muted-it">{label}</span>
-                          <span className="truncate font-semibold">{value}</span>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between gap-2 text-sm">
-                        <span className="shrink-0 text-muted-it">IBAN</span>
-                        <span className="flex min-w-0 items-center gap-1.5">
-                          <span className="truncate font-mono text-[13px] font-bold tracking-wide">{formatIbanPretty(billingCfg.bank.iban)}</span>
-                          <button onClick={() => copy(billingCfg.bank.iban.replace(/\s/g, ""), "iban")} aria-label="Copia IBAN" className="shrink-0 rounded-lg p-1.5 text-muted-it hover:bg-inchiostro/10">
-                            {copied === "iban" ? <Check className="h-3.5 w-3.5 text-verde" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
-                          </button>
-                        </span>
+                  {payMethod === "bank" && billingCfg.bank.enabled && (() => {
+                    /* datos que el remitente necesita para la transferencia (internacional SWIFT o IBAN) */
+                    const b = billingCfg.bank;
+                    const rows: { label: string; value: string; mono?: boolean; copyTag?: string }[] = [];
+                    if (b.holder) rows.push({ label: "Beneficiario", value: b.holder });
+                    if (b.bankName) rows.push({ label: "Banca", value: b.bankName });
+                    if (b.bankAddress) rows.push({ label: "Indirizzo banca", value: b.bankAddress });
+                    if (b.bic) rows.push({ label: "BIC/SWIFT", value: b.bic, mono: true, copyTag: "bic" });
+                    if (b.accountNumber) rows.push({ label: b.accountCurrency ? `N. di conto (${b.accountCurrency})` : "N. di conto", value: b.accountNumber, mono: true, copyTag: "conto" });
+                    if (b.iban) rows.push({ label: "IBAN", value: formatIbanPretty(b.iban), mono: true, copyTag: "iban" });
+                    return (
+                      <div className="mt-4 space-y-2 rounded-2xl border border-soft bg-crema-scura/60 p-4 dark:bg-inchiostro/5">
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-it">{b.iban ? "Dati per il bonifico" : "Dati per il bonifico internazionale"}</p>
+                        {rows.map((r) => (
+                          <div key={r.label} className="flex items-center justify-between gap-2 text-sm">
+                            <span className="shrink-0 text-muted-it">{r.label}</span>
+                            <span className="flex min-w-0 items-center gap-1.5">
+                              <span className={cn("truncate text-[13px] font-bold tracking-wide", r.mono && "font-mono")}>{r.value}</span>
+                              {r.copyTag && (
+                                <button onClick={() => copy(r.value.replace(/\s/g, ""), r.copyTag as string)} aria-label={`Copia ${r.label}`} className="shrink-0 rounded-lg p-1.5 text-muted-it hover:bg-inchiostro/10">
+                                  {copied === r.copyTag ? <Check className="h-3.5 w-3.5 text-verde" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+                                </button>
+                              )}
+                            </span>
+                          </div>
+                        ))}
+                        {b.accountCurrency && !b.iban && (
+                          <p className="pt-1 text-[11px] leading-relaxed text-muted-it">Cuenta en {b.accountCurrency === "PEN" ? "soles (PEN)" : b.accountCurrency === "USD" ? "dólares (USD)" : b.accountCurrency}. La transferencia internacional se realiza vía SWIFT con el código BIC indicado.</p>
+                        )}
+                        <p className="pt-1 text-[11px] leading-relaxed text-muted-it">
+                          {billingCfg.instructions}
+                        </p>
                       </div>
-                      <p className="pt-1 text-[11px] leading-relaxed text-muted-it">
-                        {billingCfg.instructions}
-                      </p>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {payMethod === "paypal" && (
                     <div className="mt-4 space-y-2 rounded-2xl border border-soft bg-crema-scura/60 p-4 dark:bg-inchiostro/5">

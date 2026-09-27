@@ -3,8 +3,8 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/admin/store";
-import { DEFAULT_APP_CONFIG, type AppConfig } from "@/lib/lms/appconfig";
-import { constantTimeEqual } from "@/lib/admin/security";
+import { DEFAULT_APP_CONFIG, type AppConfig, type BillingConfig } from "@/lib/lms/appconfig";
+import { constantTimeEqual, isValidBic, isValidIban, normalizeIban } from "@/lib/admin/security";
 
 export { hashPassword } from "./store";
 
@@ -91,8 +91,40 @@ export async function getAppConfig(): Promise<AppConfig> {
     defaults: { ...DEFAULT_APP_CONFIG.defaults, ...(stored.defaults ?? {}) },
     levels: { ...DEFAULT_APP_CONFIG.levels, ...(stored.levels ?? {}) },
     pricing: { ...DEFAULT_APP_CONFIG.pricing, ...(stored.pricing ?? {}) },
-    billing: { ...DEFAULT_APP_CONFIG.billing, ...(stored.billing ?? {}) },
+    billing: {
+      ...DEFAULT_APP_CONFIG.billing,
+      ...(stored.billing ?? {}),
+      bank: { ...DEFAULT_APP_CONFIG.billing.bank, ...(stored.billing?.bank ?? {}) }, // merge profundo: nuevos campos BCP
+    },
     security: { ...DEFAULT_APP_CONFIG.security, ...(stored.security ?? {}) },
+  };
+}
+
+/* Saneamiento de la configuración de pagos: SWIFT/BIC 8-11, IBAN opcional
+   (solo cuentas europeas, checksum mod-97), número de cuenta saneado y
+   moneda de cuenta en whitelist. Evita guardar datos corruptos o inyectados. */
+function sanitizeBilling(billing: BillingConfig): BillingConfig {
+  const bank = billing.bank ?? DEFAULT_APP_CONFIG.billing.bank;
+  const iban = normalizeIban(bank.iban ?? "");
+  const accountNumber = (bank.accountNumber ?? "").replace(/[\s]/g, "").replace(/[^0-9A-Za-z-]/g, "").slice(0, 34);
+  const bic = (bank.bic ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 11);
+  if (iban && !isValidIban(iban)) throw new Error("El IBAN configurado no es válido (checksum mod-97).");
+  if (bic && !isValidBic(bic)) throw new Error("El BIC/SWIFT configurado no es válido (formato 8 u 11 caracteres, p. ej. BCPLPEPL).");
+  if (bank.enabled && !iban && !accountNumber) throw new Error("Para activar la transferencia bancaria configura el número de cuenta o el IBAN.");
+  const accountCurrency = ["", "PEN", "USD", "EUR"].includes(bank.accountCurrency) ? bank.accountCurrency : "";
+  return {
+    ...billing,
+    currency: ["EUR", "USD", "PEN", "MXN", "ARS", "COP", "CLP"].includes(billing.currency) ? billing.currency : "USD",
+    bank: {
+      enabled: Boolean(bank.enabled),
+      holder: (bank.holder ?? "").trim().slice(0, 80),
+      bankName: (bank.bankName ?? "").trim().slice(0, 80),
+      bankAddress: (bank.bankAddress ?? "").trim().slice(0, 140),
+      accountNumber,
+      accountCurrency,
+      iban,
+      bic,
+    },
   };
 }
 
@@ -106,7 +138,9 @@ export async function saveAppConfig(patch: Partial<AppConfig>): Promise<AppConfi
     defaults: { ...current.defaults, ...(patch.defaults ?? {}) },
     levels: { ...current.levels, ...(patch.levels ?? {}) },
     pricing: { ...current.pricing, ...(patch.pricing ?? {}) },
-    billing: { ...current.billing, ...(patch.billing ?? {}) },
+    billing: patch.billing
+      ? sanitizeBilling({ ...current.billing, ...patch.billing, bank: { ...current.billing.bank, ...(patch.billing.bank ?? {}) } })
+      : current.billing,
     security: { ...current.security, ...(patch.security ?? {}) },
     updatedAt: new Date().toISOString(),
   };

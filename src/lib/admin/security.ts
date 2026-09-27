@@ -172,6 +172,28 @@ export function maskIban(raw: string): string {
   return `${iban.slice(0, 4)} ${"•".repeat(Math.max(0, iban.length - 8)).replace(/(.{4})/g, "$1 ").trim()} ${iban.slice(-4)}`.replace(/\s+/g, " ").trim();
 }
 
+/* ═══ SWIFT/BIC y cuentas no IBAN (transferencias internacionales) ════ */
+
+/** Normaliza un BIC: mayúsculas, sin espacios ni guiones. */
+export function normalizeBic(bic: string): string {
+  return (bic ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+/** Valida formato SWIFT/BIC ISO 9362: 6 alfanuméricos (banco) + 2 letras
+ *  (país) + 2 alfanuméricos (localización) + 3 opcionales (sucursal).
+ *  Ejemplo válido: BCPLPEPL (Banco de Crédito del Perú). */
+export function isValidBic(raw: string): boolean {
+  const bic = normalizeBic(raw);
+  return /^[A-Z0-9]{6}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic);
+}
+
+/** Enmascara un número de cuenta no IBAN: `19198476543210` → `••••••••••3210`. */
+export function maskAccount(raw: string): string {
+  const acc = (raw ?? "").replace(/[\s-]/g, "");
+  if (acc.length <= 4) return "•".repeat(acc.length);
+  return `${"•".repeat(acc.length - 4)}${acc.slice(-4)}`;
+}
+
 /* ═══ Tokens de sesión de estudiante ════════════════════════════════ */
 
 const KEY_STUDENT_TOKENS = "studentTokens";

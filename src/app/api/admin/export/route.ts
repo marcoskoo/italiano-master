@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { logAdminAction, requireAdmin } from "@/lib/admin/server";
 import { db } from "@/lib/admin/store";
-import { maskIban } from "@/lib/admin/security";
+import { maskAccount, maskIban } from "@/lib/admin/security";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,9 +31,12 @@ export async function GET(req: Request) {
     settings: settings.map((s) => {
       if (SENSITIVE_KEYS.has(s.key)) return { key: s.key, value: "[protegido]" };
       try {
-        const parsed = JSON.parse(s.value) as { billing?: { bank?: { iban?: string } } };
+        const parsed = JSON.parse(s.value) as { billing?: { bank?: { iban?: string; accountNumber?: string } } };
         if (parsed?.billing?.bank?.iban) {
           parsed.billing.bank.iban = maskIban(parsed.billing.bank.iban); // IBAN enmascarado
+        }
+        if (parsed?.billing?.bank?.accountNumber) {
+          parsed.billing.bank.accountNumber = maskAccount(parsed.billing.bank.accountNumber); // n.º de cuenta enmascarado
         }
         return { key: s.key, value: parsed };
       } catch {

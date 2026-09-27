@@ -6,10 +6,13 @@ export interface BillingConfig {
   currency: "EUR" | "USD" | "PEN" | "MXN" | "ARS" | "COP" | "CLP";
   bank: {
     enabled: boolean;
-    holder: string;              // titular de la cuenta
-    bankName: string;            // entidad bancaria
-    iban: string;                // IBAN (validado con checksum mod-97)
-    bic: string;                 // SWIFT/BIC
+    holder: string;              // titular/beneficiario — nombre completo como figura en la cuenta
+    bankName: string;            // entidad bancaria (p. ej. Banco de Crédito del Perú)
+    bankAddress: string;         // dirección del banco — requerida en transferencias internacionales
+    accountNumber: string;       // número de cuenta (cuentas no IBAN: Perú, LatAm…)
+    accountCurrency: "" | "PEN" | "USD" | "EUR"; // moneda de la cuenta (soles o dólares)
+    iban: string;                // IBAN — opcional, solo cuentas europeas (checksum mod-97)
+    bic: string;                 // código SWIFT/BIC (p. ej. BCPLPEPL)
   };
   paypal: { enabled: boolean; email: string };
   card: { enabled: boolean; provider: string }; // pasarela (demo)
@@ -17,6 +20,9 @@ export interface BillingConfig {
   invoicePrefix: string;         // prefijo de referencia de pago (IM-2025-…)
   instructions: string;          // nota visible en el checkout
 }
+
+/* Cuenta BCP por defecto: los datos personales (titular y número de cuenta)
+   se completan desde el Panel Admin → Configuración → Pagos. */
 
 export interface SecurityConfig {
   adminSessionMinutes: number;   // TTL del token admin (15 min – 30 días)
@@ -74,19 +80,22 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   pricing: { pro: 7.99, premium: 12.99, platinum: 19.99, yearlyDiscount: 20 },
   billing: {
     enabled: true,
-    currency: "EUR",
+    currency: "USD",
     bank: {
       enabled: true,
-      holder: "Italiano Master S.r.l.",
-      bankName: "Intesa Sanpaolo",
-      iban: "IT60X0542811101000000123456",
-      bic: "BCITITMM",
+      holder: "",
+      bankName: "Banco de Crédito del Perú (BCP)",
+      bankAddress: "Calle Centenario 156, Lima 12, Perú",
+      accountNumber: "",
+      accountCurrency: "USD",
+      iban: "",
+      bic: "BCPLPEPL",
     },
     paypal: { enabled: true, email: "pagamenti@italianomaster.it" },
     card: { enabled: true, provider: "Stripe (demo)" },
-    vatRate: 22,
+    vatRate: 18,
     invoicePrefix: "IM",
-    instructions: "Indica la referencia de pago en el concepto de la transferencia. La activación se completa al recibir el comprobante.",
+    instructions: "Transferencia internacional SWIFT: el remitente necesita el nombre del banco, la dirección, el código SWIFT/BIC, el titular y el número de cuenta. Indica la referencia de pago en el concepto de la transferencia. La activación se completa al recibir el comprobante.",
   },
   security: {
     adminSessionMinutes: 720, // 12 h
