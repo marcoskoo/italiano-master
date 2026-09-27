@@ -110,7 +110,9 @@ function sanitizeBilling(billing: BillingConfig): BillingConfig {
   const bic = (bank.bic ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 11);
   if (iban && !isValidIban(iban)) throw new Error("El IBAN configurado no es válido (checksum mod-97).");
   if (bic && !isValidBic(bic)) throw new Error("El BIC/SWIFT configurado no es válido (formato 8 u 11 caracteres, p. ej. BCPLPEPL).");
-  if (bank.enabled && !iban && !accountNumber) throw new Error("Para activar la transferencia bancaria configura el número de cuenta o el IBAN.");
+  /* Los datos personales (titular, número de cuenta) pueden completarse después desde el
+     admin: el checkout oculta la transferencia bancaria hasta que haya cuenta o IBAN,
+     y el panel muestra un aviso de "datos incompletos para el remitente". */
   const accountCurrency = ["", "PEN", "USD", "EUR"].includes(bank.accountCurrency) ? bank.accountCurrency : "";
   return {
     ...billing,

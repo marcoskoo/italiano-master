@@ -95,10 +95,6 @@ export function SettingsTab({ onSaved }: { onSaved: () => void }) {
       setError("El BIC/SWIFT no es válido: debe tener 8 u 11 caracteres (p. ej. BCPLPEPL).");
       return;
     }
-    if (bank.enabled && !bank.iban && !bank.accountNumber) {
-      setError("Para activar la transferencia bancaria indica el número de cuenta (o el IBAN si es una cuenta europea).");
-      return;
-    }
     setBusy(true);
     setMsg(null);
     setError(null);
