@@ -313,6 +313,24 @@ async function read<T>(fn: (d: StoreData) => T): Promise<T> {
   return fn(S().data as StoreData);
 }
 
+/** Lectura SIEMPRE fresca desde el blob (serializada con la cola de escritura).
+ *  Imprescindible para las comprobaciones de autenticidad (tokens admin y de
+ *  estudiante): en serverless cada instancia cachea el snapshot en memoria y
+ *  solo lo refresca al mutar, por lo que un `read()` normal puede devolver un
+ *  estado anterior al login y rechazar tokens perfectamente válidos. */
+export async function readFresh<T>(fn: (d: StoreData) => T): Promise<T> {
+  await ready();
+  const s = S();
+  const run = s.writeQueue.then(async () => {
+    if (s.mode === "blob") {
+      const fresh = await loadFromBlob();
+      if (fresh) s.data = fresh;
+    }
+    return fn(s.data as StoreData);
+  });
+  return run;
+}
+
 /** Mutación serializada: en modo blob refresca el snapshot antes de
  *  aplicar el cambio (coherencia entre instancias serverless). */
 async function mutate<T>(fn: (d: StoreData) => T): Promise<T> {

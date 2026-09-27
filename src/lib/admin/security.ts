@@ -9,6 +9,7 @@
    · Tokens de sesión de estudiante (registro con expiración)          */
 
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { readFresh } from "./store";
 import { getSetting, setSetting } from "./server";
 
 /* ═══ Comparación en tiempo constante ═══════════════════════════════ */
@@ -201,8 +202,14 @@ const MAX_STUDENT_TOKENS = 300;
 
 export interface StudentTokenEntry { token: string; userId: string; expiresAt: string }
 
+/** Lectura fresca desde el blob: en serverless cada instancia cachea el
+ *  snapshot en memoria y un login en otra instancia no sería visible aquí. */
 async function readTokens(): Promise<Record<string, StudentTokenEntry>> {
-  return getSetting<Record<string, StudentTokenEntry>>(KEY_STUDENT_TOKENS, {});
+  return readFresh((d) => {
+    const row = d.settings.find((s) => s.key === KEY_STUDENT_TOKENS);
+    if (!row) return {};
+    try { return JSON.parse(row.value) as Record<string, StudentTokenEntry>; } catch { return {}; }
+  });
 }
 
 function prune(tokens: Record<string, StudentTokenEntry>): Record<string, StudentTokenEntry> {

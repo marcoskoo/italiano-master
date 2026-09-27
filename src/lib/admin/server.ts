@@ -2,7 +2,7 @@
 
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { db } from "@/lib/admin/store";
+import { db, readFresh } from "@/lib/admin/store";
 import { DEFAULT_APP_CONFIG, type AppConfig, type BillingConfig } from "@/lib/lms/appconfig";
 import { constantTimeEqual, isValidBic, isValidIban, normalizeIban } from "@/lib/admin/security";
 
@@ -56,17 +56,37 @@ async function adminTtlMs(): Promise<number> {
   return DEFAULT_TOKEN_TTL_MS;
 }
 
-/** Lee las sesiones válidas, poda las caducadas y acepta el token único
- *  heredado de v5.0 (migración sin re-login forzado). */
-async function readSessions(): Promise<AdminSession[]> {
+/** Núcleo fresco: devuelve sesiones válidas + token legado crudo. */
+async function readSessionsWithLegacy(): Promise<{ sessions: AdminSession[]; legacyToken: string | null }> {
   const now = Date.now();
-  const list = await getSetting<{ sessions?: AdminSession[] } | null>(KEY_ADMIN_TOKENS, null);
+  const { list, legacy } = await readFresh((d) => {
+    const parse = (key: string): unknown => {
+      const row = d.settings.find((s) => s.key === key);
+      if (!row) return null;
+      try { return JSON.parse(row.value); } catch { return null; }
+    };
+    return {
+      list: parse(KEY_ADMIN_TOKENS) as { sessions?: AdminSession[] } | null,
+      legacy: parse(KEY_ADMIN_TOKEN) as { token?: string; expiresAt?: string } | null,
+    };
+  });
   const sessions = (list?.sessions ?? []).filter((s) => s.token && new Date(s.expiresAt).getTime() > now);
-  const legacy = await getSetting<{ token: string; expiresAt: string } | null>(KEY_ADMIN_TOKEN, null);
-  if (legacy?.token && new Date(legacy.expiresAt).getTime() > now && !sessions.some((s) => s.token === legacy.token)) {
-    sessions.push({ token: legacy.token, createdAt: new Date().toISOString(), expiresAt: legacy.expiresAt });
+  let legacyToken: string | null = null;
+  if (legacy?.token && legacy.expiresAt && new Date(legacy.expiresAt).getTime() > now) {
+    legacyToken = legacy.token;
+    if (!sessions.some((s) => s.token === legacy.token)) {
+      sessions.push({ token: legacy.token, createdAt: new Date().toISOString(), expiresAt: legacy.expiresAt });
+    }
   }
-  return sessions;
+  return { sessions, legacyToken };
+}
+
+/** Lee las sesiones válidas (SIEMPRE frescas desde el blob: los tokens se
+ *  emiten desde cualquier instancia serverless y un `read` cacheado podría
+ *  no verlos), poda las caducadas y acepta el token único heredado de v5.0
+ *  (migración sin re-login forzado). */
+async function readSessions(): Promise<AdminSession[]> {
+  return (await readSessionsWithLegacy()).sessions;
 }
 
 /** Persiste la lista conservando las sesiones más recientes. */
@@ -92,10 +112,9 @@ export async function issueAdminToken(): Promise<string> {
 /** Revoca UN token concreto: el logout de un dispositivo no expulsa al resto. */
 export async function revokeAdminToken(token: string): Promise<void> {
   if (!token) return;
-  const sessions = await readSessions();
+  const { sessions, legacyToken } = await readSessionsWithLegacy();
   const next = sessions.filter((s) => !constantTimeEqual(s.token, token));
-  const legacy = await getSetting<{ token: string } | null>(KEY_ADMIN_TOKEN, null);
-  const legacyHit = Boolean(legacy?.token) && constantTimeEqual(legacy!.token, token);
+  const legacyHit = Boolean(legacyToken) && constantTimeEqual(legacyToken as string, token);
   if (next.length !== sessions.length || legacyHit) {
     await writeSessions(next);
     if (legacyHit) await setSetting(KEY_ADMIN_TOKEN, { token: "", expiresAt: new Date(0).toISOString() });
