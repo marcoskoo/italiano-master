@@ -490,7 +490,7 @@ export function SettingsView() {
           </div>
           <div>
             <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-it">Obiettivo giornaliero</p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {[60, 120, 200].map((g) => (
                 <button
                   key={g}
@@ -498,7 +498,7 @@ export function SettingsView() {
                   aria-pressed={settings.dailyGoalXp === g}
                   className={cn("min-h-11 flex-1 rounded-xl border-2 px-3 py-2.5 text-sm font-bold transition-all", settings.dailyGoalXp === g ? "border-oro bg-oro-tenue text-oro-scuro dark:text-oro" : "border-soft")}
                 >
-                  {g} XP/giorno
+                  {g} XP<span className="hidden sm:inline">/giorno</span>
                 </button>
               ))}
             </div>

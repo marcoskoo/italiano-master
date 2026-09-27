@@ -356,7 +356,7 @@ export function VowelLab() {
               <button
                 type="button"
                 onClick={() => speak(v.word)}
-                className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-verde px-3 py-1 text-xs font-semibold text-white transition-transform hover:scale-105 active:scale-95"
+                className="mt-1.5 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-verde px-3.5 py-1.5 text-xs font-semibold text-white transition-transform hover:scale-105 active:scale-95"
                 aria-label={`Ascolta la parola ${v.word}`}
               >
                 <Volume2 className="h-3.5 w-3.5" /> ascolta

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, Compass, Ear, Flame, GraduationCap, Library, RefreshCcw, Sparkles, Target, Trophy, Volume2, Zap } from "lucide-react";
+import { AlertTriangle, ArrowRight, BookOpen, Compass, Ear, FileSpreadsheet, Flame, GraduationCap, Keyboard, Library, Quote, RefreshCcw, Sparkles, Target, Trophy, Volume2, Zap } from "lucide-react";
 import { MorphingHero } from "@/components/italian/morphing-hero";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { VOCAB, VOCAB_BY_ID } from "@/lib/lms/vocabulary";
@@ -23,6 +23,13 @@ const QUICK: { id: ViewId; label: string; it: string; icon: typeof Ear; desc: st
   { id: "ascolto", label: "Escucha", it: "ascolto", icon: Ear, desc: "Diálogos y dictados con audio" },
   { id: "dizionario", label: "Diccionario", it: "dizionario", icon: Library, desc: "Italiano–español con audio" },
   { id: "tutor", label: "Tutor IA", it: "tutor", icon: Sparkles, desc: "Conversa y corrige con Marco" },
+];
+
+const PLUGINS: { id: ViewId; label: string; it: string; icon: typeof Ear; desc: string }[] = [
+  { id: "proverbi", label: "Proverbi", it: "plugin", icon: Quote, desc: "73 proverbios y modismos con su truco" },
+  { id: "falsiamici", label: "Falsi amici", it: "plugin", icon: AlertTriangle, desc: "87 trampas IT–ES explicadas" },
+  { id: "dettato", label: "Dettato", it: "plugin", icon: Ear, desc: "Dictado con corrección palabra a palabra" },
+  { id: "ankiexport", label: "Export Anki", it: "plugin", icon: FileSpreadsheet, desc: "Mazos TSV/CSV desde el diccionario o tu SRS" },
 ];
 
 export function HomeView() {
@@ -279,6 +286,35 @@ export function HomeView() {
                 {q.label} <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-it">{q.it}</span>
               </p>
               <p className="mt-1 text-sm leading-relaxed text-muted-it">{q.desc}</p>
+            </motion.button>
+          ))}
+        </div>
+      </section>
+
+      {/* ── PLUGIN · ESTENSIONI ── */}
+      <section>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-display text-2xl font-semibold">Estensioni · Plugin</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-it">v4.0 · nuovi</p>
+        </div>
+        <p className="mt-1.5 text-sm text-muted-it">Herramientas extra que amplían tu aprendizaje más allá de las lecciones.</p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {PLUGINS.map((p, i) => (
+            <motion.button
+              key={p.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 + i * 0.05 }}
+              onClick={() => navigate(p.id)}
+              className="group rounded-3xl border border-soft bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:border-rosso/40 hover:shadow-lg"
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rosso-tenue text-rosso-scuro transition-colors group-hover:bg-rosso group-hover:text-white dark:text-rosso">
+                <p.icon className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <p className="mt-3.5 font-display text-lg font-semibold">
+                {p.label} <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-it">{p.it}</span>
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-it">{p.desc}</p>
             </motion.button>
           ))}
         </div>

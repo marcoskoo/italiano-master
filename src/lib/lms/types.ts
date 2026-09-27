@@ -268,7 +268,7 @@ export type ViewId =
   | "coniugatore" | "dizionario" | "situazioni" | "cultura" | "tutor" | "giochi"
   | "repaso" | "esami" | "certificati" | "impostazioni" | "piani" | "admin"
   | "numerilab" | "verbidrill" | "pianosettimanale" | "analizzatore" | "schede"
-  | "proverbi" | "falsiamici" | "dettato";
+  | "proverbi" | "falsiamici" | "dettato" | "ankiexport";
 
 export interface NavParams {
   level?: CefrLevel | "zero";

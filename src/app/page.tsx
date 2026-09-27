@@ -28,6 +28,7 @@ import { VerbDrillView } from "@/components/lms/views/verbdrill";
 import { PlannerView } from "@/components/lms/views/planner";
 import { AnalyzerView } from "@/components/lms/views/analyzer";
 import { PrintablesView } from "@/components/lms/views/printables";
+import { ProverbiView, FalsiAmiciView, DettatoView, AnkiExportView } from "@/components/lms/views/plugins";
 
 /* ── Italiano Master · LMS completo de italiano (SPA) ─────────────── */
 
@@ -228,6 +229,10 @@ export default function Home() {
         {view === "pianosettimanale" && <PlannerView />}
         {view === "analizzatore" && <AnalyzerView />}
         {view === "schede" && <PrintablesView />}
+        {view === "proverbi" && <ProverbiView />}
+        {view === "falsiamici" && <FalsiAmiciView />}
+        {view === "dettato" && <DettatoView />}
+        {view === "ankiexport" && <AnkiExportView />}
       </div>
     </AppShell>
   );

@@ -5,7 +5,7 @@
    sin cambios en las vistas. */
 
 import type { AppConfigBundle } from "./appconfig";
-import { VOCAB, VOCAB_BY_ID, VOCAB_CATEGORIES } from "./vocabulary";
+import { VOCAB, VOCAB_BY_ID, VOCAB_CATEGORIES, applyVocabAliases } from "./vocabulary";
 import type { VocabWord } from "./types";
 import { COURSES } from "./courses";
 import { EXERCISES, EXERCISES_BY_ID } from "./exercises";
@@ -58,6 +58,7 @@ function applyVocabOverrides(overrides: AppConfigBundle["vocabOverrides"]): void
 
   for (const k of Object.keys(VOCAB_BY_ID)) delete VOCAB_BY_ID[k];
   for (const w of VOCAB) VOCAB_BY_ID[w.id] = w;
+  applyVocabAliases(VOCAB_BY_ID); // ids alias (dedup por lema) siguen resolviendo
 
   VOCAB_CATEGORIES.length = 0;
   VOCAB_CATEGORIES.push(...[...new Set(VOCAB.map((w) => w.cat))]);

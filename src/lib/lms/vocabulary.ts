@@ -219,15 +219,50 @@ export const VOCAB: VocabWord[] = [
   W("w-capitolo", "capitolo", "capítulo", "kapítoło", "sostantivo", "letteratura", "B2", { it: "Il primo capitolo è avvincente.", es: "El primer capítulo es apasionante." }, { gender: "m", plural: "capitoli" }),
 ];
 
-/* Paquete de expansión v1.1: +96 palabras (6 categorías nuevas) */
-VOCAB.push(...VOCAB_EXTRA);
+/* Paquete de expansión v1.1 + Dizionario didattico v2.0/3.0 · estándares
+   internacionales (MCER/CEFR A1–C2, IPA, bandas de frecuencia tipo De Mauro,
+   registro, colocaciones, notas contrastivas y falsos amigos IT–ES).
+   Dedup por lema: conserva la entrada base (referenciada por vocabIds de
+   cursos y SRS), la enriquece con los campos del paquete y mantiene un
+   mapa de alias para que los ids eliminados sigan resolviendo. */
+const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+const byLemma = new Map<string, VocabWord>();
+for (const w of VOCAB) byLemma.set(norm(w.it), w);
+const aliasById = new Map<string, VocabWord>();
 
-/* Dizionario didattico v2.0 · estándares internacionales de enseñanza
-   de lenguas (MCER/CEFR A1–C2, IPA, bandas de frecuencia tipo De Mauro,
-   registro, colocaciones, notas contrastivas y falsos amigos IT–ES). */
-VOCAB.push(...DICT_PACKS);
+function mergePacks(packs: VocabWord[]): VocabWord[] {
+  const out: VocabWord[] = [];
+  for (const w of packs) {
+    const base = byLemma.get(norm(w.it));
+    if (base) {
+      // enriquece la entrada superviviente con los campos lexicográficos del paquete
+      base.ipa = base.ipa ?? w.ipa;
+      base.freq = base.freq ?? w.freq;
+      base.register = base.register ?? w.register;
+      base.note = base.note ?? w.note;
+      base.collo = base.collo ?? w.collo;
+      if (!base.syn?.length && w.syn?.length) base.syn = w.syn;
+      if (!base.ant?.length && w.ant?.length) base.ant = w.ant;
+      if (!base.plural && w.plural) base.plural = w.plural;
+      if (!base.gender && w.gender) base.gender = w.gender;
+      if (base.id !== w.id) aliasById.set(w.id, base);
+      continue;
+    }
+    byLemma.set(norm(w.it), w);
+    out.push(w);
+  }
+  return out;
+}
+
+VOCAB.push(...mergePacks(VOCAB_EXTRA), ...mergePacks(DICT_PACKS));
 
 export const VOCAB_BY_ID: Record<string, VocabWord> = Object.fromEntries(VOCAB.map((w) => [w.id, w]));
+/* alias: ids eliminados por dedup siguen resolviendo (cursos, SRS, admin) */
+export const VOCAB_ALIASES: ReadonlyMap<string, VocabWord> = aliasById;
+export function applyVocabAliases(target: Record<string, VocabWord>): void {
+  for (const [aliasId, w] of aliasById) if (!target[aliasId]) target[aliasId] = w;
+}
+applyVocabAliases(VOCAB_BY_ID);
 
 export const VOCAB_CATEGORIES = Object.keys(
   VOCAB.reduce<Record<string, boolean>>((acc, w) => ({ ...acc, [w.cat]: true }), {})

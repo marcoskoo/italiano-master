@@ -5,7 +5,7 @@ import {
   BookOpen, BookMarked, Brain, Calculator, Clapperboard, Compass, Crown, Ear, FlaskConical,
   Gamepad2, GraduationCap, Hash, Home, Languages, Library, LineChart, MapPin, Medal, Microscope,
   PenLine, Printer, RefreshCcw, ScrollText, Settings, Shield, Sparkles, Timer, Trophy, Volume2,
-  X, Zap, Flame, Menu, CalendarDays,
+  X, Zap, Flame, Menu, CalendarDays, Quote, AlertTriangle, Keyboard, FileSpreadsheet,
   LogIn, LogOut,
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
@@ -60,6 +60,15 @@ const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typ
     ],
   },
   {
+    group: "Estensioni · Plugin",
+    items: [
+      { id: "proverbi", label: "Proverbi e modi di dire", icon: Quote },
+      { id: "falsiamici", label: "Falsi amici", icon: AlertTriangle },
+      { id: "dettato", label: "Dettato (dictado)", icon: Keyboard },
+      { id: "ankiexport", label: "Export Anki/CSV", icon: FileSpreadsheet },
+    ],
+  },
+  {
     group: "Evaluación",
     items: [
       { id: "repaso", label: "Repaso inteligente", icon: RefreshCcw },
@@ -82,7 +91,7 @@ const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   test: { title: "Test de nivel", sub: "20 preguntas graduadas para ubicarte en el MCER" },
   cursos: { title: "Cursos", sub: "Ruta completa: Desde cero → A1 → A2 → B1 → B2 → C1 → C2" },
   grammatica: { title: "Grammatica", sub: "La gramática italiana paso a paso, de A1 a C2" },
-  vocabolario: { title: "Vocabolario", sub: "25 categorías temáticas con audio y repaso espaciado" },
+  vocabolario: { title: "Vocabolario", sub: "37 categorías temáticas con audio y repaso espaciado" },
   ascolto: { title: "Ascolto", sub: "Comprensión auditiva con diálogos, palabras y dictados" },
   lettura: { title: "Lettura", sub: "Lecturas graduadas con preguntas y glosario" },
   scrittura: { title: "Scrittura", sub: "Redacción guiada con corrección por IA y modelo" },
@@ -105,6 +114,10 @@ const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   pianosettimanale: { title: "Piano settimanale", sub: "Tu semana de estudio en un plan generado a medida" },
   analizzatore: { title: "Analizzatore di frasi", sub: "Analiza frases italianas palabra por palabra con traducción" },
   schede: { title: "Schede di studio", sub: "Hojas de vocabulario, verbos y gramática listas para imprimir" },
+  proverbi: { title: "Proverbi e modi di dire", sub: "73 proverbios y modismos con literal, equivalente y uso real" },
+  falsiamici: { title: "Falsi amici", sub: "87 trampas léxicas entre italiano y español, explicadas una a una" },
+  dettato: { title: "Dettato", sub: "Dictado con voz TTS y corrección palabra por palabra" },
+  ankiexport: { title: "Export Anki/CSV", sub: "Tus mazos de estudio listos para Anki, Quizlet o Sheets" },
 };
 
 function NavItem({ id, label, icon: Icon, onNav, active }: { id: ViewId; label: string; icon: typeof Home; onNav: () => void; active: boolean }) {

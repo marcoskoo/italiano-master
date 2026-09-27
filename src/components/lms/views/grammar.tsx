@@ -24,7 +24,9 @@ export function GrammarView() {
   const q = query.trim().toLowerCase();
   const topics = useMemo(
     () =>
-      GRAMMAR.filter((g) => g.level === levelFilter).filter((g) =>
+      /* con búsqueda activa: busca en TODOS los niveles (el tema puede vivir
+         en otro nivel distinto al filtro seleccionado) */
+      GRAMMAR.filter((g) => (q ? true : g.level === levelFilter)).filter((g) =>
         q
           ? (g.title + " " + g.titleIt + " " + g.summary + " " + g.explanation.join(" ")).toLowerCase().includes(q)
           : true
@@ -113,7 +115,12 @@ export function GrammarView() {
                   <Brain className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-display text-lg font-semibold leading-snug sm:text-xl">{t.title}</span>
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="font-display text-lg font-semibold leading-snug sm:text-xl">{t.title}</span>
+                    {q && (
+                      <span className="rounded-full bg-verde-tenue px-2 py-0.5 font-mono text-[10px] font-bold text-verde-scuro dark:text-verde">{t.level}</span>
+                    )}
+                  </span>
                   <span className="mt-0.5 block font-mono text-xs italic text-muted-it">{t.titleIt}</span>
                   <span className="mt-1 block text-sm text-muted-it">{t.summary}</span>
                 </span>

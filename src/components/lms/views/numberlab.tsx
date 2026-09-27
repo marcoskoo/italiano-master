@@ -96,7 +96,7 @@ function Converter() {
         />
         <div className="mt-3 flex flex-wrap gap-2">
           {[3, 17, 23, 48, 68, 100, 1998, 2024, 100000, 999999999].map((n) => (
-            <button key={n} onClick={() => setNum(n)} className="min-h-9 rounded-lg border border-soft bg-crema px-2.5 py-1 font-mono text-xs font-bold hover:border-verde/40">
+            <button key={n} onClick={() => setNum(n)} className="min-h-9 min-w-11 rounded-lg border border-soft bg-crema px-2.5 py-1 font-mono text-xs font-bold hover:border-verde/40">
               {n.toLocaleString("es")}
             </button>
           ))}
@@ -151,7 +151,7 @@ function ClockLab() {
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {[[8, 0], [8, 15], [8, 30], [8, 45], [12, 0], [0, 0], [1, 45], [13, 30]].map(([hh, mm]) => (
-            <button key={`${hh}:${mm}`} onClick={() => { setH(hh); setM(mm); }} className="min-h-9 rounded-lg border border-soft bg-crema px-2.5 py-1 font-mono text-xs font-bold hover:border-verde/40">
+            <button key={`${hh}:${mm}`} onClick={() => { setH(hh); setM(mm); }} className="min-h-9 min-w-11 rounded-lg border border-soft bg-crema px-2.5 py-1 font-mono text-xs font-bold hover:border-verde/40">
               {String(hh).padStart(2, "0")}:{String(mm).padStart(2, "0")}
             </button>
           ))}

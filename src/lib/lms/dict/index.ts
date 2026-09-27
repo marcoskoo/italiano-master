@@ -38,6 +38,8 @@ import { PACK_KX17 } from "./pack-kx17";
 import { PACK_KX18 } from "./pack-kx18";
 import { PACK_KX19 } from "./pack-kx19";
 import { PACK_KX20 } from "./pack-kx20";
+import { PACK_KX21 } from "./pack-kx21";
+import { PACK_KX22 } from "./pack-kx22";
 
 /* ── Dizionario didattico v3.0 · paquetes MCER A1→C2 ──────────────────
    v2.0: packs D (DIB/De Mauro, IPA, frecuencia, registro, colocaciones)
@@ -57,5 +59,5 @@ export const DICT_PACKS: VocabWord[] = [
   ...PACK_KX7, ...PACK_KX8, ...PACK_KX9, ...PACK_KX10, // materiales + formale + salute + cotidiano
   ...PACK_KX11, ...PACK_KX12, ...PACK_KX13, // adjective/cucina/feste/bagno/sentimenti
   ...PACK_KX14, ...PACK_KX15, ...PACK_KX16, ...PACK_KX17, // deportes/animales/vestido/bodas
-  ...PACK_KX18, ...PACK_KX19, ...PACK_KX20, // montaña/cuerpo/tiempo/comida final
+  ...PACK_KX18, ...PACK_KX19, ...PACK_KX20, ...PACK_KX21, ...PACK_KX22, // montaña/cuerpo/tiempo/comida + giardinaggio/mestieri/casa + botanica/orto
 ];
