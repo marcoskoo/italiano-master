@@ -205,6 +205,7 @@ async function saveToBlob(d: StoreData): Promise<boolean> {
       access: "private", // privado + cifrado AES-256-GCM (doble capa)
       contentType: "text/plain",
       addRandomSuffix: false,
+      allowOverwrite: true, // v2 de @vercel/blob: sin esto, el 2.º save falla con "already exists" y el store degrada a memory
     });
     return true;
   } catch {
@@ -241,6 +242,7 @@ interface StoreState {
   durable: boolean;
   readyPromise: Promise<void> | null;
   writeQueue: Promise<unknown>;
+  initTrace?: string[]; // diagnóstico temporal del arranque del store
 }
 
 const g = globalThis as unknown as { __italianoMasterStore?: StoreState };
@@ -260,25 +262,40 @@ function commit(d: StoreData, m: PersistenceMode): void {
 }
 
 async function init(): Promise<void> {
+  const trace: string[] = [];
+  S().initTrace = trace;
   const hasBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  trace.push(`hasBlob=${hasBlob}`);
   if (hasBlob) {
     const fromBlob = await loadFromBlob();
+    trace.push(`loadFromBlob=${fromBlob ? "ok" : "null"}`);
     if (fromBlob) {
       commit(fromBlob, "blob");
+      trace.push("commit=blob(fromBlob)");
       return;
     }
   }
   const fromFile = await loadFromFile();
+  trace.push(`loadFromFile=${fromFile ? "ok" : "null"}`);
   const base = fromFile ?? seedData();
-  if (hasBlob && (await saveToBlob(base))) {
-    commit(base, "blob");
-    return;
+  if (hasBlob) {
+    const saved = await saveToBlob(base);
+    trace.push(`saveToBlob=${saved}`);
+    if (saved) {
+      commit(base, "blob");
+      trace.push("commit=blob(saved)");
+      return;
+    }
   }
-  if (await saveToFile(base)) {
+  const savedFile = await saveToFile(base);
+  trace.push(`saveToFile=${savedFile}`);
+  if (savedFile) {
     commit(base, "file");
+    trace.push("commit=file");
     return;
   }
   commit(base, "memory");
+  trace.push("commit=memory");
 }
 
 function ready(): Promise<void> {
@@ -324,10 +341,10 @@ async function mutate<T>(fn: (d: StoreData) => T): Promise<T> {
   return run;
 }
 
-export async function getPersistenceInfo(): Promise<PersistenceInfo> {
+export async function getPersistenceInfo(): Promise<PersistenceInfo & { trace?: string[] }> {
   await ready();
   const s = S();
-  return { mode: s.mode, durable: s.durable };
+  return { mode: s.mode, durable: s.durable, ...(s.initTrace ? { trace: s.initTrace } : {}) };
 }
 
 /* ── API compatible con el subconjunto de Prisma usado por la app ───── */
