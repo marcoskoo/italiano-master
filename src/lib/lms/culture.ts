@@ -1,5 +1,6 @@
 import type { CultureArticle } from "./types";
 import { CULTURE_EXTRA } from "./extra/culture-extra";
+import { CULTURE_EXTRA_2 } from "./extra/culture-extra2";
 
 /* ── Cultura italiana · artículos con pregunta ────────────────────── */
 
@@ -89,3 +90,6 @@ export const CULTURE: CultureArticle[] = [
 
 /* # Paquete de expansión v1.1: +6 artículos de cultura */
 CULTURE.push(...CULTURE_EXTRA);
+
+/* # Paquete de expansión v4.0: +6 artículos (15 → 21) */
+CULTURE.push(...CULTURE_EXTRA_2);

@@ -1,5 +1,6 @@
 import type { Exercise } from "./types";
 import { EXERCISES_EXTRA } from "./extra/exercises-extra";
+import { EXERCISES_EXTRA_2 } from "./extra/exercises-extra2";
 
 /* ── Banca de ejercicios · motor de práctica ──────────────────────── */
 /* Nota: las citas internas usan comillas tipográficas “ ” */
@@ -215,6 +216,8 @@ export const EXERCISES: Exercise[] = [
 
 /* Paquete de expansión v1.1: +97 ejercicios (nuevas lecciones, lecturas, escuchas y laboratorios) */
 EXERCISES.push(...EXERCISES_EXTRA);
+/* # Paquete de expansión v4.0: +74 ejercicios (lecciones, lecturas, escuchas) */
+EXERCISES.push(...EXERCISES_EXTRA_2);
 
 export const EXERCISES_BY_ID: Record<string, Exercise> = Object.fromEntries(EXERCISES.map((e) => [e.id, e]));
 

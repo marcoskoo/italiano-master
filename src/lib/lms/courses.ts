@@ -1,5 +1,6 @@
 import type { Course, Lesson, Unit } from "./types";
 import { EXTRA_UNITS } from "./extra/courses-extra";
+import { EXTRA_UNITS_2 } from "./extra/courses-extra2";
 
 /* ── Cursos · Desde cero → C2 ─────────────────────────────────────── */
 
@@ -661,6 +662,12 @@ export const COURSES: Course[] = [
 for (const course of COURSES) {
   const extra = EXTRA_UNITS[course.level];
   if (extra) course.units.push(...extra);
+}
+
+/* Paquete de expansión v4.0: +7 unidades / +21 lecciones (77 → 98) */
+for (const course of COURSES) {
+  const extra2 = EXTRA_UNITS_2[course.level];
+  if (extra2) course.units.push(...extra2);
 }
 
 export const COURSE_BY_LEVEL = (level: string): Course | undefined =>

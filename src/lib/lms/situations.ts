@@ -1,5 +1,6 @@
 import type { Situation } from "./types";
 import { SITUATIONS_EXTRA } from "./extra/situations-extra";
+import { SITUATIONS_EXTRA_2 } from "./extra/situations-extra2";
 
 /* ── Situaciones reales · vocabulario → diálogo → ejercicios → role-play ── */
 
@@ -156,3 +157,6 @@ export const SITUATIONS: Situation[] = [
 
 /* # Paquete de expansión v1.1: +6 situaciones reales */
 SITUATIONS.push(...SITUATIONS_EXTRA);
+
+/* # Paquete de expansión v4.0: +6 situaciones (14 → 20) */
+SITUATIONS.push(...SITUATIONS_EXTRA_2);

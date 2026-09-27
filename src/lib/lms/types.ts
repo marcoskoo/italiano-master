@@ -217,6 +217,31 @@ export interface ConversationScenario {
   tutorSeed: string;
 }
 
+/* Proverbi e modi di dire · plugin v4.0 */
+export interface Proverb {
+  id: string;
+  it: string;              // proverbio o modismo en italiano
+  literal: string;         // traducción literal (a menudo sorprendente)
+  es: string;              // equivalente español natural
+  meaning: string;         // cuándo se usa y qué significa (ES)
+  level: CefrLevel;
+  kind: "proverbio" | "modo di dire";
+  example?: { it: string; es: string };
+}
+
+/* Falsos amigos IT–ES · plugin v4.0 */
+export interface FalseFriend {
+  id: string;
+  it: string;              // palabra italiana
+  itMeaning: string;       // lo que significa en italiano (explicado en ES)
+  es: string;              // palabra española con la que se confunde
+  esMeaning: string;       // lo que significa esa palabra en español
+  trap: string;            // la trampa explicada para hispanohablantes
+  itExample: string;       // frase de ejemplo en italiano
+  esExample: string;       // su traducción
+  level: CefrLevel;
+}
+
 /* SRS */
 export interface SrsCard {
   wordId: string;
@@ -242,7 +267,8 @@ export type ViewId =
   | "conversazione" | "ascolto" | "lettura" | "scrittura" | "pronuncia"
   | "coniugatore" | "dizionario" | "situazioni" | "cultura" | "tutor" | "giochi"
   | "repaso" | "esami" | "certificati" | "impostazioni" | "piani" | "admin"
-  | "numerilab" | "verbidrill" | "pianosettimanale" | "analizzatore" | "schede";
+  | "numerilab" | "verbidrill" | "pianosettimanale" | "analizzatore" | "schede"
+  | "proverbi" | "falsiamici" | "dettato";
 
 export interface NavParams {
   level?: CefrLevel | "zero";

@@ -1,5 +1,6 @@
 import type { ConversationScenario } from "./types";
 import { CONVERSATION_EXTRA } from "./extra/conversation-extra";
+import { CONVERSATION_EXTRA_2 } from "./extra/conversation-extra2";
 
 /* ── Conversación · escenarios con frases útiles + tutor IA ───────── */
 
@@ -80,3 +81,6 @@ export const CONVERSATION_SCENARIOS: ConversationScenario[] = [
 
 /* # Paquete de expansión v1.1: +6 escenarios de conversación */
 CONVERSATION_SCENARIOS.push(...CONVERSATION_EXTRA);
+
+/* # Paquete de expansión v4.0: +6 escenarios (12 → 18) */
+CONVERSATION_SCENARIOS.push(...CONVERSATION_EXTRA_2);
