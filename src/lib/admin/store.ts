@@ -186,7 +186,11 @@ async function loadFromBlob(): Promise<StoreData | null> {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) return null;
   try {
-    const res = await blobGet(BLOB_PATHNAME, { access: "private" });
+    // useCache: false → añade ?cache=0 y saltar la caché del edge: sin esto,
+    // los GET privados pueden devolver un snapshot ANTERIOR al último PUT y
+    // una mutación basada en él destruiría las escrituras recientes (p. ej.
+    // el token de un login recién emitido). CRÍTICO para la coherencia.
+    const res = await blobGet(BLOB_PATHNAME, { access: "private", useCache: false });
     if (!res || res.statusCode !== 200 || !res.stream) return null;
     const cipherText = await new Response(res.stream).text();
     const json = decrypt(cipherText, token);
