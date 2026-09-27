@@ -25,7 +25,7 @@ agghiacciante|escalofriante|aɡɡatˈtʃante|A|emo|5|Un racconto agghiacciante d
 raccapricciante|horripilante|rakkapritˈtʃjante|A|emo|5|Dettagli raccapriccianti del delitto.|Detalles horripilantes del delito.|r=let
 macabro|macabro|maˈkabro|A|emo|5|Un dettaglio macabro della vicenda.|Un detalle macabro del suceso.|r=let
 truculento|truculento|trukuˈlɛnto|A|emo|5|Un film truculento e crudo.|Una película truculenta y cruda.|r=let
-spassoso|divertidisimo|spaˈssɔzo|A|emo|5|Uno spettacolo spassoso e ironico.|Un espectáculo divertidísimo e irónico.|r=inf
+spassoso|divertidísimo|spaˈssɔzo|A|emo|5|Uno spettacolo spassoso e ironico.|Un espectáculo divertidísimo e irónico.|r=inf
 esilarante|hilarante|ezilarante|A|emo|5|Una battuta esilarante al provino.|Un chiste hilarante en la prueba.
 sbiellare|descarrilar|zbjelˈlare|V|tec|5|Il treno è sbiellato in curva.|El tren descarriló en la curva.|r=inf;n=Figurato: sbiellare = enloquecer
 sgangherato|desvencijado|zɡaŋɡeˈrato|A|emo|5|Un mobile sgangherato del nonno.|Un mueble desvencijado del abuelo.|r=inf

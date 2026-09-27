@@ -1,6 +1,7 @@
 import type { Course, Lesson, Unit } from "./types";
 import { EXTRA_UNITS } from "./extra/courses-extra";
 import { EXTRA_UNITS_2 } from "./extra/courses-extra2";
+import { EXTRA_UNITS_3 } from "./extra/courses-extra3";
 
 /* ── Cursos · Desde cero → C2 ─────────────────────────────────────── */
 
@@ -668,6 +669,13 @@ for (const course of COURSES) {
 for (const course of COURSES) {
   const extra2 = EXTRA_UNITS_2[course.level];
   if (extra2) course.units.push(...extra2);
+}
+
+/* Paquete de expansión v6.0: +4 unidades / +12 lecciones (98 → 110)
+   Temático: ristorante (A2), lavoro (B1), gastronomia (B2), media (C1) */
+for (const course of COURSES) {
+  const extra3 = EXTRA_UNITS_3[course.level];
+  if (extra3) course.units.push(...extra3);
 }
 
 export const COURSE_BY_LEVEL = (level: string): Course | undefined =>

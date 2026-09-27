@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw, Volume2 } from "lucide-react";
 import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
@@ -19,6 +19,9 @@ const GRADES = [
   { g: 3, label: "Fácil", sub: "×3.0", cls: "border-verde-scuro/40 bg-verde-tenue text-verde-scuro hover:border-verde-scuro dark:text-verde" },
 ];
 
+/* Umbral de gesto: deslizamiento horizontal dominante (≥48px, 1.5× el eje vertical) */
+const SWIPE_MIN = 48;
+
 export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExit?: () => void }) {
   const srs = useLms((s) => s.srs);
   const upsertSrs = useLms((s) => s.upsertSrs);
@@ -28,6 +31,7 @@ export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExi
   const [flipped, setFlipped] = useState(false);
   const [done, setDone] = useState(0);
   const [againCount, setAgainCount] = useState(0);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const currentId = queue[0];
   const word = currentId ? VOCAB_BY_ID[currentId] : undefined;
@@ -45,6 +49,28 @@ export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExi
     setTimeout(() => {
       setQueue((q) => (g === 0 ? [...q.slice(1), q[0]] : q.slice(1)));
     }, 120);
+  };
+
+  /* Gestos táctiles: → Bien (grado 2) · ← Otra vez (grado 0).
+     En el anverso, cualquier deslizamiento también revela la tarjeta. */
+  const onTouchStart = (e: ReactTouchEvent<HTMLDivElement>) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  };
+  const onTouchEnd = (e: ReactTouchEvent<HTMLDivElement>) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start || !word) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) < SWIPE_MIN || Math.abs(dx) < Math.abs(dy) * 1.5) return; // scroll o tap
+    if (!flipped) {
+      setFlipped(true);
+      speak(word.it, { rate: audioRate });
+      return;
+    }
+    grade(dx > 0 ? 2 : 0);
   };
 
   if (!word) {
@@ -80,7 +106,7 @@ export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExi
       </div>
 
       {/* tarjeta */}
-      <div className="[perspective:1200px]">
+      <div className="[perspective:1200px]" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <motion.button
           key={currentId + String(flipped)}
           onClick={() => {
@@ -90,7 +116,7 @@ export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExi
           animate={{ rotateY: 0, opacity: 1 }}
           transition={{ duration: 0.35 }}
           className={cn(
-            "relative min-h-64 w-full rounded-3xl border-2 p-8 text-center shadow-lg transition-colors",
+            "relative min-h-64 w-full touch-pan-y rounded-3xl border-2 p-8 text-center shadow-lg transition-colors select-none",
             flipped ? "border-verde/40 bg-verde-tenue/50" : "border-soft bg-surface"
           )}
           aria-label={flipped ? "Ver anverso" : "Revelar traducción"}
@@ -113,8 +139,8 @@ export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExi
             )}
           </div>
 
-          <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-widest text-muted-it">
-            {flipped ? "¿Cómo te fue?" : "Toca para revelar"}
+          <span className="absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-widest text-muted-it">
+            {flipped ? "← otra vez · bien →" : "Toca para revelar"}
           </span>
         </motion.button>
       </div>

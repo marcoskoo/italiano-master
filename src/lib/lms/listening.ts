@@ -1,6 +1,7 @@
 import type { ListeningTask } from "./types";
 import { LISTENING_EXTRA } from "./extra/listening-extra";
 import { LISTENING_EXTRA_2 } from "./extra/listening-extra2";
+import { LISTENING_EXTRA_3 } from "./extra/listening-extra3";
 
 /* ── Escucha · tareas con TTS ─────────────────────────────────────── */
 
@@ -78,3 +79,6 @@ LISTENING.push(...LISTENING_EXTRA);
 
 /* # Paquete de expansión v4.0: +8 escuchas (14 → 22) */
 LISTENING.push(...LISTENING_EXTRA_2);
+
+/* # Paquete de expansión v6.0: +8 escuchas (22 → 30) */
+LISTENING.push(...LISTENING_EXTRA_3);

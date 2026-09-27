@@ -1,6 +1,7 @@
 import type { ReadingText } from "./types";
 import { READINGS_EXTRA } from "./extra/reading-extra";
 import { READINGS_EXTRA_2 } from "./extra/reading-extra2";
+import { READINGS_EXTRA_3 } from "./extra/reading-extra3";
 
 /* ── Lectura · textos graduados ───────────────────────────────────── */
 
@@ -101,3 +102,6 @@ READINGS.push(...READINGS_EXTRA);
 
 /* # Paquete de expansión v4.0: +8 lecturas (14 → 22) */
 READINGS.push(...READINGS_EXTRA_2);
+
+/* # Paquete de expansión v6.0: +8 lecturas (22 → 30) */
+READINGS.push(...READINGS_EXTRA_3);

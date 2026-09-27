@@ -53,7 +53,7 @@ export const VOCAB: VocabWord[] = [
   W("w-vino", "vino", "vino", "víno", "sostantivo", "alimentazione", "A1", { it: "Un bicchiere di vino rosso.", es: "Una copa de vino tinto." }, { gender: "m", plural: "vini" }),
   W("w-frutta", "frutta", "fruta", "frútta", "sostantivo", "alimentazione", "A1", { it: "Mangio frutta ogni giorno.", es: "Como fruta cada día." }, { gender: "f" }),
   W("w-carne", "carne", "carne", "kárne", "sostantivo", "alimentazione", "A2", { it: "Non mangio carne.", es: "No como carne." }, { gender: "f" }),
-  W("w-pesce", "pesce", "pescado", "péshe", "sostantivo", "alimentazione", "A2", { it: "Il pesce fresco del mercato.", es: "El pescado fresco del mercado." }, { gender: "m", plural: "pesci" }),
+  W("w-pesce", "pesce", "pescado / pez", "péshe", "sostantivo", "alimentazione", "A2", { it: "Il pesce fresco del mercato.", es: "El pescado fresco del mercado." }, { gender: "m", plural: "pesci", note: "Animal vivo = pez (i pesci del mare); como alimento = pescado (il pesce al forno)." }),
 
   /* ristorante */
   W("w-ristorante", "ristorante", "restaurante", "ristoránte", "sostantivo", "ristorante", "A1", { it: "Prenoto un tavolo al ristorante.", es: "Reservo una mesa en el restaurante." }, { gender: "m", plural: "ristoranti" }),

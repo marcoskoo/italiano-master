@@ -226,6 +226,13 @@
 
 /* ── Móvil: controles táctiles más cómodos ────────────────────────── */
 @media (pointer: coarse) {
+  /* iOS Safari: evita el auto-zoom al enfocar campos con fuente < 16px
+     (mantiene 16px como mínimo; los campos mayores no cambian) */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
   /* thumbs de slider más grandes para el dedo (16px → 22px) */
   [data-slot="slider-thumb"] {
     width: 22px !important;
