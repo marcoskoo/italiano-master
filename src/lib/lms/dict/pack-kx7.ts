@@ -27,7 +27,7 @@ terracotta|terracota|terrakɔtta|S|art|4|Un vaso di terracotta toscana.|Una mace
 cartone|cartón|karˈtone|S|tec|3|Uno scatolone di cartone ondulato.|Una caja de cartón corrugado.|g=m;p=cartoni
 carta|papel|karta|S|tec|2|Un foglio di carta riciclata.|Una hoja de papel reciclado.|g=f;p=carte;c=carta d'identità
 carta da pacco|papel de envolver|karta da ˈpakko|L|cmp|5|Due metri di carta da pacco.|Dos metros de papel de envolver.
-tovagliolo di carta|servilleta de papel|tovaɲɲɔlo di karta|L|ris|4|I tovaglioli di carta sul tavolo.|Las servilletas de papel en la mesa.
+tovagliolo di carta|servilleta de papel|tovaˈʎʎolo di ˈkarta|L|ris|4|I tovaglioli di carta sul tavolo.|Las servilletas de papel en la mesa.
 fazzoletto|pañuelo|fattsoˈletto|S|rop|4|Un fazzoletto di lino ricamato.|Un pañuelo de lino bordado.|g=m;p=fazzoletti
 lino|lino|lino|S|rop|4|Una camicia di lino estiva.|Una camisa de lino de verano.|g=m;n=Invariable
 velluto|terciopelo|velˈluto|S|rop|4|Un divano di velluto verde.|Un sofá de terciopelo verde.|g=m;n=Invariable

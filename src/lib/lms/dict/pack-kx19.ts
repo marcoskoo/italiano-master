@@ -45,7 +45,7 @@ orecchie a penzoloni|orejas caídas|orekkje a pentsoloni|L|ani|5|Le orecchie a p
 ringhiare|gruñir|rinɡɡjaˈre|V|ani|4|Il cane ringhia al passante.|El perro gruñe al transeúnte.
 abbaiare|ladrar|abbaˈjare|V|ani|3|Il cane abbaia al campanello.|El perro ladra al timbre.
 miagolare|maullar|mjaɡoˈlare|V|ani|4|Il gatto miagola alla finestra.|El gato maúlla en la ventana.
-grugnire|grunir|ɡrunˈdʒire|V|ani|5|Il maiale grugnisce nel trogolo.|El cerdo grune en el comedero.
+grugnire|grunir|ɡruɲˈɲire|V|ani|5|Il maiale grugnisce nel trogolo.|El cerdo grune en el comedero.
 nitrire|relinchar|niˈtrire|V|ani|5|Il cavallo nitrisce nel prato.|El caballo relincha en el prado.|r=let
 muggire|mugir|mudˈdʒire|V|ani|5|La mucca muggisce nella stalla.|La vaca muge en el establo.|r=let
 belare|balar|beˈlare|V|ani|5|Le pecore belano al pascolo.|Las ovejas balan en el pastizal.|r=let

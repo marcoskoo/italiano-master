@@ -269,7 +269,8 @@ export type ViewId =
   | "repaso" | "esami" | "certificati" | "impostazioni" | "piani" | "admin"
   | "numerilab" | "verbidrill" | "pianosettimanale" | "analizzatore" | "schede"
   | "proverbi" | "falsiamici" | "dettato" | "ankiexport"
-  | "parolanascosta" | "preposizioni" | "pomodoro" | "muse";
+  | "parolanascosta" | "preposizioni" | "pomodoro" | "muse"
+  | "indovinelli" | "verofalso" | "proverbio";
 
 export interface NavParams {
   level?: CefrLevel | "zero";

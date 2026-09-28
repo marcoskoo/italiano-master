@@ -51,7 +51,7 @@ calendario|calendario|kalendaˈrjo|S|tmp|1|Il calendario di dicembre è pieno.|E
 cartella|carpeta|karˈtɛlla|S|lav|2|Salva il file nella cartella giusta.|Guarda el archivo en la carpeta correcta.|g=f;n=También: cartella clinica = historia clínica
 raccoglitore|fólder (carpeta anillada)|rakkɔʎʎiˈtore|S|lav|3|Metti i fogli nel raccoglitore.|Pon las hojas en el fólder.|g=m;p=raccoglitori
 progetto|proyecto|proˈdʒɛtto|S|lav|1|Seguo un progetto internazionale.|Sigo un proyecto internacional.|g=m;p=progetti;c=capoprogetto
-scadenza|fecha límite|ʃaˈdenttsa|S|lav|2|La scadenza è per venerdì.|La fecha límite es para el viernes.|g=f;p=scadenze;c=rispettare le scadenze
+scadenza|fecha límite|skaˈdɛntsa|S|lav|2|La scadenza è per venerdì.|La fecha límite es para el viernes.|g=f;p=scadenze;c=rispettare le scadenze
 rapporto|informe|rapˈpɔrto|S|lav|2|Il rapporto trimestrale è pronto.|El informe trimestral está listo.|g=m;p=rapporti;n=Relazione = relación/informe largo; rapporto también "relación entre personas"
 riepilogo|resumen (de datos)|rieˈpilogo|S|lav|4|Un riepilogo delle vendite.|Un resumen de las ventas.|g=m;p=riepiloghi
 svolgere|desempeñar|zvolˈdʒere|V|lav|3|Svolgo compiti amministrativi.|Desempeño tareas administrativas.|n=Irregular: svolgo; participio svolto

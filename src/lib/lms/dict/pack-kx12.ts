@@ -4,7 +4,7 @@ import type { VocabWord } from "../types";
 export const PACK_KX12: VocabWord[] = parsePack(`
 # ══ feste e ricorrenze ══
 capodanno|año nuevo|kapodanno|S|tmp|2|Il capodanno in piazza coi fuochi.|El año nuevo en la plaza con fuegos.|g=m;n=Invariable;c=cena di capodanno
-veglione|fiesta de fin de año|velˈljone|S|sve|5|Il veglione di capodanno in hotel.|La fiesta de fin de año en hotel.|g=m;p=veglioni
+veglione|fiesta de fin de año|veʎˈʎone|S|sve|5|Il veglione di capodanno in hotel.|La fiesta de fin de año en hotel.|g=m;p=veglioni
 fuochi d'artificio|fuegos artificiales|fwɔki dartifiˈtʃo|L|sve|3|I fuochi d'artificio a mezzanotte.|Los fuegos artificiales a medianoche.
 presepe|pesebre|preˈzɛpe|S|att|4|Il presepe napoletano artigianale.|El pesebre napolitano artesanal.|g=m;p=presepi;n=Anche presepio
 presepio|pesebre (variante)|preˈzɛpjo|S|att|5|Il presepio della parrocchia.|El pesebre de la parroquia.|g=m;p=presepi

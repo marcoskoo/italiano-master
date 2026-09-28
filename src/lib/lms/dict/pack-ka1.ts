@@ -215,7 +215,7 @@ coltello|cuchillo|kolˈtɛllo|S|ris|1|Tagliare il pane col coltello.|Cortar el p
 cucchiaio|cuchara|kukˈkjaio|S|ris|1|Un cucchiaio di zucchero.|Una cuchara de azúcar.|g=m;p=cucchiai
 pentola|olla|ˈpɛntola|S|ris|2|L'acqua bolle nella pentola.|El agua hierve en la olla.|g=f;p=pentole
 padella|sartén|paˈdɛlla|S|ris|1|Le uova in padella.|Los huevos a la sartén.|g=f;p=padelle
-tovagliolo|servilleta|tovaɲˈɲolo|S|ris|1|Il tovagliolo di stoffa.|La servilleta de tela.|g=m;p=tovaglioli
+tovagliolo|servilleta|tovaˈʎʎolo|S|ris|1|Il tovagliolo di stoffa.|La servilleta de tela.|g=m;p=tovaglioli
 bottiglia|botella|botˈtiʎʎa|S|ris|1|Una bottiglia di vino rosso.|Una botella de vino tinto.|g=f;p=bottiglie
 lattina|lata|latˈtina|S|ris|2|Una lattina di coca-cola.|Una lata de coca-cola.|g=f;p=lattine
 sacchetto|bolsa|sakˈkɛtto|S|cmp|1|Mi dia un sacchetto, per favore.|Deme una bolsa, por favor.|g=m;p=sacchetti
@@ -233,7 +233,7 @@ elefante|elefante|eleˈfante|S|ani|2|L'elefante ha una memoria eccezionale.|El e
 leone|león|leˈone|S|ani|2|Il leone ruggisce.|El león ruge.|g=m;p=leoni
 tigre|tigre|ˈtiɡre|S|ani|2|La tigre è un felino.|La tigre es un felino.|g=f;p=tigri
 giraffa|jirafa|dʒiˈraffa|S|ani|2|La giraffa mangia le foglie.|La jirafa come las hojas.|g=f;p=giraffe
-scimmia|mono|ˈskimmja|S|ani|2|La scimmia mangia la banana.|El mono come el banano.|g=f;p=scimmie
+scimmia|mono|ˈʃimmja|S|ani|2|La scimmia mangia la banana.|El mono come el banano.|g=f;p=scimmie
 orso|oso|ˈɔrso|S|ani|2|L'orso dorme tutto l'inverno.|El oso duerme todo el invierno.|g=m;p=orsi
 volpe|zorro|ˈvɔlpe|S|ani|2|La volpe è astuta.|El zorro es astuto.|g=f;p=volpi
 scoiattolo|ardilla|skoiˈattolo|S|ani|3|Lo scoiattolo nasconde le noci.|La ardilla esconde las nueces.|g=m;p=scoiattoli

@@ -53,7 +53,7 @@ export const VOCAB_EXTRA: VocabWord[] = [
   W("w2-gatto", "gatto", "gato", "gátto", "sostantivo", "animali", "A1", { it: "Il gatto dorme sul divano.", es: "El gato duerme en el sofá." }, { gender: "m", plural: "gatti" }),
   W("w2-uccello", "uccello", "pájaro", "uchéllo", "sostantivo", "animali", "A1", { it: "Un uccello canta sul davanzale.", es: "Un pájaro canta en el alféizar." }, { gender: "m", plural: "uccelli" }),
   W("w2-cavallo", "cavallo", "caballo", "kávallo", "sostantivo", "animali", "A1", { it: "Cavalco un cavallo nero.", es: "Monto un caballo negro." }, { gender: "m", plural: "cavalli" }),
-  W("w2-pesce", "pesce", "pez", "pésshe", "sostantivo", "animali", "A1", { it: "Nel Mediterraneo nuotano pesci colorati.", es: "En el Mediterráneo nadan peces de colores." }, { gender: "m", plural: "pesci" }),
+  W("w2-pesce", "pesce", "pez", "péshe", "sostantivo", "animali", "A1", { it: "Nel Mediterraneo nuotano pesci colorati.", es: "En el Mediterráneo nadan peces de colores." }, { gender: "m", plural: "pesci" }),
   W("w2-farfalla", "farfalla", "mariposa", "farfálla", "sostantivo", "animali", "A1", { it: "Una farfalla si è posata sul fiore.", es: "Una mariposa se posó en la flor." }, { gender: "f", plural: "farfalle" }),
   W("w2-lupo", "lupo", "lobo", "lúpo", "sostantivo", "animali", "A2", { it: "Nello stemma di L'Aquila c'è un lupo.", es: "En el escudo de L'Aquila hay un lobo." }, { gender: "m", plural: "lupi" }),
   W("w2-delfino", "delfino", "delfín", "delfíno", "sostantivo", "animali", "A2", { it: "Nel golfo di Napoli si vedono i delfini.", es: "En el golfo de Nápoles se ven los delfines." }, { gender: "m", plural: "delfini" }),

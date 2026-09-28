@@ -57,8 +57,8 @@ prendere pesci in faccia|tomar peces en la cara|prɛndere ˈpeʃʃi in ˈfattʃa
 fare polvere|hacer polvo|fare ˈpɔlvere|L|spt|4|La Juventus ha fatto polvere del rivale.|La Juventus hizo polvo al rival.
 fare a pezzi|hacer pedazos|fare a ˈpjezzi|L|ast|3|La critica ha fatto a pezzi il film.|La crítica hizo pedazos la película.
 essere un pezzo grosso|ser un pez gordo|eˈssere un ˈpɛttso ˈɡrɔsso|L|lav|4|Nell'azienda è un pezzo grosso.|En la empresa es un pez gordo.|r=inf
-pesce grosso|pez gordo|ˈpɛttse ˈɡrɔsso|L|ist|4|Hanno arrestato un pesce grosso.|Detuvieron a un pez gordo.|r=inf
-pesce fuor d'acqua|pez fuera del agua|ˈpɛttse fwor dakkwa|L|emo|4|Alla festa mi sentivo un pesce fuor d'acqua.|En la fiesta me sentía un pez fuera del agua.
+pesce grosso|pez gordo|ˈpeʃʃe ˈɡrɔsso|L|ist|4|Hanno arrestato un pesce grosso.|Detuvieron a un pez gordo.|r=inf
+pesce fuor d'acqua|pez fuera del agua|ˈpeʃʃe fwor dakkwa|L|emo|4|Alla festa mi sentivo un pesce fuor d'acqua.|En la fiesta me sentía un pez fuera del agua.
 
 # ══ corpo e sentimentos ══
 a mani basse|con las manos vacías|a ˈmani ˈbasse|L|ast|5|Non torno a mani basse dal mercato.|No vuelvo con las manos vacías del mercado.|n=En italiano: a mani basse = sin haber logrado nada

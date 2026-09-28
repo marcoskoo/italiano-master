@@ -44,9 +44,9 @@ medioevo|medioevo|medjoevo|S|tmp|4|Il medioevo dei comuni italiani.|El medioevo 
 rinascimento|renacimiento|rinaʃʃimento|S|art|3|Il rinascimento fiorentino.|El renacimiento florentino.|g=m;c=Quattrocento e Cinquecento
 quattrocento|cuatrocientos (1400)|kwattroʧento|N|tmp|4|La pittura del Quattrocento.|La pintura del Quattrocento.
 cinquecento|quinientos (1500)|tʃinkweʧento|N|tmp|4|Il Cinquecento di Venezia.|El Cinquecento de Venecia.
-seicento|seiscientos (1600)|seiʧento|N|tmp|4|Il barocco del Seicento.|El barroco del Seicento.
+seicento|seiscientos (1600)|seiˈtʃɛnto|N|tmp|4|Il barocco del Seicento.|El barroco del Seicento.
 settecento|setecientos (1700)|setteʧento|N|tmp|4|L'illuminismo del Settecento.|La ilustración del Settecento.
-ottocento|ochocientos (1800)|ottoʧento|N|tmp|4|Il romanzo dell'Ottocento.|La novela del Ottocento.
+ottocento|ochocientos (1800)|ottoˈtʃɛnto|N|tmp|4|Il romanzo dell'Ottocento.|La novela del Ottocento.
 novecento|novecientos (1900)|noveʧento|N|tmp|4|L'arte del Novecento.|El arte del Novecento.
 duemila|dos mil|duemila|N|tmp|3|La generazione del duemila.|La generación del dos mil.
 
@@ -167,7 +167,7 @@ cabina elettorale|cabina electoral|kabina elettorale|L|ist|5|La cabina elettoral
 scheda elettorale|papeleta electoral|skeda elettorale|L|ist|5|La scheda elettorale nella busta.|La papeleta electoral en el sobre.
 seggio|colegio electoral|seddʒo|S|ist|5|Il seggio comunale sotto scuola.|El colegio electoral bajo la escuela.|g=m;p=seggi
 spoglio|escrutinio|spɔʎʎo|S|ist|5|Lo spoglio delle schede in diretta.|El escrutinio de las papeletas en vivo.|g=m;p=spogli;n=Anche: nudo… spogliarello
-spogliarello|striptease|spoljaˈrɛllo|S|sve|5|Uno spogliarello integrale in scena.|Un striptease integral en escena.|g=m;p=spogliarelli;r=col
+spogliarello|striptease|spoʎʎaˈrɛllo|S|sve|5|Uno spogliarello integrale in scena.|Un striptease integral en escena.|g=m;p=spogliarelli;r=col
 parere|parecer|paˈrere|S|ast|3|Il parere del legale sull accordo.|El parecer del abogado sobre el acuerdo.|g=m;p=pareri;c=secondo il parere di
 parere legale|parecer legal|parere legale|L|ist|4|Un parere legale scritto dettagliato.|Un parecer legal escrito detallado.
 avvertenza|advertencia|avverˈtɛntsa|S|ast|4|Un'avvertenza sul manuale d'uso.|Una advertencia en el manual de uso.|g=f;p=avvertenze;c=senza avvertenza
@@ -285,7 +285,7 @@ grotta di Castellana|cueva de Castellana|ɡrɔtta di kastelˈlana|L|nat|4|La gro
 carsismo|kárstico (carsismo)|karzizmo|S|nat|5|Il carsismo delle Murge pugliesi.|El carso de las Murge apulias.|g=m;n=Invariable;r=tec
 inghiottitoio|sumidero|inɡojtitˈoːjo|S|nat|5|Un inghiottitoio carsico nel salento.|Un sumidero kárstico en el Salento.|g=m;p=inghiottitoi
 # ══bloque final 4: las últimas palabras ══
-sveglia la mattina|despertar por la mañana|sveglia la matˈtina|L|tmp|3|La sveglia la mattina presto.|El despertar por la mañana temprano.
+sveglia la mattina|despertar por la mañana|ˈsveʎʎa la matˈtina|L|tmp|3|La sveglia la mattina presto.|El despertar por la mañana temprano.
 colazione al bar|desayuno en el bar|kolatsjone al bar|L|ris|3|La colazione al bar da dieci euro.|El desayuno en el bar de diez euros.
 cornetto e cappuccino|croissant y capuchino|kornetto e kapputˈtʃino|L|ris|3|Cornetto e cappuccino in piedi al banco.|Croissant y capuchino de pie en el mostrador.
 al banco|de pie en el mostrador|al banko|L|ris|3|Il caffè al banco costa meno.|El café de pie cuesta menos.

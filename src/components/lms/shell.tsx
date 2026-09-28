@@ -6,7 +6,7 @@ import {
   Gamepad2, GraduationCap, Hash, Home, Languages, Library, LineChart, MapPin, Medal, Microscope,
   PenLine, Printer, RefreshCcw, ScrollText, Settings, Shield, Sparkles, Timer, Trophy, Volume2,
   X, Zap, Flame, Menu, CalendarDays, Quote, AlertTriangle, Keyboard, FileSpreadsheet,
-  Dices, Target, Wand2,
+  Dices, Target, Wand2, HelpCircle, Scale, Puzzle,
   LogIn, LogOut,
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
@@ -71,6 +71,9 @@ const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typ
       { id: "preposizioni", label: "Preposizioni lab", icon: Target },
       { id: "pomodoro", label: "Pomodoro studio", icon: Timer },
       { id: "muse", label: "Muse · generador", icon: Wand2 },
+      { id: "indovinelli", label: "Indovinelli", icon: HelpCircle },
+      { id: "verofalso", label: "Vero o Falso", icon: Scale },
+      { id: "proverbio", label: "Completa il proverbio", icon: Puzzle },
     ],
   },
   {
@@ -127,6 +130,9 @@ const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   preposizioni: { title: "Preposizioni lab", sub: "72 frases de relleno con la regla explicada: la cura contra a/in/di/da" },
   pomodoro: { title: "Pomodoro studio", sub: "Sesiones de enfoque 25/5 con XP y aviso de voz al cambiar de fase" },
   muse: { title: "Muse · generador", sub: "Retos de escritura y habla generados por nivel MCER" },
+  indovinelli: { title: "Indovinelli", sub: "18 adivinanzas italianas con pistas graduales y dato cultural incluido" },
+  verofalso: { title: "Vero o Falso", sub: "12 afirmaciones rápidas de gramática, falsos amigos y cultura: racha de 5 = XP doble" },
+  proverbio: { title: "Completa il proverbio", sub: "Empareja las mitades de 193 proverbi: equivalente español y contexto tras cada respuesta" },
 };
 
 function NavItem({ id, label, icon: Icon, onNav, active }: { id: ViewId; label: string; icon: typeof Home; onNav: () => void; active: boolean }) {

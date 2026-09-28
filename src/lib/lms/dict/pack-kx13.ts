@@ -48,7 +48,7 @@ insonne|insomne|inˈsɔnne|A|sla|5|Una notte insonne per il caldo.|Una noche ins
 insonnia|insomnio|inˈsɔnnia|S|sla|4|L'insonnia da troppi pensieri.|El insomnio de tantos pensamientos.|g=f
 sonnifero|somnífero|sonniˈfɛro|S|sla|5|Un sonnifero leggero naturale.|Un somnífero leve natural.|g=m;p=sonniferi
 incubo|pesadilla|inˈkubo|S|emo|3|Un incubo ricorrente sugli esami.|Una pesadilla recurrente sobre exámenes.|g=m;p=incubi;a=sogno
-sogno ad occhi aperti|sueño despierto|sogno ad ɔkki aperti|L|emo|4|Un sogno ad occhi aperti sul futuro.|Un sueño despierto sobre el futuro.
+sogno ad occhi aperti|sueño despierto|ˈsoɲɲo ad ˈɔkki aˈperti|L|emo|4|Un sogno ad occhi aperti sul futuro.|Un sueño despierto sobre el futuro.
 fantasia|fantasía|fantaˈzia|S|emo|3|Un mondo di fantasia colorato.|Un mundo de fantasía colorido.|g=f;p=fantasie;c=con fantasia
 immaginazione|imaginación|immaɡinatˈtsjone|S|emo|3|Usa tutta l'immaginazione possibile.|Usa toda la imaginación posible.|g=f
 `, "A2", "k-x13");

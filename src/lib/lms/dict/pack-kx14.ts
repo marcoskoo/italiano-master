@@ -35,7 +35,7 @@ elastico|elástico|elaˈstiko|S|spt|4|Un elastico per gli esercizi.|Un elástico
 bilancia|balanza|biˈlantʃa|S|cas|3|La bilancia del bagno vietata.|La balanza del baño prohibida.|g=f;p=bilance
 panca|banco|panka|S|spt|4|La panca degli addominali.|El banco de los abdominales.|g=f;p=panche;c=panchina degli sostituti
 panchina|banquillo|panˈkina|S|spt|4|In panchina per un ammonito.|En el banquillo por un amonestado.|g=f;p=panchine
-spogliatoio|vestuario|spoljaˈtoːjo|S|spt|4|Lo spogliatoio dello stadio affollato.|El vestuario del estadio lleno.|g=m;p=spogliatoi
+spogliatoio|vestuario|spoʎʎaˈtɔːjo|S|spt|4|Lo spogliatoio dello stadio affollato.|El vestuario del estadio lleno.|g=m;p=spogliatoi
 guardalinee|juez de línea|ɡwardaliˈneːe|S|spt|5|Il guardalinee alza la bandierina.|El juez de línea alza la banderita.|g=m;p=guardalinee
 bandierina|banderita|bandjeˈrina|S|spt|4|La bandierina del corner.|La banderita del córner.|g=f;p=bandierine
 corner|córner|korner|S|spt|3|Un corner battuto corto.|Un córner ejecutado corto.|g=m;n=Anglicismo

@@ -127,7 +127,7 @@ scoperta|descubrimiento|skoˈperta|S|sci|3|Una scoperta che cambia la medicina.|
 ricercatore|investigador|ritʃerkaˈtore|S|pro|4|Il ricercatore pubblica lo studio.|El investigador publica el estudio.|g=m;p=ricercatori
 campione|muestra (espécimen)|kamˈpjone|S|sci|3|Un campione di acqua del fiume.|Una muestra de agua del río.|g=m;p=campioni;n="Campeón" = campione (altro significato)
 misurazione|medición|misuraˈtsjone|S|sci|4|La misurazione della temperatura.|La medición de la temperatura.|g=f;p=misurazioni
-esattezza|exactitud|eɡsatˈtettsa|S|sci|4|L'esattezza dei calcoli è vitale.|La exactitud de los cálculos es vital.|g=f
+esattezza|exactitud|eɡzatˈtsetsa|S|sci|4|L'esattezza dei calcoli è vitale.|La exactitud de los cálculos es vital.|g=f
 approssimazione|aproximación|approssimaˈtsjone|S|sci|5|Un calcolo per approssimazione.|Un cálculo por aproximación.|g=f
 formula|fórmula|ˈfɔrmula|S|sci|3|La formula dell'acqua: H₂O.|La fórmula del agua: H₂O.|g=f;p=formule
 scoprire|descubrir|skoˈprire|V|sci|2|Ho scoperto un ristorante fantastico.|Descubrí un restaurante fantástico.|n=Io scopro; participio scoperto
