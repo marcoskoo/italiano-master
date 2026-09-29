@@ -159,3 +159,24 @@ Stage Summary:
 - v9.1 LIVE: cada personaje de los diálogos suena con voz distinta (voces físicas si el navegador las tiene — Edge/macOS —, tono grave/agudo como fallback en Chrome de 1 voz). Diferenciación visual complementaria: avatar con inicial + chip de color por hablante en las 3 superficies de diálogos.
 - Fix latente incluido: paleta azzurro/viola/terracotta-completa en globals.css (chips de categorías de letture sin color antes).
 - Estrategia robusta garantizada en cualquier plataforma (0+ voces italianas disponibles).
+
+---
+Task ID: 8
+Agent: main (Super Z)
+Task: v9.2 — Imágenes para cada lettura + reemplazo de la iconografía emoji del Vocabulario (petición del usuario)
+
+Work Log:
+- Inventario: 16 letture (3 dialoghi, 4 informazione, 5 storia-italia, 4 storia-mondo) + 37 categorías de vocabulario con palabras (las 31 base + 6 MCER v2.0: emozioni, comunicazione, istituzioni, connettivi, astratto, arte).
+- Estrategia híbrida: fotos reales para storia (autenticidad) + ilustraciones IA consistentes para diálogos/información/boom e iconos de vocabulario.
+- Búsquedas (9, image-search OSS): Coliseo amanecer, cúpula Florencia, Garibaldi, emigración sepia, Machu Picchu, Delacroix, caravana Ruta de la Seda, Somalia 1960. Rate-limits 429 gestionados con lotes secuenciales + pausas.
+- Verificación VLM de TODAS las candidatas (createVision): descartadas fotos con marcas de agua (Alamy ×3, Shutterstock ×1, Dreamstime) y una off-topic (protestas USA); confirmados contenido y recortes (Garibaldi/Delacroix/Somalia tras attention-crop).
+- Generación IA (gen-images.mjs, SDK z-ai, concurrencia 3, reintentos): 8 ilustraciones letture 1344x768 (bar, hotel Florencia, terraza verano, redes sociales, dieta mediterránea, mar que sube, trabajo remoto, boom 60s con Fiat 500+Vespa) + 37 iconos vocabulario 1024x1024 estilo plano verde/terracotta sobre crema, todos "no text".
+- Procesado (process-images.mjs, sharp): letture → JPEG q80 mozjpeg 1344x768 cover attention-crop; vocab → WebP q85 512x512. Total: 1,9 MB + 628 KB = 2,5 MB para 53 imágenes.
+- Código: LETTURE_IMG (letture.ts) + CATEGORY_IMG (types.ts, 37 entradas); letture.tsx con miniatura 16:9 hover-zoom en tarjetas y hero con gradiente+chip en el lector (article reestructurado overflow-hidden); vocabulary.tsx con banner 4:3 en tarjetas de categoría (sustituye emoji) y miniatura en cabecera de categoría abierta.
+- Lint 0/0, build OK. Verificación local agent-browser (sesión nueva): 16 tarjetas con imagen, lector Roma con Coliseo (MD5 servido=local), diálogo bar con ilustración + avatares BARISTA/CLIENTE en DOM, vocabulario con 37 banners ilustrados, categoría abierta con miniatura, 0 errores consola.
+- Commit 8ee640f → push → deploy dpl_FC3o READY. Producción: home 200, 4 imágenes muestreadas 200, biblioteca y vocabulario verificados visualmente (VLM) sin errores ni elementos rotos.
+
+Stage Summary:
+- v9.2 LIVE: cada lettura tiene su imagen (fotos históricas verificadas + ilustraciones originales) y el Vocabulario estrenó iconografía ilustrada IA (37 categorías, estilo consistente con la marca).
+- 53 imágenes nuevas (2,5 MB total, optimizadas JPEG/WebP), pipeline reproducible en scripts/img/.
+- Control de calidad VLM en todo el ciclo: candidatas → recortes → renders locales → producción.
