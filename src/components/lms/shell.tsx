@@ -81,7 +81,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [loginBusy, setLoginBusy] = useState(false);
 
   const rank = rankFor(xp);
-  const meta = VIEW_TITLES[view];
+  /* v9.5.1: vista corrupta/desconocida en el estado persistido → fallback a inicio.
+     Antes VIEW_TITLES[view] era undefined y meta.title tumbaba toda la app. */
+  const meta = VIEW_TITLES[view] ?? VIEW_TITLES.inicio;
   const appName = remoteConfig?.appName || "Italiano Master";
   const dueCount = useMemo(() => dueCards(srs).length, [srs]);
 

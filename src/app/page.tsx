@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { AppShell } from "@/components/lms/shell";
 import { useLms } from "@/lib/lms/store";
+import { VIEW_TITLES } from "@/lib/lms/nav";
 import { initVoices } from "@/lib/lms/tts";
 import { fetchAppConfig, telemetry, getClientId, syncProfileRequest, fetchServerProgress, loginRequest, setAdminToken, type ProfileSyncPayload } from "@/lib/lms/remote";
 import { HomeView } from "@/components/lms/views/home";
@@ -95,7 +96,9 @@ function MaintenanceScreen({ message, onAdminLogin }: { message: string; onAdmin
 }
 
 export default function Home() {
-  const view = useLms((s) => s.view);
+  const rawView = useLms((s) => s.view);
+  /* v9.5.1: estado persistido corrupto (vista inexistente) → inicio en vez de pantalla vacía */
+  const view = (typeof rawView === "string" && rawView in VIEW_TITLES ? rawView : "inicio") as typeof rawView;
   const account = useLms((s) => s.account);
   const remoteConfig = useLms((s) => s.remoteConfig);
   const configVersion = useLms((s) => s.configVersion);
