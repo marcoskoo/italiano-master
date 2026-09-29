@@ -180,3 +180,24 @@ Stage Summary:
 - v9.2 LIVE: cada lettura tiene su imagen (fotos históricas verificadas + ilustraciones originales) y el Vocabulario estrenó iconografía ilustrada IA (37 categorías, estilo consistente con la marca).
 - 53 imágenes nuevas (2,5 MB total, optimizadas JPEG/WebP), pipeline reproducible en scripts/img/.
 - Control de calidad VLM en todo el ciclo: candidatas → recortes → renders locales → producción.
+
+---
+Task ID: 9
+Agent: main (Super Z)
+Task: v9.3 — Más lecturas con imágenes (arte, cucina, musica) + imágenes en selector de categorías de Juegos + ilustraciones en flashcards de repaso
+
+Work Log:
+- Análisis de superficies: el selector de categorías del juego Memoria usaba CATEGORY_META.emoji (games.tsx), las FlashcardSession no tenían imagen, y la biblioteca de letture tenía 16 títulos sin categoría de cultura.
+- Contenido nuevo (src/lib/lms/letture-cultura.ts, 250 líneas): 6 letture originales categoría "cultura" — Caravaggio B2 (7 párrafos), Cappella Sistina B1 (7), cucina regionale B1 (8), pizza napoletana A2 (7), opera lirica C1 (8), Sanremo B2 (7). Cada una con glosario 5-6 términos, 5 preguntas MC con explicación, 3 idee per discutir. Hechos verificados (Grammy de Modugno, UNESCO 2017 pizzaiuolo, DOP/IGP, carbonara sin nata, Va' pensiero/Risorgimento). Corregidos 4 typos detectados (español en texto it, caracteres CJK accidentales).
+- Integración: LetturaCat += "cultura", LETTURE_CATS += 🎨 "Cultura italiana", LETTURE 16→22, LETTURE_IMG +6, CAT_STYLES cultura=viola (paleta ya existía desde v9.1).
+- Imágenes (6): búsquedas image-search (gl us, 6 queries, lotes con pausas) → 14 candidatas descargadas → verificación VLM (descartes: Alamy/Depositphotos con marca de agua en caravaggio-5, scala-0/3, sanremo-0/1/3/4) → selección final: Santa Caterina de Caravaggio (2000px), interior Sixtina CNN (3000px), pasta fresca, margherita ante horno de leña (1920x1080), teatro con telón rojo, fachada Ariston con marquesina "75° Festival" → sharp attention-crop 1344x768 mozjpeg q80 (1,04 MB total) → verificación VLM de recortes finales (todos bien enmarcados, sin marcas de agua).
+- Giochi (Memoria): selector de categorías con miniatura 16:9 CATEGORY_IMG (37 imágenes) + hover-zoom + emoji pequeño junto al nombre; cabecera de partida con mini imagen 9x9 redondeada.
+- Flashcards: ilustración de categoría (h-20/24 rounded-2xl) en el anverso sobre la palabra; reverso sin cambios (traducción + ejemplo).
+- Lint 0 errores, build OK (13 rutas + APIs). Dev server daemonizado (doble fork python — nohup/setsid morían entre comandos).
+- E2E local (agent-browser sesión nueva): chip 🎨 Cultura italiana → 6 cards; lector Caravaggio con hero cult-arte-17 + 17 párrafos + quiz renderizado; selector Memoria con 37 imágenes consistentes (VLM: ninguna rota, sin emoji-only); partida iniciada con mini imagen en cabecera; flashcard "ciao" con ilustración saluti.webp centrada (VLM OK), giro + 4 botones grado OK; 0 errores consola.
+- Commit 0a9610d → push → deploy dpl_2BkCR8HqiPraVvwTZNwjofypswGy READY. Producción: home 200, 6 imágenes nuevas 200, biblioteca 22 cards (22 con imagen, 6 cult-*), filtro cultura "6 letture disponibles" con todas las fotos cargadas (VLM confirma), selector juegos 37 imágenes, 0 errores consola.
+
+Stage Summary:
+- v9.3 LIVE: 22 letture totales (+6 de cultura: arte, cucina, musica con fotos reales verificadas), selector de categorías de Juegos ilustrado (37 imágenes), flashcards de repaso con ilustración de categoría.
+- 6 imágenes nuevas (1,04 MB), pipeline reproducible en scripts/img/.
+- Coste adicional: 0 € (assets estáticos + contenido original).
