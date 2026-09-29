@@ -248,3 +248,25 @@ Work Log:
 Stage Summary:
 - v9.5 LIVE: Ruota della fortuna rediseñada de conic-gradient plano a rueda de casino premium (aro dorado + bombillas animadas, gajos etiquetados radialmente, Stella d'Italia, puntero con rubí que tiquea, jackpot pulsante, celebración con destellos y chips de premios).
 - Lógica de premios/pesos/1-giro-al-día intacta; mismo feel de giro (4s cubic-bezier). Accesible (aria-label, reduced-motion) y responsive (móvil sin overflow).
+
+---
+Task ID: 6
+Agent: main (Super Z)
+Task: v9.5.1 — Investigar y corregir "Application error: a client-side exception" reportado por el usuario en italiano-master.vercel.app
+
+Work Log:
+- Reproducción y diagnóstico: home y las 44 vistas cargaban bien como invitado (barrido completo con scripts/sweep-views.sh seteando state.view en localStorage + reload). Causas identificadas:
+  1. NO existía error boundary (ni app/error.tsx ni global-error.tsx) → cualquier excepción mostraba el mensaje crudo de Next.js en inglés.
+  2. Crash reproducible real: shell.tsx línea 84 `const meta = VIEW_TITLES[view]` → vista inválida/corrupta en el estado persistido → meta undefined → meta.title lanza TypeError y tumba toda la app (reproducido inyectando view='situazione' inexistente).
+  3. Causa más probable del reporte del usuario: tab/PWA con build anterior abierto durante el deploy v9.5 → petición de chunk con hash antiguo → 404 → ChunkLoadError → "Application error" (SW cache-first pasaba el 404).
+- Fix 1 — src/app/global-error.tsx (nuevo): boundary global con estilo de marca (claro/oscuro vía prefers-color-scheme), mensaje tranquilizador ("tu progreso está a salvo"), 3 acciones: Riprova (reset()), Ricarica (reload), Svuota cache (borra caches + desregistra SW + reload) y último recurso "Ripristina l'app" (limpia localStorage; usuarios logueados re-sincronizan del servidor). ChunkLoadError → recarga automática una sola vez por sesión (flag sessionStorage im-chunk-reloaded, sin bucles).
+- Fix 2 — shell.tsx: `VIEW_TITLES[view] ?? VIEW_TITLES.inicio` (elimina la clase entera de crash por vista corrupta).
+- Fix 3 — page.tsx: validación `rawView in VIEW_TITLES` → fallback a "inicio" (cinturón y tirantes; renderiza HomeView en vez de contenido vacío).
+- Fix 4 — public/sw.js: VERSION im-v9-5-1 → al activarse purga todas las cachés de versiones anteriores para cada usuario.
+- Verificación local E2E: (a) view inválida → HomeView sin crash; (b) monthCounters=null → pantalla global-error con Riprova/Ricarica/Svuota cache/Ripristina; (c) flujo completo: estado corrupto → error → "Ripristina l'app" → app cargada limpia; lint OK, build OK.
+- Deploy: commit f0ec4c3 → push. Producción verificada: sw.js sirve im-v9-5-1, app carga con SW viejo desregistrado, barrido de 44 vistas + vista inválida → 0 crashes.
+- No fue posible reproducir como usuario autenticado (login admin devuelve 401: credenciales Mkoo/Mk06612 ya no válidas — pendiente de confirmar con el usuario).
+
+Stage Summary:
+- v9.5.1 LIVE: la app ya no puede mostrar el error crudo de Next.js — toda excepción del cliente se captura con pantalla de marca y recuperación en 1 clic; los ChunkLoadError post-deploy se auto-recuperan con recarga única; el crash por vista corrupta está eliminado en 2 capas; el SW nuevo purga cachés antiguas al activarse.
+- Remedio inmediato para el usuario que vio el error: recargar la página (o el botón Ricarica de la nueva pantalla si volviera a ocurrir).
