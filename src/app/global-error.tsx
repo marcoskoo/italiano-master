@@ -25,6 +25,7 @@ function readPersistedContext(): string {
     if (typeof st.view === "string") bits.push(`view=${st.view}`);
     const np = st.navParams;
     if (np && typeof np === "object") bits.push(`navParams=${JSON.stringify(np).slice(0, 120)}`);
+    if (typeof st.level === "string") bits.push(`level=${st.level}`);
     if (typeof st.xp === "number") bits.push(`xp=${st.xp}`);
     if (st.account?.username) bits.push(`user=${st.account.username}`);
     return bits.join(" ") || "estado vacío";
@@ -232,7 +233,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           )}
 
           <p className="im-err-code" style={{ fontSize: 11.5, marginTop: 18, fontFamily: "ui-monospace, monospace" }}>
-            {error.digest ? `cod: ${error.digest}` : "italiano master · v9.5.2"}
+            {error.digest ? `cod: ${error.digest}` : "italiano master · v9.5.3"}
           </p>
         </div>
       </body>

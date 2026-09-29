@@ -177,15 +177,26 @@ function FrasiTab({ canRecognize, recognitionCtor, addXp, trackQuest, defaultLev
   trackQuest: (t: "shadow", n?: number) => void;
   defaultLevel: CefrLevel | null;
 }) {
-  const [lvl, setLvl] = useState<CefrLevel | "tutti">(defaultLevel ?? "A1");
-  const list = useMemo(() => (lvl === "tutti" ? SHADOW_PHRASES : SHADOW_PHRASES.filter((p) => p.level === lvl)), [lvl]);
+  /* v9.5.3: el nivel del perfil se valida contra los datos reales — un nivel
+     sin frases (p. ej. C2 antes de esta versión, o un valor corrupto)
+     arrancaba con lista vacía y phrase undefined → TypeError que tumbaba
+     toda la app. Ahora: nivel sin datos → "tutti"; sin nivel → "A1". */
+  const [lvl, setLvl] = useState<CefrLevel | "tutti">(() => {
+    if (defaultLevel && SHADOW_PHRASES.some((p) => p.level === defaultLevel)) return defaultLevel;
+    return defaultLevel ? "tutti" : "A1";
+  });
+  const list = useMemo(() => {
+    if (lvl === "tutti") return SHADOW_PHRASES;
+    const filtered = SHADOW_PHRASES.filter((p) => p.level === lvl);
+    return filtered.length > 0 ? filtered : SHADOW_PHRASES; /* nunca vacía */
+  }, [lvl]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState<ShadowScore | null>(null);
   const [manualDone, setManualDone] = useState(false);
   const [recognizing, setRecognizing] = useState(false);
   const transcriptRef = useRef<string | null>(null);
   const rec = useRecorder();
-  const phrase = list[Math.min(idx, list.length - 1)];
+  const phrase = list.length > 0 ? list[Math.min(idx, list.length - 1)] : undefined;
 
   const changePhrase = useCallback((delta: number) => {
     setIdx((i) => (i + delta + list.length) % list.length);
@@ -220,7 +231,7 @@ function FrasiTab({ canRecognize, recognitionCtor, addXp, trackQuest, defaultLev
           // evaluar al terminar
           setTimeout(() => {
             const heard = transcriptRef.current;
-            if (heard && heard.trim().length > 0) {
+            if (heard && phrase && heard.trim().length > 0) {
               const sc = scoreSpeech(phrase.it, heard);
               setScore(sc);
               addXp(XP_SCORED, "pronuncia");
@@ -247,11 +258,21 @@ function FrasiTab({ canRecognize, recognitionCtor, addXp, trackQuest, defaultLev
 
   const verdict = score ? shadowVerdict(score.score) : null;
 
+  /* cinturón y tirantes: sin frases disponibles → mensaje claro, nunca crash */
+  if (!phrase) {
+    return (
+      <section className="rounded-3xl border border-soft bg-surface p-8 text-center">
+        <p className="font-display text-lg font-semibold">Nessuna frase disponibile</p>
+        <p className="mt-2 text-sm text-muted-it">No hay frases para este nivel: elige «Tutti» u otro nivel para practicar.</p>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-5">
       {/* filtro de nivel */}
       <div className="flex flex-wrap gap-2">
-        {(["tutti", ...CEFR_LEVELS.slice(0, 5)] as const).map((l) => (
+        {(["tutti", ...CEFR_LEVELS] as const).map((l) => (
           <button
             key={l}
             onClick={() => { setLvl(l as CefrLevel | "tutti"); setIdx(0); setScore(null); setManualDone(false); rec.reset(); }}
