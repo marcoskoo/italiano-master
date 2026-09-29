@@ -20,7 +20,9 @@ export function AudioButton({ text, size = "md", rate, label, variant = "icon", 
   const settingsRate = useLms((s) => s.settings.audioRate);
   const [playing, setPlaying] = useState(false);
 
-  const handle = useCallback(() => {
+  const handle = useCallback((e: React.MouseEvent) => {
+    // no propagar: los audios viven dentro de tarjetas/tarjetas pulsables
+    e.stopPropagation();
     setPlaying(true);
     const ok = speak(text, { rate: rate ?? settingsRate, onEnd: () => setPlaying(false) });
     if (!ok) setPlaying(false);

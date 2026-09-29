@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowLeft, ArrowRight, BookA, Gauge, Info, Link2, Search, Sparkles, Waves } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, BookA, Gauge, Info, Link2, Search, Sparkles, Star, Waves } from "lucide-react";
 import {
   CEFR_VOCAB_TARGETS, DICT_STATS, DICTIONARY, FALSI_AMICI, FREQ_LABELS,
   REGISTER_LABELS, cefrCoverage, searchDictionary,
@@ -12,6 +12,7 @@ import { CATEGORY_META, CEFR_LEVELS, type VocabWord } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { newCard } from "@/lib/lms/srs";
 import { AudioButton } from "../audio-button";
+import { FlashcardSession } from "../flashcards";
 import { cn } from "@/lib/utils";
 
 /* ════════ Vista: DICCIONARIO (Dizionario didattico v2.0) ════════
@@ -42,10 +43,47 @@ export function DictionaryView() {
   const [selected, setSelected] = useState<string | null>(null);
   const [limit, setLimit] = useState(PAGE);
   const [statsOpen, setStatsOpen] = useState(true);
+  const [favReview, setFavReview] = useState(false);
 
   const srs = useLms((s) => s.srs);
   const upsertSrs = useLms((s) => s.upsertSrs);
   const addXp = useLms((s) => s.addXp);
+  const navParams = useLms((s) => s.navParams);
+  const dictFavorites = useLms((s) => s.dictFavorites);
+  const dictHistory = useLms((s) => s.dictHistory);
+  const toggleDictFavorite = useLms((s) => s.toggleDictFavorite);
+  const pushDictHistory = useLms((s) => s.pushDictHistory);
+
+  const openWord = (id: string) => {
+    setSelected(id);
+  };
+
+  /* registrar cronologia al abrir cualquier palabra (click o deep-link):
+     sincronización con el store externo — nunca setState de React aquí */
+  const lastHistoryPush = useRef<string | null>(null);
+  useEffect(() => {
+    if (selected && lastHistoryPush.current !== selected) {
+      lastHistoryPush.current = selected;
+      pushDictHistory(selected);
+    }
+  }, [selected, pushDictHistory]);
+
+  /* v8.0: deep-link desde la ricerca globale (Ctrl+K) — ajuste de estado
+     durante el render (patrón oficial de React, sin efectos) */
+  const [appliedWordId, setAppliedWordId] = useState<string | null>(null);
+  if (navParams.wordId && navParams.wordId !== appliedWordId) {
+    setAppliedWordId(navParams.wordId);
+    if (VOCAB_BY_ID[navParams.wordId]) setSelected(navParams.wordId);
+  }
+
+  const favoriteWords = useMemo(
+    () => dictFavorites.map((id) => VOCAB_BY_ID[id]).filter(Boolean) as VocabWord[],
+    [dictFavorites]
+  );
+  const historyWords = useMemo(
+    () => dictHistory.map((id) => VOCAB_BY_ID[id]).filter(Boolean) as VocabWord[],
+    [dictHistory]
+  );
 
   const results = useMemo(() => {
     let list = query.trim() ? searchDictionary(query) : DICTIONARY;
@@ -61,6 +99,18 @@ export function DictionaryView() {
 
   const visible = results.slice(0, limit);
   const word = selected ? VOCAB_BY_ID[selected] : undefined;
+
+  /* ── ripasso dei preferiti (v8.0) ── */
+  if (favReview && favoriteWords.length >= 2) {
+    return (
+      <div>
+        <button onClick={() => setFavReview(false)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Torna al dizionario
+        </button>
+        <FlashcardSession cardIds={favoriteWords.map((w) => w.id)} onExit={() => setFavReview(false)} />
+      </div>
+    );
+  }
 
   /* ── entrada completa ── */
   if (word) {
@@ -92,6 +142,20 @@ export function DictionaryView() {
             </div>
             <div className="flex flex-col items-end gap-2">
               <span className="rounded-full bg-verde-tenue px-3 py-1.5 text-xs font-bold text-verde-scuro dark:text-verde">{word.level} · MCER</span>
+              <button
+                onClick={() => toggleDictFavorite(word.id)}
+                aria-pressed={dictFavorites.includes(word.id)}
+                className={cn(
+                  "inline-flex min-h-10 items-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-bold transition-all",
+                  dictFavorites.includes(word.id)
+                    ? "border-oro bg-oro-tenue text-oro-scuro dark:text-oro"
+                    : "border-soft text-muted-it hover:border-oro/50 hover:text-oro-scuro dark:hover:text-oro"
+                )}
+                title={dictFavorites.includes(word.id) ? "Quitar de preferiti" : "Añadir a preferiti"}
+              >
+                <Star className={cn("h-3.5 w-3.5", dictFavorites.includes(word.id) && "fill-current")} aria-hidden="true" />
+                {dictFavorites.includes(word.id) ? "nei preferiti" : "preferito"}
+              </button>
               {word.freq && (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-soft px-3 py-1.5 text-xs font-bold text-muted-it" title={FREQ_LABELS[word.freq].desc}>
                   <Gauge className="h-3.5 w-3.5" aria-hidden="true" /> freq. {FREQ_LABELS[word.freq].label}
@@ -188,7 +252,7 @@ export function DictionaryView() {
                   <ul className="mt-2 space-y-1 text-sm font-semibold">
                     {related.map((r, i) => (
                       <li key={i}>
-                        <button onClick={() => setSelected(r.id)} className="underline decoration-dotted underline-offset-2 hover:text-verde">
+                        <button onClick={() => openWord(r.id)} className="underline decoration-dotted underline-offset-2 hover:text-verde">
                           {r.it} <span className="font-normal text-muted-it">({r.es})</span>
                         </button>
                       </li>
@@ -280,6 +344,39 @@ export function DictionaryView() {
         <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-it" aria-hidden="true" />
       </div>
 
+      {/* preferiti + cronologia (v8.0) */}
+      {(favoriteWords.length > 0 || historyWords.length > 0) && (
+        <div className="space-y-2.5">
+          {favoriteWords.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-oro-scuro dark:text-oro">
+                <Star className="h-3 w-3 fill-current" aria-hidden="true" /> Preferiti
+              </span>
+              {favoriteWords.slice(0, 8).map((w) => (
+                <button key={w.id} onClick={() => openWord(w.id)} className="rounded-full border border-oro/40 bg-oro-tenue px-3 py-1 text-xs font-bold text-oro-scuro transition-transform hover:scale-105 dark:text-oro">
+                  {w.it}
+                </button>
+              ))}
+              {favoriteWords.length >= 4 && (
+                <button onClick={() => setFavReview(true)} className="rounded-full bg-verde px-3 py-1 text-xs font-bold text-white shadow-sm transition-transform hover:scale-105 dark:text-inchiostro">
+                  Ripassa i preferiti ({favoriteWords.length})
+                </button>
+              )}
+            </div>
+          )}
+          {historyWords.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-it">Cronologia</span>
+              {historyWords.slice(0, 8).map((w) => (
+                <button key={w.id} onClick={() => openWord(w.id)} className="rounded-full border border-soft bg-surface px-3 py-1 text-xs font-semibold text-muted-it transition-colors hover:border-verde/40 hover:text-verde">
+                  {w.it}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* filtros */}
       <div className="space-y-2.5">
         <div className="flex flex-wrap gap-2">
@@ -345,13 +442,17 @@ export function DictionaryView() {
           </div>
         )}
         {visible.map((w, i) => (
-          <motion.button
+          <motion.div
             key={w.id}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: Math.min(i * 0.02, 0.3) }}
-            onClick={() => setSelected(w.id)}
-            className="group flex items-center gap-3 rounded-2xl border border-soft bg-surface p-4 text-left transition-all hover:-translate-y-0.5 hover:border-verde/40 hover:shadow-md"
+            role="button"
+            tabIndex={0}
+            aria-label={`Abrir: ${w.it}`}
+            onClick={() => openWord(w.id)}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openWord(w.id); } }}
+            className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-soft bg-surface p-4 text-left transition-all hover:-translate-y-0.5 hover:border-verde/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-verde/50"
           >
             <AudioButton text={w.it} size="sm" />
             <span className="min-w-0 flex-1">
@@ -370,7 +471,7 @@ export function DictionaryView() {
               </span>
             </span>
             <ArrowRight className="h-4 w-4 shrink-0 text-muted-it opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" />
-          </motion.button>
+          </motion.div>
         ))}
       </div>
 

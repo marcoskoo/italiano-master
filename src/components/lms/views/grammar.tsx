@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Brain, ChevronDown, ListChecks, Search, Table2, Volume2 } from "lucide-react";
 import { GRAMMAR } from "@/lib/lms/grammar";
@@ -16,10 +16,23 @@ import { cn } from "@/lib/utils";
 
 export function GrammarView() {
   const userLevel = useLms((s) => s.level);
+  const navParams = useLms((s) => s.navParams);
   const [levelFilter, setLevelFilter] = useState<string>(userLevel ?? "A1");
   const [query, setQuery] = useState("");
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [practiceTopic, setPracticeTopic] = useState<string | null>(null);
+
+  /* v8.0: deep-link desde la ricerca globale (Ctrl+K) — ajuste de estado
+     durante el render (patrón oficial de React, sin efectos) */
+  const [appliedGrammarId, setAppliedGrammarId] = useState<string | null>(null);
+  if (navParams.grammarId && navParams.grammarId !== appliedGrammarId) {
+    setAppliedGrammarId(navParams.grammarId);
+    const topic = GRAMMAR.find((g) => g.id === navParams.grammarId);
+    if (topic) {
+      setLevelFilter(topic.level);
+      setOpenTopic(topic.id);
+    }
+  }
 
   const q = query.trim().toLowerCase();
   const topics = useMemo(

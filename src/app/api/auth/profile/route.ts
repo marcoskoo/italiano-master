@@ -9,6 +9,7 @@ interface ProfilePatch {
   userId?: string;
   xp?: number; level?: string; plan?: string; streak?: number;
   lessonsDone?: number; wordsInSrs?: number;
+  weekXp?: number; weekKey?: string; // leghe settimanali (v8.0)
 }
 
 /* GET /api/auth/profile?userId=… → progreso del estudiante en el servidor.
@@ -58,6 +59,13 @@ export async function PATCH(req: Request) {
     if (typeof body.streak === "number") data.streak = Math.max(0, Math.round(body.streak));
     if (typeof body.lessonsDone === "number") data.lessonsDone = Math.max(0, Math.round(body.lessonsDone));
     if (typeof body.wordsInSrs === "number") data.wordsInSrs = Math.max(0, Math.round(body.wordsInSrs));
+    /* lega settimanale: mismo weekKey → monotónico; semana nueva → arranca
+       desde el valor del cliente (la semana acaba de cambiar).           */
+    if (typeof body.weekXp === "number" && typeof body.weekKey === "string" && body.weekKey.length === 10) {
+      const fresh = Math.max(0, Math.round(body.weekXp));
+      if (user.weekKey === body.weekKey) data.weekXp = Math.max(user.weekXp ?? 0, fresh);
+      else { data.weekXp = fresh; data.weekKey = body.weekKey; }
+    }
     if (body.level && user.role !== "admin") data.level = body.level;
     // el plan es estado de pago: solo el admin puede modificarlo en el servidor
     // (un estudiante no puede auto-otorgarse PLATINUM sincronizando su perfil)

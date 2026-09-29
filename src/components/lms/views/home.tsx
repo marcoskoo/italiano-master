@@ -46,6 +46,8 @@ export function HomeView() {
   const level = useLms((s) => s.level);
   const placementDone = useLms((s) => s.placementDone);
   const streak = useLms((s) => s.streakCount);
+  const streakFreezes = useLms((s) => s.streakFreezes);
+  const lastFreezeDate = useLms((s) => s.lastFreezeDate);
   const completedLessons = useLms((s) => s.completedLessons);
   const srs = useLms((s) => s.srs);
   const errorLog = useLms((s) => s.errorLog);
@@ -119,7 +121,7 @@ export function HomeView() {
           <dl className="mt-9 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {([
               { label: "XP total", value: xp.toLocaleString(), icon: Zap, tone: "oro" },
-              { label: "Racha", value: `${streak} d`, icon: Flame, tone: "rosso" },
+              { label: streakFreezes > 0 ? `Racha · ${streakFreezes}❄️` : "Racha", value: `${streak} d`, icon: Flame, tone: "rosso" },
               { label: "Lecciones", value: `${completedLessons.length}/${allLessons}`, icon: BookOpen, tone: "verde" },
               { label: "Tarjetas", value: String(Object.keys(srs).length), icon: Library, tone: "terracotta" },
             ] as const).map((card) => (
@@ -134,6 +136,13 @@ export function HomeView() {
               <InstallButton compact className="!min-h-9 !px-4 !py-1.5 text-xs" />
             </div>
           </dl>
+
+          {/* v8.0 · avviso congelamento racha */}
+          {lastFreezeDate === new Date().toISOString().slice(0, 10) && (
+            <p className="mt-3 rounded-2xl border border-rosso/25 bg-rosso-tenue/60 px-4 py-3 text-sm font-semibold text-rosso-scuro dark:text-rosso">
+              ❄️ La tua racha è stata congelata oggi: i giorni persi non hanno interrotto la serie. Ti quedan {streakFreezes} congelamenti.
+            </p>
+          )}
         </div>
         <div className="relative">
           <MorphingHero />

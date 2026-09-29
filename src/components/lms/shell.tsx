@@ -2,144 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  BookOpen, BookMarked, Brain, Calculator, Clapperboard, Compass, Crown, Ear, FlaskConical,
-  Gamepad2, GraduationCap, Hash, Home, Languages, Library, LineChart, MapPin, Medal, Microscope,
-  PenLine, Printer, RefreshCcw, ScrollText, Settings, Shield, Sparkles, Timer, Trophy, Volume2,
-  X, Zap, Flame, Menu, CalendarDays, Quote, AlertTriangle, Keyboard, FileSpreadsheet,
-  Dices, Target, Wand2, HelpCircle, Scale, Puzzle,
-  LogIn, LogOut, Mic, FileInput,
+  Brain, FlaskConical, Gamepad2, GraduationCap, Home, Menu, RefreshCcw, Search, Shield, Sparkles,
+  X, Zap, Flame, Medal, LogIn, LogOut,
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { dueCards } from "@/lib/lms/srs";
+import { NAV_GROUPS, VIEW_TITLES } from "@/lib/lms/nav";
 import { PlanChip, UpgradeCta } from "./plan-badge";
 import { loginRequest, setAdminToken, setSessionToken, logoutRequest, getAdminToken, getSessionToken } from "@/lib/lms/remote";
+import { SearchPalette } from "./search-palette";
 import { cn } from "@/lib/utils";
 
 /* ── Shell del LMS: sidebar + header + vista activa ──────────────── */
-
-const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typeof Home }[] }[] = [
-  {
-    group: "Tu ruta",
-    items: [
-      { id: "inicio", label: "Inicio", icon: Home },
-      { id: "pianosettimanale", label: "Piano settimanale", icon: CalendarDays },
-      { id: "progreso", label: "Mi progreso", icon: LineChart },
-      { id: "test", label: "Test de nivel", icon: Compass },
-      { id: "piani", label: "Piani PRO", icon: Crown },
-    ],
-  },
-  {
-    group: "Cursos",
-    items: [{ id: "cursos", label: "Cursos A1–C2", icon: GraduationCap }],
-  },
-  {
-    group: "Práctica por destreza",
-    items: [
-      { id: "grammatica", label: "Gramática", icon: Brain },
-      { id: "vocabolario", label: "Vocabulario", icon: Library },
-      { id: "ascolto", label: "Escucha", icon: Ear },
-      { id: "lettura", label: "Lectura", icon: BookOpen },
-      { id: "scrittura", label: "Escritura", icon: PenLine },
-      { id: "conversazione", label: "Conversación", icon: Languages },
-      { id: "pronuncia", label: "Pronunciación", icon: Volume2 },
-      { id: "shadowing", label: "Shadowing", icon: Mic },
-    ],
-  },
-  {
-    group: "Herramientas",
-    items: [
-      { id: "dizionario", label: "Diccionario", icon: BookMarked },
-      { id: "coniugatore", label: "Conjugador", icon: Calculator },
-      { id: "verbidrill", label: "Allenamento verbi", icon: Timer },
-      { id: "numerilab", label: "Numeri lab", icon: Hash },
-      { id: "analizzatore", label: "Analizador de frases", icon: Microscope },
-      { id: "importatore", label: "Importador de textos", icon: FileInput },
-      { id: "schede", label: "Schede di studio", icon: Printer },
-      { id: "situazioni", label: "Situaciones reales", icon: MapPin },
-      { id: "cultura", label: "Cultura italiana", icon: Clapperboard },
-      { id: "tutor", label: "Tutor IA", icon: Sparkles },
-      { id: "giochi", label: "Juegos", icon: Gamepad2 },
-    ],
-  },
-  {
-    group: "Estensioni · Plugin",
-    items: [
-      { id: "proverbi", label: "Proverbi e modi di dire", icon: Quote },
-      { id: "falsiamici", label: "Falsi amici", icon: AlertTriangle },
-      { id: "dettato", label: "Dettato (dictado)", icon: Keyboard },
-      { id: "ankiexport", label: "Export Anki/CSV", icon: FileSpreadsheet },
-      { id: "parolanascosta", label: "Parola nascosta", icon: Dices },
-      { id: "preposizioni", label: "Preposizioni lab", icon: Target },
-      { id: "pomodoro", label: "Pomodoro studio", icon: Timer },
-      { id: "muse", label: "Muse · generador", icon: Wand2 },
-      { id: "indovinelli", label: "Indovinelli", icon: HelpCircle },
-      { id: "verofalso", label: "Vero o Falso", icon: Scale },
-      { id: "proverbio", label: "Completa il proverbio", icon: Puzzle },
-    ],
-  },
-  {
-    group: "Evaluación",
-    items: [
-      { id: "repaso", label: "Repaso inteligente", icon: RefreshCcw },
-      { id: "esami", label: "Exámenes", icon: ScrollText },
-      { id: "cils", label: "Preparazione CILS", icon: GraduationCap },
-      { id: "certificati", label: "Certificados", icon: Trophy },
-    ],
-  },
-  {
-    group: "Sistema",
-    items: [
-      { id: "impostazioni", label: "Configuración", icon: Settings },
-      { id: "admin", label: "Panel Admin", icon: Shield },
-    ],
-  },
-];
-
-const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
-  inicio: { title: "Benvenuto!", sub: "Tu plataforma integral de italiano, desde cero hasta C2" },
-  progreso: { title: "Mi progreso", sub: "XP, racha, destrezas y recomendaciones adaptativas" },
-  test: { title: "Test de nivel", sub: "20 preguntas graduadas para ubicarte en el MCER" },
-  cursos: { title: "Cursos", sub: "Ruta completa: Desde cero → A1 → A2 → B1 → B2 → C1 → C2" },
-  grammatica: { title: "Grammatica", sub: "La gramática italiana paso a paso, de A1 a C2" },
-  vocabolario: { title: "Vocabolario", sub: "37 categorías temáticas con audio y repaso espaciado" },
-  ascolto: { title: "Ascolto", sub: "Comprensión auditiva con diálogos, palabras y dictados" },
-  lettura: { title: "Lettura", sub: "Lecturas graduadas con preguntas y glosario" },
-  scrittura: { title: "Scrittura", sub: "Redacción guiada con corrección por IA y modelo" },
-  conversazione: { title: "Conversazione", sub: "Escenarios reales con frases útiles y tutor IA" },
-  pronuncia: { title: "Pronuncia", sub: "Laboratorio interactivo de sonidos y entonación" },
-  dizionario: { title: "Dizionario", sub: "Diccionario italiano–español de aprendizaje" },
-  coniugatore: { title: "Coniugatore", sub: "Conjugador de verbos con 7 tiempos y práctica" },
-  situazioni: { title: "Situazioni reali", sub: "El italiano que de verdad se usa: aeropuerto, hotel, médico…" },
-  cultura: { title: "Cultura italiana", sub: "Historia, arte, gastronomía y gestos: el idioma en contexto" },
-  tutor: { title: "Tutor IA", sub: "Tu profesor italiano disponible 24/7" },
-  giochi: { title: "Giochi", sub: "Memoria, orden de frases, quiz relámpago e impiccato" },
-  repaso: { title: "Repaso inteligente", sub: "Repetición espaciada adaptada a tu memoria" },
-  esami: { title: "Esami", sub: "Pruebas por nivel con certificado al aprobar" },
-  cils: { title: "Preparazione CILS", sub: "Estructura del examen, estrategias por prueba y simulacro cronometrado con veredicto" },
-  certificati: { title: "Certificati", sub: "Tus diplomas de italiano, listos para descargar" },
-  impostazioni: { title: "Impostazioni", sub: "Tema, tamaño de texto, audio y perfil" },
-  piani: { title: "Piani PRO · Premium · Platinum", sub: "Sblocca tutto il potenziale di Italiano Master" },
-  admin: { title: "Pannello di Controllo", sub: "Amministrazione totale de la plataforma" },
-  numerilab: { title: "Numeri lab", sub: "Conversor de números y hora + práctica con XP" },
-  verbidrill: { title: "Allenamento verbi", sub: "Drill de conjugación contrarreloj con rachas" },
-  pianosettimanale: { title: "Piano settimanale", sub: "Tu semana de estudio en un plan generado a medida" },
-  analizzatore: { title: "Analizzatore di frasi", sub: "Analiza frases italianas palabra por palabra con traducción" },
-  schede: { title: "Schede di studio", sub: "Hojas de vocabulario, verbos y gramática listas para imprimir" },
-  proverbi: { title: "Proverbi e modi di dire", sub: "193 proverbios, modismos y locuciones latinas con literal, equivalente y uso real" },
-  falsiamici: { title: "Falsi amici", sub: "87 trampas léxicas entre italiano y español, explicadas una a una" },
-  dettato: { title: "Dettato", sub: "Dictado con voz TTS y corrección palabra por palabra" },
-  ankiexport: { title: "Export Anki/CSV", sub: "Tus mazos de estudio listos para Anki, Quizlet o Sheets" },
-  parolanascosta: { title: "Parola nascosta", sub: "Wordle italiano: adivina la palabra del diccionario en 6 intentos" },
-  preposizioni: { title: "Preposizioni lab", sub: "72 frases de relleno con la regla explicada: la cura contra a/in/di/da" },
-  pomodoro: { title: "Pomodoro studio", sub: "Sesiones de enfoque 25/5 con XP y aviso de voz al cambiar de fase" },
-  muse: { title: "Muse · generador", sub: "Retos de escritura y habla generados por nivel MCER" },
-  indovinelli: { title: "Indovinelli", sub: "18 adivinanzas italianas con pistas graduales y dato cultural incluido" },
-  verofalso: { title: "Vero o Falso", sub: "12 afirmaciones rápidas de gramática, falsos amigos y cultura: racha de 5 = XP doble" },
-  proverbio: { title: "Completa il proverbio", sub: "Empareja las mitades de 193 proverbi: equivalente español y contexto tras cada respuesta" },
-  shadowing: { title: "Shadowing", sub: "Escucha, repite grabando tu voz y compara: puntuación de pronunciación palabra por palabra" },
-  importatore: { title: "Importatore di testi", sub: "Convierte cualquier texto o página web en una lección interactiva con tu diccionario de 8.000 lemas" },
-};
 
 function NavItem({ id, label, icon: Icon, onNav, active }: { id: ViewId; label: string; icon: typeof Home; onNav: () => void; active: boolean }) {
   return (
@@ -351,6 +226,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+            <button
+              onClick={() => window.dispatchEvent(new Event("im:open-search"))}
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-soft px-2.5 text-xs font-bold text-inchiostro/70 transition-colors hover:bg-verde-tenue sm:px-3 dark:text-inchiostro/80"
+              aria-label="Ricerca globale (Ctrl+K)"
+              title="Ricerca globale · Ctrl K"
+            >
+              <Search className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden md:inline">Cerca</span>
+              <kbd className="hidden rounded-md border border-soft bg-crema-scura px-1.5 py-0.5 font-mono text-[10px] text-muted-it lg:inline dark:bg-inchiostro/10">Ctrl K</kbd>
+            </button>
             <span className="inline-flex items-center gap-1 rounded-full bg-oro-tenue px-2.5 py-1.5 text-[11px] font-bold text-oro-scuro sm:gap-1.5 sm:px-3 sm:text-xs dark:text-oro" title="Puntos de experiencia">
               <Zap className="h-3.5 w-3.5" aria-hidden="true" />
               {xp}
@@ -523,6 +408,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </form>
           </div>
         )}
+
+        {/* ── ricerca globale (Ctrl+K) ── */}
+        <SearchPalette />
       </div>
     </div>
   );

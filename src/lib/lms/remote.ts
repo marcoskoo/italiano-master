@@ -104,6 +104,7 @@ export async function logoutRequest(token: string | null): Promise<void> {
 export interface ProfileSyncPayload {
   xp: number; level: string; plan: string; streak: number;
   lessonsDone: number; wordsInSrs: number;
+  weekXp?: number; weekKey?: string; // leghe settimanali (v8.0)
 }
 
 export async function fetchServerProgress(userId: string): Promise<{ xp: number; streak: number } | null> {
@@ -134,6 +135,41 @@ export async function syncProfileRequest(userId: string, payload: ProfileSyncPay
     });
   } catch {
     /* offline: se reintenta en el próximo cambio */
+  }
+}
+
+/* ── Classifica settimanale (v8.0) ─────────────────────────────────── */
+
+export interface LeaderboardRow {
+  id: string;
+  displayName: string;
+  level: string;
+  plan: string;
+  weekXp: number;
+  xp: number;
+  streak: number;
+  isMe: boolean;
+}
+
+export interface LeaderboardData {
+  weekKey: string;
+  league: string;
+  rows: LeaderboardRow[];
+  totals: Record<string, number>;
+  resetAt: number;
+}
+
+export async function fetchLeaderboard(userId: string): Promise<LeaderboardData | null> {
+  try {
+    const token = getSessionToken() ?? getAdminToken();
+    const res = await fetch(`/api/leaderboard?userId=${encodeURIComponent(userId)}`, {
+      cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as LeaderboardData;
+  } catch {
+    return null;
   }
 }
 

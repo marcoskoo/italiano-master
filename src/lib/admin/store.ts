@@ -14,6 +14,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID, 
 import fs from "fs/promises";
 import path from "path";
 import { get as blobGet, put as blobPut } from "@vercel/blob";
+import { weekKeyFor, promoteLeague, demoteLeague, PROMOTION_SLOTS, DEMOTION_RATIO, MIN_ACTIVE_DEMOTION } from "@/lib/lms/leagues";
 
 /* ── modelos (idénticos a las tablas anteriores) ────────────────────── */
 
@@ -28,6 +29,10 @@ export interface UserRow {
   streak: number;
   lessonsDone: number;
   wordsInSrs: number;
+  /* leghe settimanali (v8.0) — opcionales para no romper snapshots previos */
+  weekXp?: number;      // XP ganado en la semana en curso
+  weekKey?: string;     // lunes (yyyy-mm-dd) de la semana de ese weekXp
+  league?: string;      // "bronzo" … "diamante"
   active: boolean;
   passwordHash: string;
   lastSeen: Date;
@@ -88,20 +93,23 @@ function seedData(): StoreData {
     streak: 12,
     lessonsDone: 48,
     wordsInSrs: 150,
+    weekXp: 320,
+    weekKey: weekKeyFor(),
+    league: "diamante",
     active: true,
     passwordHash: hashPassword("Mkoo", "Mk/06612"),
     lastSeen: new Date(now),
     createdAt: new Date(now - 120 * day),
   };
-  const specs: [string, string, string, string, number, number, number, number][] = [
-    ["giulia", "Giulia Serrano", "B1", "pro", 1840, 6, 14, 42],
-    ["carlos", "Carlos Méndez", "A2", "free", 520, 3, 6, 18],
-    ["lucia", "Lucía Herrera", "B2", "premium", 2380, 11, 22, 64],
-    ["diego", "Diego Castillo", "A1", "free", 180, 1, 2, 9],
-    ["valentina", "Valentina Ríos", "C1", "platinum", 3260, 21, 31, 88],
-    ["marco", "Marco Ávila", "B1", "pro", 1420, 5, 12, 37],
+  const specs: [string, string, string, string, number, number, number, number, string, number][] = [
+    ["giulia", "Giulia Serrano", "B1", "pro", 1840, 6, 14, 42, "oro", 210],
+    ["carlos", "Carlos Méndez", "A2", "free", 520, 3, 6, 18, "bronzo", 60],
+    ["lucia", "Lucía Herrera", "B2", "premium", 2380, 11, 22, 64, "smeraldo", 275],
+    ["diego", "Diego Castillo", "A1", "free", 180, 1, 2, 9, "bronzo", 15],
+    ["valentina", "Valentina Ríos", "C1", "platinum", 3260, 21, 31, 88, "diamante", 340],
+    ["marco", "Marco Ávila", "B1", "pro", 1420, 5, 12, 37, "argento", 120],
   ];
-  const students: UserRow[] = specs.map(([username, displayName, level, plan, xp, streak, lessonsDone, wordsInSrs], i) => ({
+  const students: UserRow[] = specs.map(([username, displayName, level, plan, xp, streak, lessonsDone, wordsInSrs, league, weekXp], i) => ({
     id: `u-demo-${username}`,
     username,
     displayName,
@@ -112,6 +120,9 @@ function seedData(): StoreData {
     streak,
     lessonsDone,
     wordsInSrs,
+    weekXp,
+    weekKey: weekKeyFor(),
+    league,
     active: true,
     passwordHash: hashPassword(username, "italiano123"),
     lastSeen: new Date(now - Math.floor(Math.random() * 3 * day)),
@@ -397,6 +408,82 @@ function matchTelemetry(t: TelemetryRow, where?: TelemetryWhere): boolean {
   if (where.event !== undefined && t.event !== where.event) return false;
   if (where.createdAt?.gte && t.createdAt.getTime() < where.createdAt.gte.getTime()) return false;
   return true;
+}
+
+/* ── Leghe settimanali (v8.0) ────────────────────────────────────────
+   Snapshot + rollover perezoso: la primera petición de cada semana
+   ejecuta el cierre (top-3 sube · último 20% baja) y reinicia weekXp. */
+
+export interface LeaderboardRow {
+  id: string;
+  displayName: string;
+  level: string;
+  plan: string;
+  weekXp: number;
+  xp: number;
+  streak: number;
+  isMe: boolean;
+}
+
+export interface LeaderboardData {
+  weekKey: string;
+  league: string;
+  rows: LeaderboardRow[];
+  totals: Record<string, number>;
+  resetAt: number;
+}
+
+const LEAGUE_WEEK_SETTING = "league-week";
+
+export async function leaderboardFor(userId: string): Promise<LeaderboardData> {
+  const current = weekKeyFor();
+
+  // 1) rollover perezoso (una única mutación serializada)
+  await mutate((d) => {
+    const stored = d.settings.find((s) => s.key === LEAGUE_WEEK_SETTING)?.value;
+    if (stored === current) return;
+
+    const ranked = [...d.users].sort((a, b) => (b.weekXp ?? 0) - (a.weekXp ?? 0) || b.xp - a.xp);
+    const active = ranked.filter((u) => (u.weekXp ?? 0) > 0);
+    const promoteN = Math.min(PROMOTION_SLOTS, active.length);
+    const demoteN = active.length >= MIN_ACTIVE_DEMOTION ? Math.max(1, Math.round(active.length * DEMOTION_RATIO)) : 0;
+
+    active.slice(0, promoteN).forEach((u) => { u.league = promoteLeague(u.league); });
+    if (demoteN > 0) active.slice(active.length - demoteN).forEach((u) => { u.league = demoteLeague(u.league); });
+
+    d.users.forEach((u) => { u.weekXp = 0; u.weekKey = current; });
+    const idx = d.settings.findIndex((s) => s.key === LEAGUE_WEEK_SETTING);
+    if (idx === -1) d.settings.push({ key: LEAGUE_WEEK_SETTING, value: current });
+    else d.settings[idx].value = current;
+  });
+
+  // 2) snapshot de la liga del solicitante
+  const league = await read((d) => d.users.find((u) => u.id === userId)?.league ?? "bronzo");
+  const rows = await read((d) =>
+    d.users
+      .filter((u) => (u.league ?? "bronzo") === league)
+      .sort((a, b) => (b.weekXp ?? 0) - (a.weekXp ?? 0) || b.xp - a.xp)
+      .map((u) => ({
+        id: u.id,
+        displayName: u.displayName,
+        level: u.level,
+        plan: u.plan,
+        weekXp: u.weekXp ?? 0,
+        xp: u.xp,
+        streak: u.streak,
+        isMe: u.id === userId,
+      }))
+  );
+  const totals = await read((d) => {
+    const t: Record<string, number> = {};
+    for (const u of d.users) {
+      const l = u.league ?? "bronzo";
+      t[l] = (t[l] ?? 0) + 1;
+    }
+    return t;
+  });
+
+  return { weekKey: current, league, rows, totals, resetAt: 0 };
 }
 
 export const db = {

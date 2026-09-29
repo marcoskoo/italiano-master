@@ -11,6 +11,7 @@ import { applyRemoteBundle } from "./overrides";
 import { telemetry } from "./remote";
 import { generateDailyQuests, QUEST_BONUS_XP, ALL_QUESTS_BONUS_XP } from "./quests";
 import type { DailyQuest, TrackType } from "./quests";
+import { weekKeyFor } from "./leagues";
 
 export interface Account {
   id: string;
@@ -123,6 +124,16 @@ interface LmsState {
   /* textos importados (v6.0) */
   importedTexts: ImportedText[];
 
+  /* lega settimanale + congelamento racha (v8.0) */
+  weekXp: number;              // XP ganado en la semana en curso
+  weekKey: string;             // lunes (yyyy-mm-dd) de la semana del weekXp
+  streakFreezes: number;       // ❄️ disponibles (máx. 2)
+  lastFreezeDate: string | null; // fecha del último congelamiento usado
+
+  /* preferiti e cronologia del dizionario (v8.0) */
+  dictFavorites: string[];     // ids de palabras favoritas
+  dictHistory: string[];       // últimas 12 palabras consultadas
+
   /* actions */
   navigate: (view: ViewId, params?: NavParams) => void;
   setUserName: (name: string) => void;
@@ -150,6 +161,9 @@ interface LmsState {
   ensureDailyQuests: () => void;
   saveImportedText: (t: { title: string; text: string; words: number }) => void;
   deleteImportedText: (id: string) => void;
+  toggleDictFavorite: (wordId: string) => void;
+  pushDictHistory: (wordId: string) => void;
+  restoreBackup: (data: Record<string, unknown>) => void;
   resetAll: () => void;
   loginAccount: (account: Account, profile?: { displayName?: string; level?: string; plan?: string; xp?: number; streak?: number }) => void;
   adoptServerProgress: (progress: { xp: number; streak: number }) => void;
@@ -233,6 +247,13 @@ export const useLms = create<LmsState>()(
 
       importedTexts: [],
 
+      weekXp: 0,
+      weekKey: weekKeyFor(),
+      streakFreezes: 0,
+      lastFreezeDate: null,
+      dictFavorites: [],
+      dictHistory: [],
+
       navigate: (view, params = {}) => set({ view, navParams: params }),
 
       setUserName: (name) => set({ userName: name.trim() || "Studente" }),
@@ -249,12 +270,34 @@ export const useLms = create<LmsState>()(
         const t = today();
         const studyDays = [...s.studyDays.filter((d) => d.date !== t), { date: t, xp: (s.dailyXpDate === t ? s.dailyXp : 0) + amount }].slice(-30);
 
-        // streak: consecutive days
+        // lega settimanale (v8.0): XP de la semana; al cambiar la semana arranca de cero
+        const wk = weekKeyFor();
+        const weekXp = s.weekKey === wk ? s.weekXp + amount : amount;
+
+        // streak: días consecutivos, con congelamiento ❄️ (v8.0)
         let streak = s.streakCount;
+        let streakFreezes = s.streakFreezes;
+        let lastFreezeDate = s.lastFreezeDate;
         if (s.lastStudyDate !== t) {
           const yest = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-          streak = s.lastStudyDate === yest ? s.streakCount + 1 : 1;
+          if (s.lastStudyDate === yest) {
+            streak = s.streakCount + 1;
+          } else {
+            // hueco de 1+ días sin estudiar: cada ❄️ cubre UN día perdido
+            const gapDays = s.lastStudyDate
+              ? Math.round((Date.parse(t) - Date.parse(s.lastStudyDate)) / 86400000) - 1
+              : 99;
+            if (gapDays >= 1 && gapDays <= streakFreezes) {
+              streakFreezes -= gapDays;
+              lastFreezeDate = t;
+              streak = s.streakCount + gapDays + 1; // días congelados + hoy
+            } else {
+              streak = 1;
+            }
+          }
         }
+        // premio de constancia: cada 7 días de racha → +1 ❄️ (máx. 2)
+        if (streak > 0 && streak % 7 === 0 && streakFreezes < 2) streakFreezes += 1;
 
         const skills = { ...s.skillStats };
         if (skill) skills[skill] = Math.min(100, skills[skill] + Math.round(amount / 4));
@@ -267,6 +310,10 @@ export const useLms = create<LmsState>()(
           streakCount: streak,
           lastStudyDate: t,
           skillStats: skills,
+          weekXp,
+          weekKey: wk,
+          streakFreezes,
+          lastFreezeDate,
         });
         // misión diaria de XP (el bonus de misión vuelve a entrar por aquí y termina en profundidad finita)
         get().trackQuest("xp", amount);
@@ -421,6 +468,56 @@ export const useLms = create<LmsState>()(
 
       deleteImportedText: (id) => set({ importedTexts: get().importedTexts.filter((t) => t.id !== id) }),
 
+      /* ── Preferiti e cronologia del dizionario (v8.0) ── */
+      toggleDictFavorite: (wordId) => {
+        const favs = get().dictFavorites;
+        set({ dictFavorites: favs.includes(wordId) ? favs.filter((f) => f !== wordId) : [...favs, wordId] });
+      },
+
+      pushDictHistory: (wordId) => {
+        const h = get().dictHistory.filter((x) => x !== wordId);
+        set({ dictHistory: [wordId, ...h].slice(0, 12) });
+      },
+
+      /* ── Backup e ripristino (v8.0) ──
+         Restaura SOLO progreso: nunca cuenta, seguridad, plan ni pagos
+         (un archivo manipulado no puede escalar privilegios).          */
+      restoreBackup: (data) => {
+        const s = get();
+        const num = (v: unknown, fb: number) => (typeof v === "number" && Number.isFinite(v) ? v : fb);
+        const str = (v: unknown, fb: string | null) => (typeof v === "string" && v ? v : fb);
+        const arr = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
+        const rec = (v: unknown): Record<string, unknown> =>
+          v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
+        set({
+          userName: (str(data.userName, null) ?? s.userName).trim() || "Studente",
+          level: (str(data.level, null) ?? s.level) as CefrLevel | null,
+          xp: num(data.xp, s.xp),
+          streakCount: num(data.streakCount, s.streakCount),
+          lastStudyDate: str(data.lastStudyDate, s.lastStudyDate),
+          studyDays: arr<StudyDay>(data.studyDays),
+          dailyXp: num(data.dailyXp, s.dailyXp),
+          dailyXpDate: str(data.dailyXpDate, null) ?? today(),
+          weekXp: num(data.weekXp, s.weekXp),
+          weekKey: str(data.weekKey, null) ?? s.weekKey,
+          streakFreezes: Math.min(2, Math.max(0, num(data.streakFreezes, s.streakFreezes))),
+          lastFreezeDate: str(data.lastFreezeDate, s.lastFreezeDate),
+          completedLessons: arr<string>(data.completedLessons),
+          completedUnits: arr<string>(data.completedUnits),
+          quizHistory: arr<QuizResultEntry>(data.quizHistory).slice(0, 60),
+          certificates: arr<LmsState["certificates"][number]>(data.certificates),
+          writingHistory: arr<LmsState["writingHistory"][number]>(data.writingHistory).slice(0, 20),
+          srs: rec(data.srs) as Record<string, SrsCard>,
+          errorLog: rec(data.errorLog) as LmsState["errorLog"],
+          skillStats: { ...DEFAULT_SKILLS, ...rec(data.skillStats) } as SkillStats,
+          counters: rec(data.counters) as Record<string, number>,
+          importedTexts: arr<ImportedText>(data.importedTexts).slice(0, 8),
+          dictFavorites: arr<string>(data.dictFavorites),
+          dictHistory: arr<string>(data.dictHistory).slice(0, 12),
+        });
+        telemetry("backup_restored", { xp: num(data.xp, 0) }, s.account?.username);
+      },
+
       lockApp: () => {
         if (!get().security.pinHash) return; // sin PIN no hay bloqueo posible
         set({ locked: true });
@@ -460,6 +557,8 @@ export const useLms = create<LmsState>()(
           tutorCount: 0, tutorCountDate: today(), writingCount: 0, writingCountDate: today(),
           quests: generateDailyQuests(today()), questsDate: today(), questsAllBonus: false, counters: {},
           importedTexts: [],
+          weekXp: 0, weekKey: weekKeyFor(), streakFreezes: 0, lastFreezeDate: null,
+          dictFavorites: [], dictHistory: [],
         }),
 
       loginAccount: (account, profile) => {

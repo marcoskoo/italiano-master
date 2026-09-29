@@ -272,7 +272,9 @@ export type ViewId =
   | "parolanascosta" | "preposizioni" | "pomodoro" | "muse"
   | "indovinelli" | "verofalso" | "proverbio" | "cils"
   /* v6.0 · gratis: APIs nativas */
-  | "shadowing" | "importatore";
+  | "shadowing" | "importatore"
+  /* v8.0 · gratis: analítica y ligas */
+  | "statistiche" | "classifica";
 
 export interface NavParams {
   level?: CefrLevel | "zero";
@@ -280,4 +282,7 @@ export interface NavParams {
   situationId?: string;
   tutorSeed?: string;
   category?: WordCategory;
+  /* v8.0: ricerca globale */
+  wordId?: string;      // entrada del diccionario a abrir
+  grammarId?: string;   // tema de gramática a abrir
 }

@@ -34,6 +34,8 @@ import { ParolaNascostaView, PreposizioniView, PomodoroView, MuseView } from "@/
 import { IndovinelliView, VeroFalsoView, ProverbioView } from "@/components/lms/views/plugins3";
 import { ShadowingView } from "@/components/lms/views/shadowing";
 import { ImporterView } from "@/components/lms/views/importer";
+import { StatisticheView } from "@/components/lms/views/statistiche";
+import { ClassificaView } from "@/components/lms/views/classifica";
 import { PwaRegister, InstallBanner } from "@/components/lms/pwa";
 import { LockScreen } from "@/components/lms/lock-screen";
 
@@ -122,12 +124,14 @@ export default function Home() {
         lockApp();
       }, autoLockMin * 60 * 1000);
     };
-    const events: (keyof WindowEventMap)[] = ["mousemove", "keydown", "click", "scroll", "touchstart", "visibilitychange"];
+    const events: (keyof WindowEventMap)[] = ["mousemove", "keydown", "click", "scroll", "touchstart"];
     events.forEach((ev) => window.addEventListener(ev, arm, { passive: true }));
+    document.addEventListener("visibilitychange", arm); // ojo: visibilitychange vive en document, no en window
     arm();
     return () => {
       if (timer) clearTimeout(timer);
       events.forEach((ev) => window.removeEventListener(ev, arm));
+      document.removeEventListener("visibilitychange", arm);
     };
   }, [pinHash, autoLockMin, lockApp]);
 
@@ -179,6 +183,8 @@ export default function Home() {
           streak: s.streakCount,
           lessonsDone: s.completedLessons.length,
           wordsInSrs: Object.keys(s.srs).length,
+          weekXp: s.weekXp,
+          weekKey: s.weekKey,
         };
         void syncProfileRequest(s.account.id, payload);
       }, 1200);
@@ -283,6 +289,8 @@ export default function Home() {
         {view === "proverbio" && <ProverbioView />}
         {view === "shadowing" && <ShadowingView />}
         {view === "importatore" && <ImporterView />}
+        {view === "statistiche" && <StatisticheView />}
+        {view === "classifica" && <ClassificaView />}
       </div>
       <PwaRegister />
       <InstallBanner />

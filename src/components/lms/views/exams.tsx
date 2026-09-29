@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Award, Copy, Check, CreditCard, Crown, Download, GraduationCap, Headphones, KeyRound, Landmark, Lock, ScrollText, ShieldCheck, Trophy, Wallet } from "lucide-react";
+import { ArrowLeft, Award, Copy, Check, CreditCard, Crown, Download, GraduationCap, Headphones, KeyRound, Landmark, Lock, ScrollText, ShieldCheck, Trophy, Upload, Wallet } from "lucide-react";
 import { CEFR_LEVELS, LEVEL_LABELS, type CefrLevel } from "@/lib/lms/types";
 import { exercisesByLevel } from "@/lib/lms/exercises";
 import { COURSES } from "@/lib/lms/courses";
@@ -321,6 +321,7 @@ export function SettingsView() {
   const userName = useLms((s) => s.userName);
   const setUserName = useLms((s) => s.setUserName);
   const resetAll = useLms((s) => s.resetAll);
+  const restoreBackup = useLms((s) => s.restoreBackup);
   const addXp = useLms((s) => s.addXp);
   const navigate = useLms((s) => s.navigate);
   const plan = useLms((s) => s.plan);
@@ -335,6 +336,8 @@ export function SettingsView() {
   const clearPinStore = useLms((s) => s.clearPin);
   const lockApp = useLms((s) => s.lockApp);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [backupMsg, setBackupMsg] = useState<string | null>(null);
+  const backupFileRef = useRef<HTMLInputElement>(null);
   const [confirmDowngrade, setConfirmDowngrade] = useState(false);
   const [nameDraft, setNameDraft] = useState(userName);
 
@@ -390,19 +393,41 @@ export function SettingsView() {
 
   const planDef = PLANS[plan];
 
+  /* v8.0 · Backup completo: SOLO progreso (sin cuenta, seguridad, plan ni pagos) */
   const exportData = () => {
-    const state = useLms.getState();
+    const s = useLms.getState();
     const data = {
-      userName: state.userName, level: state.level, xp: state.xp, streakCount: state.streakCount,
-      completedLessons: state.completedLessons, quizHistory: state.quizHistory,
-      certificates: state.certificates, srsSize: Object.keys(state.srs).length,
-      exportedAt: new Date().toISOString(),
+      app: "italiano-master", backup: 2, exportedAt: new Date().toISOString(),
+      userName: s.userName, level: s.level,
+      xp: s.xp, streakCount: s.streakCount, lastStudyDate: s.lastStudyDate,
+      studyDays: s.studyDays, dailyXp: s.dailyXp, dailyXpDate: s.dailyXpDate,
+      weekXp: s.weekXp, weekKey: s.weekKey, streakFreezes: s.streakFreezes, lastFreezeDate: s.lastFreezeDate,
+      completedLessons: s.completedLessons, completedUnits: s.completedUnits,
+      quizHistory: s.quizHistory, certificates: s.certificates, writingHistory: s.writingHistory,
+      srs: s.srs, errorLog: s.errorLog, skillStats: s.skillStats, counters: s.counters,
+      importedTexts: s.importedTexts, dictFavorites: s.dictFavorites, dictHistory: s.dictHistory,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const link = document.createElement("a");
-    link.download = "italiano-master-progreso.json";
+    link.download = `italiano-master-backup-${new Date().toISOString().slice(0, 10)}.json`;
     link.href = URL.createObjectURL(blob);
     link.click();
+    setBackupMsg("Backup scaricato ✓ — consérvalo en lugar seguro.");
+  };
+
+  const importBackup = async (file: File) => {
+    setBackupMsg(null);
+    try {
+      const raw = JSON.parse(await file.text());
+      const data = (raw && typeof raw === "object" && raw.state && typeof raw.state === "object") ? raw.state : raw;
+      if (typeof data.xp !== "number" || typeof data.srs !== "object" || data.srs === null) {
+        throw new Error("Formato no reconocido");
+      }
+      restoreBackup(data);
+      setBackupMsg(`Backup ripristinato ✓ (${data.xp} XP · ${Object.keys(data.srs).length} carte · racha ${data.streakCount ?? 0})`);
+    } catch (err) {
+      setBackupMsg(err instanceof Error ? `File non valido: ${err.message}` : "File non valido");
+    }
   };
 
   const exportPack = () => {
@@ -774,8 +799,26 @@ export function SettingsView() {
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <button onClick={exportData} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-verde/40 bg-verde-tenue px-5 py-2.5 text-sm font-bold text-verde-scuro transition-all hover:scale-105 dark:text-verde">
-            <Download className="h-4 w-4" aria-hidden="true" /> Esporta progressi (JSON)
+            <Download className="h-4 w-4" aria-hidden="true" /> Backup completo (JSON)
           </button>
+          <button
+            onClick={() => backupFileRef.current?.click()}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-verde/40 bg-surface px-5 py-2.5 text-sm font-bold text-verde-scuro transition-all hover:scale-105 dark:text-verde"
+          >
+            <Upload className="h-4 w-4" aria-hidden="true" /> Ripristina backup
+          </button>
+          <input
+            ref={backupFileRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            aria-label="Seleccionar archivo de backup"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void importBackup(f);
+              e.target.value = "";
+            }}
+          />
           {planDef.limits.offlinePack ? (
             <button onClick={exportPack} className="inline-flex min-h-11 items-center gap-2 rounded-xl plan-gold-bg px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-oro/25 transition-all hover:scale-105">
               <Crown className="h-4 w-4" aria-hidden="true" /> Pacchetto offline PLATINUM ({Object.keys(srs).length} parole)
@@ -797,9 +840,16 @@ export function SettingsView() {
             </div>
           )}
         </div>
+        {backupMsg && (
+          <p role="status" className={cn("mt-4 rounded-xl px-4 py-3 text-sm font-semibold", backupMsg.includes("✓") ? "bg-verde-tenue text-verde-scuro dark:text-verde" : "bg-rosso-tenue text-rosso-scuro dark:text-rosso")}>
+            {backupMsg}
+          </p>
+        )}
+        <p className="mt-4 text-xs leading-relaxed text-muted-it">
+          El backup incluye TODO tu progreso (XP, racha, tarjetas SRS, lecciones, certificados, escritos, textos importados y preferiti)
+          y <strong>nunca</strong> contiene cuenta, PIN, plan ni datos de pago. Restáuralo en cualquier dispositivo desde este botón.
+        </p>
       </section>
-
-      {/* accesibilidad info */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
         <h2 className="font-display text-xl font-semibold">Accessibilità</h2>
         <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-it">

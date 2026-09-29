@@ -7,6 +7,7 @@ import { CEFR_LEVELS } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { PLANS, todayUsage, planLimits } from "@/lib/lms/plans";
 import { telemetry } from "@/lib/lms/remote";
+import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Tutor IA ──────────────────────────────────────────────── */
@@ -189,6 +190,11 @@ export function TutorView() {
                 m.role === "user" ? "rounded-tr-sm bg-terracotta text-white" : "rounded-tl-sm bg-crema-scura dark:bg-inchiostro/10"
               )}>
                 {m.content}
+                {m.role === "assistant" && (
+                  <span className="mt-2 block border-t border-inchiostro/10 pt-2 dark:border-inchiostro/20">
+                    <AudioButton text={m.content.replace(/[📝✅⭐]/gu, "")} size="sm" label="Ascolta la risposta di Marco" />
+                  </span>
+                )}
               </div>
             </motion.div>
           ))}
