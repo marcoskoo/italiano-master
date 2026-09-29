@@ -274,7 +274,9 @@ export type ViewId =
   /* v6.0 · gratis: APIs nativas */
   | "shadowing" | "importatore"
   /* v8.0 · gratis: analítica y ligas */
-  | "statistiche" | "classifica";
+  | "statistiche" | "classifica"
+  /* v9.0 · letture & gamificación */
+  | "letture" | "premi";
 
 export interface NavParams {
   level?: CefrLevel | "zero";
@@ -285,4 +287,5 @@ export interface NavParams {
   /* v8.0: ricerca globale */
   wordId?: string;      // entrada del diccionario a abrir
   grammarId?: string;   // tema de gramática a abrir
+  letturaId?: string;   // lettura (v9.0) a abrir
 }

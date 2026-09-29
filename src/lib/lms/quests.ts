@@ -11,7 +11,7 @@ import type { LmsState } from "./store";
 
 /** Tipos que alimentan misiones (los que generan quest diaria) */
 export type QuestType =
-  | "correct" | "listen" | "lesson" | "game" | "review" | "dictation" | "shadow" | "import" | "xp";
+  | "correct" | "listen" | "lesson" | "game" | "review" | "dictation" | "shadow" | "import" | "reading" | "xp";
 
 /** Tipos solo-contador (para logros, sin quest diaria) */
 export type CounterType = "tutor" | "writing" | "manual";
@@ -45,6 +45,7 @@ export const QUEST_DEFS: QuestDef[] = [
   { type: "dictation", emoji: "✍️", label: (t) => `Completa ${t} ${t === 1 ? "dictado" : "dictados"}`, targets: [1, 2] },
   { type: "shadow", emoji: "🎙️", label: (t) => `Graba ${t} ${t === 1 ? "frase" : "frases"} en shadowing`, targets: [3, 5] },
   { type: "import", emoji: "📥", label: (t) => `Añade ${t} palabras desde el importador`, targets: [5, 8] },
+  { type: "reading", emoji: "📜", label: (t) => `Completa ${t} ${t === 1 ? "lettura" : "letture"} con quiz`, targets: [1, 2] },
   { type: "xp", emoji: "⚡", label: (t) => `Gana ${t} XP hoy`, targets: [60, 100, 150] },
 ];
 
@@ -112,6 +113,77 @@ export interface AchievementState {
   listens: number;      // counters.listen
   tutorUses: number;    // counters.tutor
   writings: number;     // counters.writing
+  readings: number;     // letture completadas (v9.0)
+  storiaReads: number;  // letture de historia completadas (v9.0)
+  spins: number;        // giocate della ruota (v9.0)
+  wheelsCoins: number;  // monete vinte alla ruota (v9.0)
+}
+
+/* Sfida del mese (v9.0): plantillas deterministas por mes */
+export interface MonthlyChallenge {
+  monthKey: string;          // yyyy-mm
+  type: "xp" | "correct" | "review" | "reading" | "listen";
+  target: number;
+}
+
+export const MONTH_TEMPLATES: { type: MonthlyChallenge["type"]; emoji: string; target: number; label: (t: number) => string; xpReward: number }[] = [
+  { type: "xp", emoji: "⚡", target: 1000, label: (t) => `Gana ${t} XP este mes`, xpReward: 100 },
+  { type: "correct", emoji: "🎯", target: 400, label: (t) => `Acierta ${t} respuestas`, xpReward: 120 },
+  { type: "review", emoji: "🔁", target: 250, label: (t) => `Repasa ${t} tarjetas`, xpReward: 120 },
+  { type: "reading", emoji: "📜", target: 8, label: (t) => `Completa ${t} letture`, xpReward: 150 },
+  { type: "listen", emoji: "👂", target: 150, label: (t) => `Escucha ${t} audios`, xpReward: 100 },
+];
+
+export const MONTHLY_REWARD_COINS = 300;
+
+export function monthKeyFor(d = new Date()): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/** Sfida del mese determinista: mismo mes = misma sfida para todos */
+export function generateMonthlyChallenge(monthKey: string): MonthlyChallenge {
+  const rnd = mulberry32(seedFrom(`sfida-${monthKey}`));
+  const tpl = MONTH_TEMPLATES[Math.floor(rnd() * MONTH_TEMPLATES.length)];
+  // ligera variación del objetivo según el mes
+  const factor = 0.9 + rnd() * 0.3;
+  return { monthKey, type: tpl.type, target: Math.max(1, Math.round(tpl.target * factor)) };
+}
+
+export function monthlyTemplate(type: MonthlyChallenge["type"]) {
+  return MONTH_TEMPLATES.find((t) => t.type === type) ?? MONTH_TEMPLATES[0];
+}
+
+/* ── Ruota della fortuna (v9.0): premios ponderados ── */
+export interface WheelPrize {
+  id: string;
+  emoji: string;
+  label: string;
+  coins?: number;
+  xp?: number;
+  freeze?: boolean;
+  boost?: boolean;
+  weight: number;
+}
+
+export const WHEEL_PRIZES: WheelPrize[] = [
+  { id: "c15", emoji: "🪙", label: "15 monete", coins: 15, weight: 26 },
+  { id: "c25", emoji: "🪙", label: "25 monete", coins: 25, weight: 22 },
+  { id: "c40", emoji: "💰", label: "40 monete", coins: 40, weight: 12 },
+  { id: "x20", emoji: "⚡", label: "20 XP", xp: 20, weight: 14 },
+  { id: "x35", emoji: "⚡", label: "35 XP", xp: 35, weight: 8 },
+  { id: "freeze", emoji: "❄️", label: "1 congelamiento", freeze: true, weight: 7 },
+  { id: "boost", emoji: "🚀", label: "Boost 2× 15 min", boost: true, weight: 7 },
+  { id: "jackpot", emoji: "💎", label: "Jackpot: 60 monete", coins: 60, weight: 4 },
+];
+
+export function spinWheelPrize(): WheelPrize {
+  const total = WHEEL_PRIZES.reduce((s, p) => s + p.weight, 0);
+  let r = Math.random() * total;
+  for (const p of WHEEL_PRIZES) {
+    r -= p.weight;
+    if (r <= 0) return p;
+  }
+  return WHEEL_PRIZES[0];
 }
 
 export type AchievementCat = "studio" | "lessico" | "costanza" | "abilita" | "valore";
@@ -163,6 +235,9 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: "giocatore", emoji: "🎲", name: "Giocatore", desc: "Juega 25 partidas", cat: "abilita", target: 25, value: (s) => s.games },
   { id: "tutor-amico", emoji: "💬", name: "Amico del tutor", desc: "25 sesiones con el Tutor IA", cat: "abilita", target: 25, value: (s) => s.tutorUses },
   { id: "scrittore", emoji: "🖊️", name: "Scrittore", desc: "10 escrituras corregidas", cat: "abilita", target: 10, value: (s) => s.writings },
+  { id: "lettore", emoji: "📜", name: "Lettore appassionato", desc: "10 letture con comprensión", cat: "abilita", target: 10, value: (s) => s.readings },
+  { id: "storico", emoji: "🏛️", name: "Storico", desc: "5 letture de storia (Italia o mundo)", cat: "abilita", target: 5, value: (s) => s.storiaReads },
+  { id: "ruota-fortuna", emoji: "🎡", name: "Amico della ruota", desc: "Gira la ruota 15 giorni", cat: "valore", target: 15, value: (s) => s.spins },
   /* ── Valore ── */
   { id: "diplomato", emoji: "🎓", name: "Diplomato", desc: "Aprueba un examen de nivel", cat: "valore", target: 1, value: (s) => s.certificates },
   { id: "perfetto", emoji: "✨", name: "Perfetto!", desc: "Un examen sin fallos (100%)", cat: "valore", target: 1, value: (s) => s.perfectCerts },
@@ -190,5 +265,9 @@ export function achievementState(s: LmsState, totalLessons: number): Achievement
     listens: s.counters.listen ?? 0,
     tutorUses: s.counters.tutor ?? 0,
     writings: s.counters.writing ?? 0,
+    readings: s.readingsRead.length,
+    storiaReads: s.readingsRead.filter((id) => id.startsWith("it-") || id.startsWith("mon-")).length,
+    spins: s.counters.spin ?? 0,
+    wheelsCoins: s.counters.wheelCoins ?? 0,
   };
 }

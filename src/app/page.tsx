@@ -36,6 +36,8 @@ import { ShadowingView } from "@/components/lms/views/shadowing";
 import { ImporterView } from "@/components/lms/views/importer";
 import { StatisticheView } from "@/components/lms/views/statistiche";
 import { ClassificaView } from "@/components/lms/views/classifica";
+import { LettureView } from "@/components/lms/views/letture";
+import { PremiView } from "@/components/lms/views/premi";
 import { PwaRegister, InstallBanner } from "@/components/lms/pwa";
 import { LockScreen } from "@/components/lms/lock-screen";
 
@@ -291,6 +293,8 @@ export default function Home() {
         {view === "importatore" && <ImporterView />}
         {view === "statistiche" && <StatisticheView />}
         {view === "classifica" && <ClassificaView />}
+        {view === "letture" && <LettureView />}
+        {view === "premi" && <PremiView />}
       </div>
       <PwaRegister />
       <InstallBanner />

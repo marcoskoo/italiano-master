@@ -1,6 +1,6 @@
 import {
   BookOpen, BookMarked, Brain, Calculator, CalendarDays, Clapperboard, Compass, Crown, Ear, FileInput,
-  Gamepad2, GraduationCap, Hash, Home, Keyboard, Languages, Library, LineChart, MapPin, Medal, Mic,
+  Gamepad2, Gift, GraduationCap, Hash, Home, Keyboard, Languages, Library, LineChart, MapPin, Medal, Mic,
   Microscope, PenLine, Printer, Quote, RefreshCcw, ScrollText, Settings, Shield, Sparkles, Target, Timer,
   Trophy, Volume2, AlertTriangle, BarChart3, Dices, FileSpreadsheet, HelpCircle, Puzzle, Scale, Wand2,
 } from "lucide-react";
@@ -18,6 +18,7 @@ export const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; ic
       { id: "progreso", label: "Mi progreso", icon: LineChart },
       { id: "statistiche", label: "Statistiche", icon: BarChart3 },
       { id: "classifica", label: "Classifica", icon: Medal },
+      { id: "premi", label: "Premi & Sfide", icon: Gift },
       { id: "test", label: "Test de nivel", icon: Compass },
       { id: "piani", label: "Piani PRO", icon: Crown },
     ],
@@ -33,6 +34,7 @@ export const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; ic
       { id: "vocabolario", label: "Vocabulario", icon: Library },
       { id: "ascolto", label: "Escucha", icon: Ear },
       { id: "lettura", label: "Lectura", icon: BookOpen },
+      { id: "letture", label: "Letture & Storia", icon: BookMarked },
       { id: "scrittura", label: "Escritura", icon: PenLine },
       { id: "conversazione", label: "Conversación", icon: Languages },
       { id: "pronuncia", label: "Pronunciación", icon: Volume2 },
@@ -134,6 +136,8 @@ export const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   proverbio: { title: "Completa il proverbio", sub: "Empareja las mitades de 193 proverbi: equivalente español y contexto tras cada respuesta" },
   shadowing: { title: "Shadowing", sub: "Escucha, repite grabando tu voz y compara: puntuación de pronunciación palabra por palabra" },
   importatore: { title: "Importatore di testi", sub: "Convierte cualquier texto o página web en una lección interactiva con tu diccionario de 8.000 lemas" },
+  letture: { title: "Letture & Storia", sub: "Dialoghi, testi informativi e storia (Italia + mondo): audio sincronizado, comprensión y debate" },
+  premi: { title: "Premi & Sfide", sub: "Monete, ruota della fortuna, negozio, boost XP e sfida del mese" },
 };
 
 export const NAV_FLAT = NAV_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, group: g.group })));

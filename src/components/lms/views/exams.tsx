@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Award, Copy, Check, CreditCard, Crown, Download, GraduationCap, Headphones, KeyRound, Landmark, Lock, ScrollText, ShieldCheck, Trophy, Upload, Wallet } from "lucide-react";
+import { ArrowLeft, Award, Bell, Copy, Check, CreditCard, Crown, Download, GraduationCap, Headphones, KeyRound, Landmark, Lock, ScrollText, ShieldCheck, Trophy, Upload, Wallet } from "lucide-react";
 import { CEFR_LEVELS, LEVEL_LABELS, type CefrLevel } from "@/lib/lms/types";
 import { exercisesByLevel } from "@/lib/lms/exercises";
 import { COURSES } from "@/lib/lms/courses";
 import { useLms } from "@/lib/lms/store";
 import { PLANS, levelAllowed, requiredPlanForLevel, planLimits } from "@/lib/lms/plans";
 import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
+import { pushSupported, currentSubscription, enablePush, disablePush, sendTestPush } from "@/lib/push/client";
 import { QuizEngine } from "../quiz-engine";
 import { PlanChip } from "../plan-badge";
 import { cn } from "@/lib/utils";
@@ -341,6 +342,50 @@ export function SettingsView() {
   const [confirmDowngrade, setConfirmDowngrade] = useState(false);
   const [nameDraft, setNameDraft] = useState(userName);
 
+  /* v9.0 · notifiche push */
+  const account = useLms((s) => s.account);
+  const [pushStatus, setPushStatus] = useState<"checking" | "off" | "on" | "denied" | "unsupported">("checking");
+  const [pushMsg, setPushMsg] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const check = async () => {
+      if (!pushSupported()) { if (alive) setPushStatus("unsupported"); return; }
+      const sub = await currentSubscription();
+      if (!alive) return;
+      if (sub && Notification.permission === "granted") setPushStatus("on");
+      else if (Notification.permission === "denied") setPushStatus("denied");
+      else setPushStatus("off");
+    };
+    void check();
+    return () => { alive = false; };
+  }, []);
+  const handleEnablePush = async () => {
+    setPushMsg(null);
+    const res = await enablePush(account?.username ?? null, userName);
+    if (res.ok) {
+      setPushStatus("on");
+      setPushMsg("Notifiche attivate ✓ — riceverai un ricordo giornaliero per la racha.");
+    } else {
+      setPushMsg(
+        res.reason === "denied" ? "Permesso negato: attiva le notifiche nelle impostazioni del browser."
+        : res.reason === "unsupported" ? "Il tuo browser non supporta le notifiche push."
+        : res.reason === "nokey" ? "Push non ancora configurato sul server (disponibile in produzione)."
+        : "Non è stato possibile attivare le notifiche. Riprova in produzione (HTTPS)."
+      );
+    }
+  };
+  const handleDisablePush = async () => {
+    setPushMsg(null);
+    await disablePush();
+    setPushStatus("off");
+    setPushMsg("Notifiche disattivate.");
+  };
+  const handleTestPush = async () => {
+    setPushMsg(null);
+    const res = await sendTestPush(account?.username ?? null);
+    setPushMsg(res.ok ? `Notifica di prova inviata ✓ (${res.message})` : res.message);
+  };
+
   /* PIN flow (create/change/remove) */
   const [pinMode, setPinMode] = useState<"none" | "create" | "change" | "remove">("none");
   const [pinCurrent, setPinCurrent] = useState("");
@@ -406,6 +451,9 @@ export function SettingsView() {
       quizHistory: s.quizHistory, certificates: s.certificates, writingHistory: s.writingHistory,
       srs: s.srs, errorLog: s.errorLog, skillStats: s.skillStats, counters: s.counters,
       importedTexts: s.importedTexts, dictFavorites: s.dictFavorites, dictHistory: s.dictHistory,
+      coins: s.coins, xpBoostUntil: s.xpBoostUntil, lastWheelDate: s.lastWheelDate,
+      readingsRead: s.readingsRead, monthKey: s.monthKey, monthCounters: s.monthCounters,
+      monthChallengeClaimed: s.monthChallengeClaimed, ownedTitles: s.ownedTitles, activeTitle: s.activeTitle,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const link = document.createElement("a");
@@ -788,6 +836,47 @@ export function SettingsView() {
             />
           </label>
         </div>
+      </section>
+
+      {/* notifiche push (v9.0) */}
+      <section className="rounded-3xl border border-soft bg-surface p-6">
+        <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
+          <Bell className="h-5 w-5 text-verde" aria-hidden="true" /> Notifiche
+        </h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
+          Recordatorio diario gratuito para mantener tu racha: repaso, ruota della fortuna o missiones.
+          Se envían como notificaciones del navegador (PWA instalable), sin apps externas.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          {pushStatus === "on" ? (
+            <>
+              <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-verde/50 bg-verde-tenue px-4 py-2.5 text-sm font-bold text-verde-scuro dark:text-verde">
+                <Check className="h-4 w-4" aria-hidden="true" /> Attive su questo dispositivo
+              </span>
+              <button onClick={() => void handleTestPush()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-verde/40 bg-surface px-4 py-2.5 text-sm font-bold text-verde-scuro transition-all hover:scale-105 dark:text-verde">
+                Prova la notifica
+              </button>
+              <button onClick={() => void handleDisablePush()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-rosso/30 px-4 py-2.5 text-sm font-bold text-rosso-scuro transition-all hover:scale-105 dark:text-rosso">
+                Disattiva
+              </button>
+            </>
+          ) : pushStatus === "denied" ? (
+            <p className="rounded-xl border border-rosso/30 bg-rosso-tenue px-4 py-2.5 text-sm font-semibold text-rosso-scuro dark:text-rosso">
+              Permiso bloqueado por el navegador: habilítalo en el icono 🔒 de la barra de direcciones.
+            </p>
+          ) : pushStatus === "unsupported" ? (
+            <p className="rounded-xl bg-crema-scura px-4 py-2.5 text-sm text-muted-it dark:bg-inchiostro/10">
+              Este navegador no soporta notificaciones push (mejor con Chrome/Edge o la app instalada).
+            </p>
+          ) : pushStatus === "checking" ? (
+            <p className="text-sm text-muted-it">Controllo…</p>
+          ) : (
+            <button onClick={() => void handleEnablePush()} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-105">
+              <Bell className="h-4 w-4" aria-hidden="true" /> Attiva le notifiche
+            </button>
+          )}
+        </div>
+        {pushMsg && <p className="mt-3 rounded-xl bg-crema-scura px-4 py-2.5 text-sm font-semibold dark:bg-inchiostro/10">{pushMsg}</p>}
       </section>
 
       {/* datos */}

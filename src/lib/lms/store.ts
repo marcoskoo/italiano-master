@@ -9,8 +9,8 @@ import type { PlanId } from "./plans";
 import type { AppConfig, AppConfigBundle } from "./appconfig";
 import { applyRemoteBundle } from "./overrides";
 import { telemetry } from "./remote";
-import { generateDailyQuests, QUEST_BONUS_XP, ALL_QUESTS_BONUS_XP } from "./quests";
-import type { DailyQuest, TrackType } from "./quests";
+import { generateDailyQuests, QUEST_BONUS_XP, ALL_QUESTS_BONUS_XP, generateMonthlyChallenge, monthKeyFor, monthlyTemplate, MONTHLY_REWARD_COINS, spinWheelPrize, type WheelPrize } from "./quests";
+import type { DailyQuest, TrackType, MonthlyChallenge } from "./quests";
 import { weekKeyFor } from "./leagues";
 
 export interface Account {
@@ -64,7 +64,7 @@ export interface UserSecurity {
   lockoutUntil: number;         // timestamp ms de fin del bloqueo
 }
 
-interface LmsState {
+export interface LmsState {
   /* profile */
   userName: string;
   level: CefrLevel | null;
@@ -134,6 +134,17 @@ interface LmsState {
   dictFavorites: string[];     // ids de palabras favoritas
   dictHistory: string[];       // últimas 12 palabras consultadas
 
+  /* ── gamificación avanzada (v9.0) ── */
+  coins: number;               // 🪙 monete
+  xpBoostUntil: number;        // timestamp ms: boost 2× XP activo hasta entonces
+  lastWheelDate: string | null;// yyyy-mm-dd del último giro de la ruota
+  readingsRead: string[];      // ids de letture con quiz completado
+  monthKey: string;            // yyyy-mm del contador mensual
+  monthCounters: Record<string, number>; // progreso del mes (sfida mensile)
+  monthChallengeClaimed: boolean;        // premio mensial ya reclamado
+  ownedTitles: string[];       // títulos de perfil comprados
+  activeTitle: string | null;  // título mostrado en el perfil
+
   /* actions */
   navigate: (view: ViewId, params?: NavParams) => void;
   setUserName: (name: string) => void;
@@ -163,6 +174,13 @@ interface LmsState {
   deleteImportedText: (id: string) => void;
   toggleDictFavorite: (wordId: string) => void;
   pushDictHistory: (wordId: string) => void;
+  /* v9.0 · gamificación */
+  addCoins: (n: number) => void;
+  spinWheelDaily: () => { prize: WheelPrize; alreadySpun: false } | { alreadySpun: true };
+  buyShopItem: (id: "freeze" | "boost" | "titolo-storico" | "titolo-cicerone" | "titolo-poeta" | "titolo-navigatore") => { ok: boolean; reason?: string };
+  markReadingDone: (id: string) => { coinsEarned: number; firstTime: boolean };
+  claimMonthlyChallenge: () => { ok: boolean; coins: number; xp: number };
+  setActiveTitle: (id: string | null) => void;
   restoreBackup: (data: Record<string, unknown>) => void;
   resetAll: () => void;
   loginAccount: (account: Account, profile?: { displayName?: string; level?: string; plan?: string; xp?: number; streak?: number }) => void;
@@ -254,6 +272,17 @@ export const useLms = create<LmsState>()(
       dictFavorites: [],
       dictHistory: [],
 
+      /* v9.0 · gamificación */
+      coins: 0,
+      xpBoostUntil: 0,
+      lastWheelDate: null,
+      readingsRead: [],
+      monthKey: monthKeyFor(),
+      monthCounters: {},
+      monthChallengeClaimed: false,
+      ownedTitles: [],
+      activeTitle: null,
+
       navigate: (view, params = {}) => set({ view, navParams: params }),
 
       setUserName: (name) => set({ userName: name.trim() || "Studente" }),
@@ -265,9 +294,11 @@ export const useLms = create<LmsState>()(
 
       updateSettings: (partial) => set({ settings: { ...get().settings, ...partial } }),
 
-      addXp: (amount, skill) => {
+      addXp: (amountIn, skill) => {
         const s = get();
         const t = today();
+        // boost 2× (v9.0): si hay un boost activo, el XP se duplica
+        const amount = Date.now() < s.xpBoostUntil ? amountIn * 2 : amountIn;
         const studyDays = [...s.studyDays.filter((d) => d.date !== t), { date: t, xp: (s.dailyXpDate === t ? s.dailyXp : 0) + amount }].slice(-30);
 
         // lega settimanale (v8.0): XP de la semana; al cambiar la semana arranca de cero
@@ -452,6 +483,24 @@ export const useLms = create<LmsState>()(
 
         set({ counters, quests: updated, questsDate: t, questsAllBonus: allBonus });
 
+        // monete por misión completada (v9.0): +10 al completar, +25 por las 3
+        let coinsEarned = 0;
+        if (isQuestType) {
+          for (const q of updated) {
+            if (q.type === type && q.done && !(s.quests.find((o) => o.id === q.id)?.done)) coinsEarned += 10;
+          }
+        }
+        if (!s.questsAllBonus && allBonus) coinsEarned += 25;
+        if (coinsEarned > 0) set({ coins: get().coins + coinsEarned });
+
+        // sfida del mese (v9.0): los contadores del mes se actualizan aquí;
+        // al cambiar de mes el contador y el flag de premio se reinician
+        const mk = monthKeyFor();
+        const monthChanged = s.monthKey !== mk;
+        const mc = monthChanged ? {} : { ...s.monthCounters };
+        mc[type] = (mc[type] ?? 0) + amount;
+        set(monthChanged ? { monthCounters: mc, monthKey: mk, monthChallengeClaimed: false } : { monthCounters: mc });
+
         // el bonus entra por addXp → también alimenta la misión de XP (recursión finita)
         if (bonusXp > 0) get().addXp(bonusXp);
       },
@@ -478,6 +527,81 @@ export const useLms = create<LmsState>()(
         const h = get().dictHistory.filter((x) => x !== wordId);
         set({ dictHistory: [wordId, ...h].slice(0, 12) });
       },
+
+      /* ── Gamificación avanzada (v9.0) ── */
+      addCoins: (n) => set({ coins: Math.max(0, get().coins + n) }),
+
+      /* Ruota della fortuna: 1 giro al día; premios ponderados */
+      spinWheelDaily: () => {
+        const s = get();
+        const t = today();
+        if (s.lastWheelDate === t) return { alreadySpun: true as const };
+        const prize = spinWheelPrize();
+        const patch: Partial<LmsState> = {
+          lastWheelDate: t,
+          coins: s.coins + (prize.coins ?? 0),
+          xpBoostUntil: prize.boost ? Date.now() + 15 * 60 * 1000 : s.xpBoostUntil,
+          streakFreezes: prize.freeze ? Math.min(2, s.streakFreezes + 1) : s.streakFreezes,
+          counters: { ...s.counters, spin: (s.counters.spin ?? 0) + 1, wheelCoins: (s.counters.wheelCoins ?? 0) + (prize.coins ?? 0) },
+        };
+        set(patch);
+        if (prize.xp) get().addXp(prize.xp);
+        telemetry("wheel_spun", { prize: prize.id, coins: prize.coins ?? 0, xp: prize.xp ?? 0 }, get().account?.username);
+        return { prize, alreadySpun: false as const };
+      },
+
+      /* Negozio: congelamiento / boost / títulos de perfil */
+      buyShopItem: (id) => {
+        const s = get();
+        const PRICES: Record<typeof id, number> = {
+          freeze: 80, boost: 60,
+          "titolo-storico": 150, "titolo-cicerone": 200, "titolo-poeta": 200, "titolo-navigatore": 150,
+        };
+        const price = PRICES[id];
+        if (id.startsWith("titolo-") && s.ownedTitles.includes(id)) return { ok: false, reason: "Ya lo tienes" };
+        if (s.coins < price) return { ok: false, reason: "Monete insufficienti" };
+        const patch: Partial<LmsState> = { coins: s.coins - price };
+        if (id === "freeze") {
+          if (s.streakFreezes >= 2) return { ok: false, reason: "Máximo 2 congelamientos" };
+          patch.streakFreezes = s.streakFreezes + 1;
+        } else if (id === "boost") {
+          patch.xpBoostUntil = Math.max(Date.now(), s.xpBoostUntil) + 15 * 60 * 1000;
+        } else {
+          patch.ownedTitles = [...s.ownedTitles, id];
+          if (!s.activeTitle) patch.activeTitle = id;
+        }
+        set(patch);
+        telemetry("item_bought", { item: id, price }, s.account?.username);
+        return { ok: true };
+      },
+
+      /* Lettura completada: +20 monete la primera vez */
+      markReadingDone: (id) => {
+        const s = get();
+        const first = !s.readingsRead.includes(id);
+        if (first) {
+          set({ readingsRead: [...s.readingsRead, id], coins: s.coins + 20 });
+        }
+        get().trackQuest("reading");
+        telemetry("reading_done", { id, first }, s.account?.username);
+        return { coinsEarned: first ? 20 : 0, firstTime: first };
+      },
+
+      /* Sfida del mese: reclama 300 monete + XP del template */
+      claimMonthlyChallenge: () => {
+        const s = get();
+        const mk = monthKeyFor();
+        const ch = generateMonthlyChallenge(mk); // determinista: mismo mes = misma sfida
+        const progress = s.monthKey === mk ? (s.monthCounters[ch.type] ?? 0) : 0;
+        if (s.monthChallengeClaimed || progress < ch.target) return { ok: false, coins: 0, xp: 0 };
+        const tpl = monthlyTemplate(ch.type);
+        set({ coins: s.coins + MONTHLY_REWARD_COINS, monthChallengeClaimed: true });
+        get().addXp(tpl.xpReward);
+        telemetry("monthly_challenge_claimed", { month: mk, type: ch.type }, s.account?.username);
+        return { ok: true, coins: MONTHLY_REWARD_COINS, xp: tpl.xpReward };
+      },
+
+      setActiveTitle: (id) => set({ activeTitle: id }),
 
       /* ── Backup e ripristino (v8.0) ──
          Restaura SOLO progreso: nunca cuenta, seguridad, plan ni pagos
@@ -514,6 +638,15 @@ export const useLms = create<LmsState>()(
           importedTexts: arr<ImportedText>(data.importedTexts).slice(0, 8),
           dictFavorites: arr<string>(data.dictFavorites),
           dictHistory: arr<string>(data.dictHistory).slice(0, 12),
+          coins: Math.max(0, num(data.coins, s.coins)),
+          xpBoostUntil: num(data.xpBoostUntil, 0),
+          lastWheelDate: str(data.lastWheelDate, null),
+          readingsRead: arr<string>(data.readingsRead),
+          monthKey: str(data.monthKey, null) ?? monthKeyFor(),
+          monthCounters: rec(data.monthCounters) as Record<string, number>,
+          monthChallengeClaimed: data.monthChallengeClaimed === true,
+          ownedTitles: arr<string>(data.ownedTitles),
+          activeTitle: str(data.activeTitle, null),
         });
         telemetry("backup_restored", { xp: num(data.xp, 0) }, s.account?.username);
       },
@@ -559,6 +692,9 @@ export const useLms = create<LmsState>()(
           importedTexts: [],
           weekXp: 0, weekKey: weekKeyFor(), streakFreezes: 0, lastFreezeDate: null,
           dictFavorites: [], dictHistory: [],
+          coins: 0, xpBoostUntil: 0, lastWheelDate: null, readingsRead: [],
+          monthKey: monthKeyFor(), monthCounters: {}, monthChallengeClaimed: false,
+          ownedTitles: [], activeTitle: null,
         }),
 
       loginAccount: (account, profile) => {

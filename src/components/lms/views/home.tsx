@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowRight, BookOpen, Compass, Dices, Ear, FileSpreadsheet, Flame, GraduationCap, Keyboard, Library, Quote, RefreshCcw, Sparkles, Target, Timer, Trophy, Volume2, Wand2, Zap } from "lucide-react";
+import { AlertTriangle, ArrowRight, BookOpen, Coins, Compass, Dices, Ear, FileSpreadsheet, Flame, GraduationCap, Keyboard, Library, Quote, RefreshCcw, Sparkles, Target, Timer, Trophy, Volume2, Wand2, Zap } from "lucide-react";
 import { MorphingHero } from "@/components/italian/morphing-hero";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { VOCAB, VOCAB_BY_ID } from "@/lib/lms/vocabulary";
@@ -22,10 +22,18 @@ import type { ViewId } from "@/lib/lms/types";
 
 const QUICK: { id: ViewId; label: string; it: string; icon: typeof Ear; desc: string }[] = [
   { id: "cursos", label: "Cursos", it: "corsi", icon: GraduationCap, desc: "Ruta A1→C2 con lecciones completas" },
+  { id: "letture", label: "Letture & Storia", it: "letture", icon: BookOpen, desc: "Historia de Italia y el mundo con audio" },
   { id: "ascolto", label: "Escucha", it: "ascolto", icon: Ear, desc: "Diálogos y dictados con audio" },
-  { id: "dizionario", label: "Diccionario", it: "dizionario", icon: Library, desc: "Italiano–español con audio" },
   { id: "tutor", label: "Tutor IA", it: "tutor", icon: Sparkles, desc: "Conversa y corrige con Marco" },
 ];
+
+/* títulos de perfil comprables (v9.0) */
+const TITLE_EMOJIS: Record<string, string> = {
+  "titolo-storico": "🏛️", "titolo-cicerone": "🗣️", "titolo-poeta": "🖋️", "titolo-navigatore": "⚓",
+};
+const TITLES_SHORT: Record<string, string> = {
+  "titolo-storico": "Storico", "titolo-cicerone": "Cicerone", "titolo-poeta": "Poeta", "titolo-navigatore": "Navigatore",
+};
 
 const PLUGINS: { id: ViewId; label: string; it: string; icon: typeof Ear; desc: string }[] = [
   { id: "proverbi", label: "Proverbi", it: "plugin", icon: Quote, desc: "193 proverbios, modismos y locuciones latinas" },
@@ -58,6 +66,9 @@ export function HomeView() {
   const remoteConfig = useLms((s) => s.remoteConfig);
   const quests = useLms((s) => s.quests);
   const ensureDailyQuests = useLms((s) => s.ensureDailyQuests);
+  const coins = useLms((s) => s.coins);
+  const lastWheelDate = useLms((s) => s.lastWheelDate);
+  const activeTitle = useLms((s) => s.activeTitle);
 
   useEffect(() => { ensureDailyQuests(); }, [ensureDailyQuests]);
 
@@ -95,7 +106,7 @@ export function HomeView() {
             LMS completo · da zero a C2
           </p>
           <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-            Ciao {userName.split(" ")[0]}, <span className="italic text-verde-scuro dark:text-verde">impariamo l&apos;italiano.</span>
+            Ciao {userName.split(" ")[0]}{activeTitle ? <span className="ml-2 align-middle text-base font-bold text-terracotta dark:text-verde">{TITLE_EMOJIS[activeTitle] ?? ""} {TITLES_SHORT[activeTitle] ?? ""}</span> : ""}, <span className="italic text-verde-scuro dark:text-verde">impariamo l&apos;italiano.</span>
           </h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-it sm:text-lg">
             Un sistema integral: lecciones conectadas, las 4 destrezas, gramática paso a paso,
@@ -122,16 +133,23 @@ export function HomeView() {
             {([
               { label: "XP total", value: xp.toLocaleString(), icon: Zap, tone: "oro" },
               { label: streakFreezes > 0 ? `Racha · ${streakFreezes}❄️` : "Racha", value: `${streak} d`, icon: Flame, tone: "rosso" },
-              { label: "Lecciones", value: `${completedLessons.length}/${allLessons}`, icon: BookOpen, tone: "verde" },
+              { label: lastWheelDate === new Date().toISOString().slice(0, 10) ? "Monete" : "Monete · ruota!", value: coins.toLocaleString(), icon: Coins, tone: "oro", to: "premi" as const },
               { label: "Tarjetas", value: String(Object.keys(srs).length), icon: Library, tone: "terracotta" },
-            ] as const).map((card) => (
-              <div key={card.label} className={cn("rounded-2xl border border-soft bg-surface p-3.5", card.tone === "oro" && "border-oro/25", card.tone === "rosso" && "border-rosso/25", card.tone === "verde" && "border-verde/25", card.tone === "terracotta" && "border-terracotta/25")}>
-                <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-it">
-                  <card.icon className="h-3 w-3" aria-hidden="true" /> {card.label}
-                </dt>
-                <dd className="mt-1 font-display text-2xl font-bold">{card.value}</dd>
-              </div>
-            ))}
+            ] as const).map((card) => {
+              const inner = (
+                <>
+                  <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-it">
+                    <card.icon className="h-3 w-3" aria-hidden="true" /> {card.label}
+                  </dt>
+                  <dd className="mt-1 font-display text-2xl font-bold">{card.value}</dd>
+                </>
+              );
+              return "to" in card && card.to ? (
+                <button key={card.label} onClick={() => navigate(card.to)} className={cn("rounded-2xl border border-soft bg-surface p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-oro/50", card.tone === "oro" && "border-oro/25")}>{inner}</button>
+              ) : (
+                <div key={card.label} className={cn("rounded-2xl border border-soft bg-surface p-3.5", card.tone === "oro" && "border-oro/25", card.tone === "rosso" && "border-rosso/25", card.tone === "terracotta" && "border-terracotta/25")}>{inner}</div>
+              );
+            })}
             <div className="col-span-2 flex items-center justify-center sm:col-span-1">
               <InstallButton compact className="!min-h-9 !px-4 !py-1.5 text-xs" />
             </div>

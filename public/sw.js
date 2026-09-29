@@ -1,12 +1,13 @@
-/* ── Italiano Master · Service Worker (v6.0) ────────────────────────
+/* ── Italiano Master · Service Worker (v9.0) ────────────────────────
    Estrategia offline sin servicios de pago:
    · Pre-cache: shell + offline + assets de marca
    · /_next/static/* → cache-first (assets inmutables con hash)
    · navegación y demás GET → network-first con fallback a caché
      y, si no hay red, /offline.html
-   · /api/* → solo red (nunca se cachea el backend) */
+   · /api/* → solo red (nunca se cachea el backend)
+   · Web Push (v9.0): recordatorios diarios vía VAPID          */
 
-const VERSION = "im-v6-0-0";
+const VERSION = "im-v9-0-0";
 const CACHE = `italiano-master-${VERSION}`;
 
 const PRECACHE = [
@@ -78,5 +79,43 @@ self.addEventListener("fetch", (event) => {
           return Response.error();
         })
       )
+  );
+});
+
+/* ── Web Push (v9.0) ───────────────────────────────────────────── */
+
+self.addEventListener("push", (event) => {
+  let data = { title: "Italiano Master", body: "È ora di studiare!", url: "/", tag: "im-push" };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch {
+    if (event.data) data.body = event.data.text();
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icon-192.png",
+      badge: "/icon-96.png",
+      tag: data.tag || "im-push",
+      data: { url: data.url || "/" },
+      vibrate: [80, 40, 80],
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ("focus" in client) {
+          client.focus();
+          if ("navigate" in client) client.navigate(url);
+          return;
+        }
+      }
+      return self.clients.openWindow(url);
+    })
   );
 });
