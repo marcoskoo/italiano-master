@@ -270,3 +270,23 @@ Work Log:
 Stage Summary:
 - v9.5.1 LIVE: la app ya no puede mostrar el error crudo de Next.js — toda excepción del cliente se captura con pantalla de marca y recuperación en 1 clic; los ChunkLoadError post-deploy se auto-recuperan con recarga única; el crash por vista corrupta está eliminado en 2 capas; el SW nuevo purga cachés antiguas al activarse.
 - Remedio inmediato para el usuario que vio el error: recargar la página (o el botón Ricarica de la nueva pantalla si volviera a ocurrir).
+
+---
+Task ID: 7
+Agent: main (Super Z)
+Task: v9.5.2 — El usuario seguía viendo la pantalla "Ops! Qualcosa è andato storto": encontrar y corregir la excepción real
+
+Work Log:
+- Reproducción: la pantalla del usuario es la variante NO-chunk del global-error (excepción determinista en su dispositivo). Probados sin reproducir: estado invitado limpio (44 vistas), estado "veterano" completo con cuenta admin/plan platinum/500 SRS/60 quizzes/certificados/ligas/quests con tipos inexistentes (scripts/veteran-sweep.sh → 0 crashes).
+- Hipótesis navParams: los deep-links persistidos apuntan a ids que pueden haber cambiado entre versiones. Creado scripts/navparams-test.sh: **CRASH REPRODUCIDO** — view=vocabolario + navParams.category con id inexistente/renombrado.
+- Causa raíz: vocabulary.tsx línea 24 usaba navParams.category sin validar → CATEGORY_META[openCat].emoji (línea 103) con categoría obsoleta = undefined.emoji → TypeError al cargar → tumba toda la app. Encaja con el historial: el usuario estaba en Vocabulario con una categoría cuya id cambió en versiones recientes (v9.4 trabajo de imágenes/categorías).
+- Auditoría de los demás consumidores de navParams: situations (if situation), grammar (if topic), dictionary (if VOCAB_BY_ID), letture (valida LETTURE_BY_ID al init), courses (findLesson → undefined → guard), tutor (seed) — todos ya seguros; solo vocabulary era vulnerable.
+- Fix vocabulary.tsx: validación safeCat (CATEGORY_META[navParams.category] existe ? categoría : null) al inicializar openCat.
+- global-error.tsx v9.5.2: (a) "Dettagli tecnici" desplegable con error.message + 4 líneas de stack + contexto del estado persistido (view/navParams/user) → cualquier error futuro es diagnosticable por el propio usuario; (b) telemetría client_error (sendBeacon/fetch keepalive) SIEMPRE que se muestra, con msg/stack/digest/chunk/ctx/ua; (c) auto-recarga única extendida a CUALQUIER error (Safari emite "Load failed" en vez de ChunkLoadError y el regex anterior no lo cubría); regex ampliado.
+- API /api/telemetry: "client_error" añadido a ALLOWED_EVENTS (visible en el panel admin → Attività).
+- Verificación local: crash reproducido → fix → mismo estado envenenado renderiza Vocabolario (fallback a lista de categorías); categoría válida (saluti) sigue abriendo por deep-link; detalles técnicos muestran mensaje+stack reales; POST /api/telemetry 200; lint limpio.
+- Deploy: commit 9dac3ac. Producción verificada: mismo veneno (view=vocabolario + category fantasma) → "vocabolario ok" sin crash; barrido dirigido inicio/premi/letture/vocabolario/grammatica/dizionario → 6/6 ok; HTTP 200.
+
+Stage Summary:
+- v9.5.2 LIVE: crash real del usuario eliminado (categoría de vocabulario obsoleta persistida). La app ahora valida los deep-links persistidos, y cualquier error futuro llega al panel admin (client_error) y es visible en pantalla ("Dettagli tecnici") para diagnóstico inmediato.
+- Scripts de diagnóstico persistidos: veteran-sweep.sh, navparams-test.sh (junto al sweep-views.sh existente).
