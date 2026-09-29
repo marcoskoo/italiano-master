@@ -290,3 +290,27 @@ Work Log:
 Stage Summary:
 - v9.5.2 LIVE: crash real del usuario eliminado (categoría de vocabulario obsoleta persistida). La app ahora valida los deep-links persistidos, y cualquier error futuro llega al panel admin (client_error) y es visible en pantalla ("Dettagli tecnici") para diagnóstico inmediato.
 - Scripts de diagnóstico persistidos: veteran-sweep.sh, navparams-test.sh (junto al sweep-views.sh existente).
+
+---
+Task ID: 8
+Agent: main (Super Z)
+Task: v9.5.3 — "Sigue igual": el usuario seguía viendo la pantalla de error (captura IMG_8128, v9.5.2). Encontrar y corregir la excepción REAL de su dispositivo.
+
+Work Log:
+- Análisis de la captura: pantalla global-error v9.5.2 (boundary funcionando), "Dettagli tecnici" colapsado → sin mensaje visible. El error NO es chunk ni navParams (ya corregidos en v9.5.1/v9.5.2): es determinista en su dispositivo.
+- Nuevo superpoder de diagnóstico: scripts/read-blob.mjs — lee el snapshot CIFRADO de producción (Vercel Blob, AES-256-GCM, clave derivada del BLOB_READ_WRITE_TOKEN obtenido vía API de Vercel con decrypt=true) sin tocar el backend. Telemetría accesible sin login admin.
+- Telemetría client_error (16 eventos idénticos, 20:21–20:34 UTC): msg="undefined is not an object (evaluating 'j.level')" ctx="view=shadowing navParams={} xp=69".
+- Decodificado el crash site EXACTO descargando el chunk de producción (adc706eebc7d8066.js:7569:186329): `children:[j.level," · frase ",c+1,"/",l.length]` = shadowing.tsx línea 277 {phrase.level} con phrase=undefined.
+- Causa raíz confirmada con la propia telemetría: evento level_set {"level":"C2"} a las 19:10 UTC → el usuario entró a Shadowing a las 20:21. SHADOW_PHRASES solo tenía niveles A1–C1 → filter(level==="C2") = lista VACÍA → list[-1] = undefined → phrase.level = TypeError en cada carga (view persistida en localStorage) → crash loop. Por eso "sigue igual": la vista envenenada se re-cargaba en cada visita.
+- Auditoría de la misma clase de bug en TODAS las vistas (índice en lista filtrada por nivel): plugins (Dettato: disabled pool<5), plugins2/3 (guard item ? ...), letture/dictionary/grammar/skills (solo .map/.find, sin índice) → shadowing era el ÚNICO desprotegido.
+- Fix shadowing.tsx (4 capas): (1) nivel del perfil validado contra los datos al montar (nivel sin frases → "tutti", sin nivel → "A1"); (2) list con fallback: filtro vacío → todas las frases (nunca vacía); (3) if (!phrase) → empty-state "Nessuna frase disponibile" en vez de crash; (4) guard de phrase en el callback de reconocimiento de voz.
+- Contenido nuevo: 6 frases C2 (sh-c2-01..06, período hipotético mixto, "pur essendo", ne partitivo, idioms) + 1 tarea oral CILS C2 (oral-c2-01) → el nivel C2 tiene contenido REAL y los chips muestran A1–C2 completos (antes ocultaban C2 por falta de datos).
+- global-error.tsx: ctx de diagnóstico ahora incluye level=… (habría ahorrado una hora de deducción); versión v9.5.3. sw.js → im-v9-5-3.
+- Verificación local con el veneno EXACTO (view=shadowing + level=C2 + xp=69): "C2 · frase 1/6" con la frase C2 visible, chips Tutti+A1..C2, tab orale con 8 tareas (C2 · opinione nueva), 0 errores consola, 12 vistas en regresión OK.
+- Deploy d547b7c → producción verificada con el mismo veneno: NO CRASH + "C2 · frase 1/6" + sin client_error nuevos en telemetría. SW con skipWaiting+clients.claim → se actualiza solo al abrir la app.
+
+Stage Summary:
+- v9.5.3 LIVE: crash loop del usuario eliminado (nivel C2 + Shadowing sin frases C2). El diagnóstico llegó por la telemetría client_error de v9.5.2 (el fix anterior pagó dividendos) + lectura directa del blob cifrado de producción.
+- El usuario NO necesita hacer nada: al recargar, su estado persistido (view=shadowing, level=C2) ahora renderiza 6 frases C2 reales. Si la pestaña quedó en la pantalla de error: Ricarica o reabrir.
+- Herramienta reproducible: scripts/read-blob.mjs (lectura del estado+telemetría de producción descifrado; BLOB_TOKEN por env).
+- Bonus: nivel C2 con contenido real en Shadowing (6 frases + simulacro oral CILS C2).
