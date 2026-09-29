@@ -13,6 +13,8 @@ const ALLOWED_EVENTS = new Set([
   "payment_method_selected", "plan_activated", "security_pin_enabled",
   "security_pin_disabled", "security_lock", "pomodoro_session", "wordle_win",
   "app_locked", "app_unlocked", "session_revoked",
+  /* v9.5.2: excepciones del cliente capturadas por global-error (diagnóstico) */
+  "client_error",
 ]);
 
 /* POST /api/telemetry → registra un evento de uso de la plataforma.

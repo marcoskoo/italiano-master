@@ -21,7 +21,13 @@ export function VocabularyView() {
   const upsertSrs = useLms((s) => s.upsertSrs);
   const addXp = useLms((s) => s.addXp);
 
-  const [openCat, setOpenCat] = useState<WordCategory | null>(navParams.category ?? null);
+  /* v9.5.2: la categoría puede venir del estado persistido (navParams) y haber
+     sido renombrada/eliminada en una versión posterior → validar antes de usarla,
+     o CATEGORY_META[openCat].emoji tumbaba toda la app al cargar. */
+  const safeCat = navParams.category && CATEGORY_META[navParams.category as WordCategory]
+    ? navParams.category
+    : null;
+  const [openCat, setOpenCat] = useState<WordCategory | null>(safeCat);
   const [session, setSession] = useState<string[] | null>(null);
   const [search, setSearch] = useState("");
   const [visible, setVisible] = useState(60);
