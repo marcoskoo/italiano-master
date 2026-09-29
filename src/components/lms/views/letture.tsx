@@ -27,6 +27,7 @@ const CAT_STYLES: Record<LetturaCat, string> = {
   informazione: "border-oro/30 bg-oro-tenue text-oro-scuro dark:text-oro",
   "storia-italia": "border-verde/30 bg-verde-tenue text-verde-scuro dark:text-verde",
   "storia-mondo": "border-terracotta/30 bg-terracotta/10 text-terracotta-scuro dark:text-terracotta",
+  cultura: "border-viola/30 bg-viola-tenue text-viola-scuro dark:text-viola",
 };
 
 export function LettureView() {

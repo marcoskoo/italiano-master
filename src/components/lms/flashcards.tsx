@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, type TouchEvent as ReactTouchEvent } from "r
 import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw, Volume2 } from "lucide-react";
 import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
+import { CATEGORY_IMG } from "@/lib/lms/types";
 import { newCard, review, dueCards } from "@/lib/lms/srs";
 import { useLms } from "@/lib/lms/store";
 import { speak } from "@/lib/lms/tts";
@@ -129,6 +130,15 @@ export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExi
           </span>
 
           <div className="flex min-h-48 flex-col items-center justify-center">
+            {!flipped && CATEGORY_IMG[word.cat] && (
+              <img
+                src={CATEGORY_IMG[word.cat]}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="mb-4 h-20 w-20 rounded-2xl border border-soft object-cover shadow-sm sm:h-24 sm:w-24"
+              />
+            )}
             <p className="font-display text-4xl font-semibold leading-tight">{flipped ? word.es : word.it}</p>
             <p className="mt-2 font-mono text-sm text-muted-it">{flipped ? word.pron : `/ ${word.pron} /`}</p>
             {flipped && (

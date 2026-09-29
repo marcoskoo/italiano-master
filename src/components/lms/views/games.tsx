@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Gamepad2, Grid3x3, ListOrdered, Sparkles, Timer, Trophy } from "lucide-react";
 import { VOCAB, wordsByCategory } from "@/lib/lms/vocabulary";
-import { CATEGORY_META, type CefrLevel, type WordCategory } from "@/lib/lms/types";
+import { CATEGORY_META, CATEGORY_IMG, type CefrLevel, type WordCategory } from "@/lib/lms/types";
 import { EXERCISES } from "@/lib/lms/exercises";
 import { useLms } from "@/lib/lms/store";
 import { QuizEngine } from "../quiz-engine";
@@ -139,10 +139,22 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
         <h2 className="font-display text-2xl font-semibold">Scegli una categoria</h2>
         <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
           {(Array.from(new Set(VOCAB.map((w) => w.cat))) as WordCategory[]).map((c) => (
-            <button key={c} onClick={() => { setCat(c); startGame(c); }} className="rounded-2xl border-2 border-soft bg-surface p-4 text-left transition-all hover:-translate-y-0.5 hover:border-verde/40">
-              <p className="text-2xl" aria-hidden="true">{CATEGORY_META[c].emoji}</p>
-              <p className="mt-2 text-sm font-bold">{CATEGORY_META[c].es}</p>
-              <p className="text-xs text-muted-it">{Math.min(8, wordsByCategory(c).length)} coppie</p>
+            <button key={c} onClick={() => { setCat(c); startGame(c); }} className="group overflow-hidden rounded-2xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-0.5 hover:border-verde/40 hover:shadow-lg">
+              {CATEGORY_IMG[c] && (
+                <img
+                  src={CATEGORY_IMG[c]}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              )}
+              <div className="p-3.5">
+                <p className="flex items-center gap-1.5 text-sm font-bold">
+                  <span aria-hidden="true">{CATEGORY_META[c].emoji}</span> {CATEGORY_META[c].es}
+                </p>
+                <p className="mt-1 text-xs text-muted-it">{Math.min(8, wordsByCategory(c).length)} coppie</p>
+              </div>
             </button>
           ))}
         </div>
@@ -154,7 +166,12 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
     <div>
       <button onClick={() => setCat(null)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">← Cambia categoria</button>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-soft bg-surface px-5 py-3.5">
-        <p className="font-display text-lg font-semibold">{CATEGORY_META[cat].emoji} {CATEGORY_META[cat].es}</p>
+        <p className="flex items-center gap-2.5 font-display text-lg font-semibold">
+          {CATEGORY_IMG[cat] && (
+            <img src={CATEGORY_IMG[cat]} alt="" className="h-9 w-9 rounded-xl object-cover" />
+          )}
+          {CATEGORY_META[cat].emoji} {CATEGORY_META[cat].es}
+        </p>
         <div className="flex items-center gap-4 text-sm font-bold">
           <span className="flex items-center gap-1.5 text-muted-it"><Timer className="h-4 w-4" aria-hidden="true" /> {elapsed}s</span>
           <span className="flex items-center gap-1.5 text-muted-it"><Trophy className="h-4 w-4" aria-hidden="true" /> {pairsFound}/{totalPairs}</span>
