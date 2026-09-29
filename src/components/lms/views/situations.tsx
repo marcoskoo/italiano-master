@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ListChecks, MapPin, Play, Sparkles, Square, Volume2 } from "lucide-react";
-import { SITUATIONS } from "@/lib/lms/situations";
+import { SITUATIONS, SITUATION_IMG } from "@/lib/lms/situations";
 import { getExercises } from "@/lib/lms/exercises";
 import { useLms } from "@/lib/lms/store";
 import { speakDialogue, stopSpeaking } from "@/lib/lms/tts";
@@ -47,9 +47,11 @@ export function SituationsView() {
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Tutte le situazioni
         </button>
 
-        <div className="rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue to-surface p-6 dark:from-verde-tenue/30">
-          <div className="flex items-start gap-4">
-            <span className="text-5xl" aria-hidden="true">{situation.emoji}</span>
+        <div className="overflow-hidden rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue to-surface dark:from-verde-tenue/30">
+          {SITUATION_IMG[situation.id] && (
+            <img src={SITUATION_IMG[situation.id]} alt="" className="ita-img aspect-[16/9] w-full object-cover" />
+          )}
+          <div className="flex items-start gap-4 p-6">
             <div>
               <h2 className="font-display text-3xl font-semibold leading-tight">{situation.title}</h2>
               <p className="mt-1 font-mono text-sm italic text-muted-it">{situation.titleIt} · livello {situation.level}</p>
@@ -147,18 +149,26 @@ export function SituationsView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.04 }}
           onClick={() => setOpenId(s.id)}
-          className="group rounded-3xl border-2 border-soft bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
+          className="group relative overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
         >
-          <div className="flex items-center justify-between">
-            <p className="text-4xl" aria-hidden="true">{s.emoji}</p>
-            <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">{s.level}</span>
-          </div>
-          <p className="mt-3.5 font-display text-lg font-semibold leading-snug">{s.title}</p>
-          <p className="mt-1 font-mono text-[11px] italic text-muted-it">{s.titleIt}</p>
-          <div className="mt-3 flex items-center gap-3 text-[11px] font-semibold text-muted-it">
-            <span className="flex items-center gap-1"><Volume2 className="h-3 w-3" aria-hidden="true" />{s.dialogue.length} battute</span>
-            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" aria-hidden="true" />{s.vocab.length} parole</span>
-            <span className="flex items-center gap-1"><ListChecks className="h-3 w-3" aria-hidden="true" />{s.exerciseIds.length} esercizi</span>
+          {SITUATION_IMG[s.id] && (
+            <img
+              src={SITUATION_IMG[s.id]}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          )}
+          <span className="absolute right-3 top-3 rounded-full bg-inchiostro/70 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-white backdrop-blur-sm">{s.level}</span>
+          <div className="p-5">
+            <p className="font-display text-lg font-semibold leading-snug">{s.title}</p>
+            <p className="mt-1 font-mono text-[11px] italic text-muted-it">{s.titleIt}</p>
+            <div className="mt-3 flex items-center gap-3 text-[11px] font-semibold text-muted-it">
+              <span className="flex items-center gap-1"><Volume2 className="h-3 w-3" aria-hidden="true" />{s.dialogue.length} battute</span>
+              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" aria-hidden="true" />{s.vocab.length} parole</span>
+              <span className="flex items-center gap-1"><ListChecks className="h-3 w-3" aria-hidden="true" />{s.exerciseIds.length} esercizi</span>
+            </div>
           </div>
         </motion.button>
       ))}

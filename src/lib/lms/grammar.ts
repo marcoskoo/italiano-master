@@ -633,3 +633,8 @@ import { GRAMMAR_FULL_C } from "./extra/grammar-full-c";
 GRAMMAR.push(...GRAMMAR_FULL_A, ...GRAMMAR_FULL_B, ...GRAMMAR_FULL_C);
 
 export const GRAMMAR_BY_LEVEL = (level: string) => GRAMMAR.filter((g) => g.level === level);
+
+/* ── v9.4 · Iconos por tema de gramática (claro + oscuro) ─────────── */
+export const GRAMMAR_IMG: Record<string, string> = Object.fromEntries(
+  GRAMMAR.map((g) => [g.id, `/images/grammatica/${g.id}.webp`])
+);

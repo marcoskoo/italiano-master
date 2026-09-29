@@ -98,7 +98,7 @@ export function LettureView() {
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               )}
               <div className={cn("p-5", img && "pt-4")}>
@@ -282,7 +282,7 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
               alt={text.title}
               loading="eager"
               decoding="async"
-              className="aspect-[16/9] w-full object-cover"
+              className="ita-img aspect-[16/9] w-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" aria-hidden="true" />
             <div className="absolute bottom-3 left-4 right-4">

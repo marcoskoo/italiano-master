@@ -41,7 +41,7 @@ export const LETTURE_CATS: Record<LetturaCat, { label: string; emoji: string; de
   informazione: { label: "Informazione", emoji: "📰", desc: "Testi attuali con idee per discutere" },
   "storia-italia": { label: "Storia d'Italia", emoji: "🏛️", desc: "Da Roma al boom economico" },
   "storia-mondo": { label: "Storia del mondo", emoji: "🌍", desc: "Grandi storie attorno al pianeta" },
-  cultura: { label: "Cultura italiana", emoji: "🎨", desc: "Arte, cucina e musica del Bel Paese" },
+  cultura: { label: "Cultura italiana", emoji: "🎨", desc: "Arte, cucina, musica, cinema, sport e moda" },
 };
 
 /* ═══ DIALOGHI ═══════════════════════════════════════════════════════ */
@@ -306,7 +306,7 @@ const INFORMAZIONE: Lettura[] = [
   },
 ];
 
-/** Biblioteca completa (22 letture: v9.0 + v9.3) */
+/** Biblioteca completa (28 letture: v9.0 + v9.3 + v9.4) */
 export const LETTURE: Lettura[] = [...DIALOGHI, ...INFORMAZIONE, ...STORIA_ITALIA, ...STORIA_MONDO, ...CULTURA];
 
 export const LETTURE_BY_ID: Record<string, Lettura> = Object.fromEntries(LETTURE.map((l) => [l.id, l]));
@@ -339,6 +339,12 @@ export const LETTURE_IMG: Record<string, string> = {
   "cult-cucina-20": "/images/letture/cult-cucina-20.jpg",
   "cult-musica-21": "/images/letture/cult-musica-21.jpg",
   "cult-musica-22": "/images/letture/cult-musica-22.jpg",
+  "cult-cine-23": "/images/letture/cult-cine-23.jpg",
+  "cult-cine-24": "/images/letture/cult-cine-24.jpg",
+  "cult-sport-25": "/images/letture/cult-sport-25.jpg",
+  "cult-sport-26": "/images/letture/cult-sport-26.jpg",
+  "cult-moda-27": "/images/letture/cult-moda-27.jpg",
+  "cult-moda-28": "/images/letture/cult-moda-28.jpg",
 };
 
 /** Número de letture de historia completadas (logro «Storico») */

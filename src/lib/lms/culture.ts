@@ -93,3 +93,8 @@ CULTURE.push(...CULTURE_EXTRA);
 
 /* # Paquete de expansión v4.0: +6 artículos (15 → 21) */
 CULTURE.push(...CULTURE_EXTRA_2);
+
+/* ── v9.4 · Imágenes por artículo de cultura ──────────────────────── */
+export const CULTURE_IMG: Record<string, string> = Object.fromEntries(
+  CULTURE.map((a) => [a.id, `/images/cultura/${a.id}.jpg`])
+);

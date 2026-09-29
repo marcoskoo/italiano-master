@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, BookOpen, Check, Clapperboard, Clock, Volume2 } from "lucide-react";
-import { CULTURE } from "@/lib/lms/culture";
+import { CULTURE, CULTURE_IMG } from "@/lib/lms/culture";
 import { useLms } from "@/lib/lms/store";
 import { speak } from "@/lib/lms/tts";
 import { cn } from "@/lib/utils";
@@ -29,13 +29,16 @@ export function CultureView() {
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Tutti gli articoli
         </button>
 
-        <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
+        <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="overflow-hidden rounded-3xl border border-soft bg-surface">
+          {CULTURE_IMG[article.id] && (
+            <img src={CULTURE_IMG[article.id]} alt="" className="ita-img aspect-[16/9] w-full object-cover" />
+          )}
+          <div className="p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-verde-tenue px-3 py-1.5 text-xs font-bold text-verde-scuro dark:text-verde">{article.category}</span>
             <span className="flex items-center gap-1 text-xs text-muted-it"><Clock className="h-3 w-3" aria-hidden="true" /> {article.minutes} min · {article.level}</span>
           </div>
           <h2 className="mt-4 font-display text-3xl font-semibold leading-tight sm:text-4xl">
-            <span className="mr-2" aria-hidden="true">{article.emoji}</span>
             {article.title}
           </h2>
 
@@ -96,6 +99,7 @@ export function CultureView() {
               </motion.p>
             )}
           </div>
+          </div>
         </motion.article>
       </div>
     );
@@ -113,21 +117,29 @@ export function CultureView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.04 }}
             onClick={() => setOpenId(a.id)}
-            className="group flex flex-col rounded-3xl border-2 border-soft bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
+            className="group relative flex flex-col overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
           >
-            <div className="flex items-center justify-between">
-              <p className="text-4xl" aria-hidden="true">{a.emoji}</p>
-              {answered && (
-                <span className={cn("flex h-8 w-8 items-center justify-center rounded-full", correct ? "bg-verde-tenue text-verde" : "bg-rosso-tenue text-rosso")}>
-                  {correct ? <Check className="h-4 w-4" aria-hidden="true" /> : <BookOpen className="h-4 w-4" aria-hidden="true" />}
-                </span>
-              )}
+            {CULTURE_IMG[a.id] && (
+              <img
+                src={CULTURE_IMG[a.id]}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            )}
+            {answered && (
+              <span className={cn("absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full shadow-md backdrop-blur-sm", correct ? "bg-verde text-white" : "bg-rosso-tenue text-rosso")}>
+                {correct ? <Check className="h-4 w-4" aria-hidden="true" /> : <BookOpen className="h-4 w-4" aria-hidden="true" />}
+              </span>
+            )}
+            <div className="flex flex-1 flex-col p-5">
+              <p className="font-display text-lg font-semibold leading-snug">{a.title}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muted-it">
+                {a.category} · {a.level} · {a.minutes} min
+              </p>
+              <p className="mt-2.5 line-clamp-3 text-sm leading-relaxed text-muted-it">{a.paragraphs[0]}</p>
             </div>
-            <p className="mt-3.5 font-display text-lg font-semibold leading-snug">{a.title}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muted-it">
-              {a.category} · {a.level} · {a.minutes} min
-            </p>
-            <p className="mt-2.5 line-clamp-3 text-sm leading-relaxed text-muted-it">{a.paragraphs[0]}</p>
           </motion.button>
         );
       })}

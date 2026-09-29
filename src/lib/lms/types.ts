@@ -333,3 +333,10 @@ export interface NavParams {
   grammarId?: string;   // tema de gramática a abrir
   letturaId?: string;   // lettura (v9.0) a abrir
 }
+
+/* ── v9.4 · Imágenes de las 3 hojas de estudio (Printables) ───────── */
+export const PRINTABLE_IMG: Record<string, string> = {
+  vocabolario: "/images/strumenti/print-vocab.webp",
+  verbi: "/images/strumenti/print-verbi.webp",
+  grammatica: "/images/strumenti/print-gram.webp",
+};

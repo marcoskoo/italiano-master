@@ -84,3 +84,8 @@ CONVERSATION_SCENARIOS.push(...CONVERSATION_EXTRA);
 
 /* # Paquete de expansión v4.0: +6 escenarios (12 → 18) */
 CONVERSATION_SCENARIOS.push(...CONVERSATION_EXTRA_2);
+
+/* ── v9.4 · Imágenes por escenario de conversación ────────────────── */
+export const CONVERSATION_IMG: Record<string, string> = Object.fromEntries(
+  CONVERSATION_SCENARIOS.map((s) => [s.id, `/images/conversazione/${s.id}.jpg`])
+);

@@ -105,3 +105,8 @@ READINGS.push(...READINGS_EXTRA_2);
 
 /* # Paquete de expansión v6.0: +8 lecturas (22 → 30) */
 READINGS.push(...READINGS_EXTRA_3);
+
+/* ── v9.4 · Imágenes por texto de lectura ─────────────────────────── */
+export const READING_IMG: Record<string, string> = Object.fromEntries(
+  READINGS.map((t) => [t.id, `/images/testi/${t.id}.jpg`])
+);

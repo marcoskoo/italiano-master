@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Brain, ChevronDown, ListChecks, Search, Table2, Volume2 } from "lucide-react";
-import { GRAMMAR } from "@/lib/lms/grammar";
+import { GRAMMAR, GRAMMAR_IMG } from "@/lib/lms/grammar";
+import { ThemeImg } from "../theme-img";
 import { getExercises } from "@/lib/lms/exercises";
 import { CEFR_LEVELS } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
@@ -124,9 +125,13 @@ export function GrammarView() {
                 aria-expanded={open}
                 className="flex w-full items-center gap-4 p-5 text-left sm:p-6"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-verde-tenue text-verde-scuro dark:text-verde">
-                  <Brain className="h-5 w-5" aria-hidden="true" />
-                </span>
+                {GRAMMAR_IMG[t.id] ? (
+                  <ThemeImg src={GRAMMAR_IMG[t.id]} alt={t.titleIt} className="h-12 w-12 shrink-0 rounded-2xl object-cover shadow-sm" />
+                ) : (
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-verde-tenue text-verde-scuro dark:text-verde">
+                    <Brain className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                )}
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="font-display text-lg font-semibold leading-snug sm:text-xl">{t.title}</span>

@@ -142,3 +142,26 @@ export function buildFfQuestion(target: FalseFriend, pool: FalseFriend[]): {
     explain: `“${target.it}” = ${target.itMeaning}. Ojo: no significa “${target.es}” (${target.esMeaning}). ${target.trap}`,
   };
 }
+
+/* ── v9.4 · Grupos temáticos + imágenes de grupo ──────────────────── */
+export type FfGroup = "ff-classici" | "ff-corpo-casa" | "ff-cibo" | "ff-sociale" | "ff-lavoro" | "ff-natura";
+
+export const FF_GROUPS: Record<FfGroup, { label: string; es: string; img: string }> = {
+  "ff-classici": { label: "I grandi classici", es: "Los grandes clásicos", img: "/images/falsamici/ff-classici.webp" },
+  "ff-corpo-casa": { label: "Corpo, vestiti e casa", es: "Cuerpo, ropa y casa", img: "/images/falsamici/ff-corpo-casa.webp" },
+  "ff-cibo": { label: "Cibo e bevande", es: "Comida y bebida", img: "/images/falsamici/ff-cibo.webp" },
+  "ff-sociale": { label: "Vita sociale e sentimenti", es: "Vida social y sentimientos", img: "/images/falsamici/ff-sociale.webp" },
+  "ff-lavoro": { label: "Lavoro, soldi e studi", es: "Trabajo, dinero y estudios", img: "/images/falsamici/ff-lavoro.webp" },
+  "ff-natura": { label: "Natura, tempo e luoghi", es: "Naturaleza, tiempo y lugares", img: "/images/falsamici/ff-natura.webp" },
+};
+
+/** Grupo temático derivado del rango numérico del id (ff-001…ff-122). */
+export function ffGroupOf(id: string): FfGroup {
+  const n = parseInt(id.replace("ff-", ""), 10) || 0;
+  if (n <= 29) return "ff-classici";
+  if (n <= 49) return "ff-corpo-casa";
+  if (n <= 69) return "ff-cibo";
+  if (n <= 89) return "ff-sociale";
+  if (n <= 109) return "ff-lavoro";
+  return "ff-natura";
+}

@@ -82,3 +82,8 @@ LISTENING.push(...LISTENING_EXTRA_2);
 
 /* # Paquete de expansión v6.0: +8 escuchas (22 → 30) */
 LISTENING.push(...LISTENING_EXTRA_3);
+
+/* ── v9.4 · Imágenes por tarea de escucha ─────────────────────────── */
+export const LISTENING_IMG: Record<string, string> = Object.fromEntries(
+  LISTENING.map((t) => [t.id, `/images/ascolto/${t.id}.jpg`])
+);

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw, Volume2 } from "lucide-react";
 import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
 import { CATEGORY_IMG } from "@/lib/lms/types";
+import { ThemeImg } from "./theme-img";
 import { newCard, review, dueCards } from "@/lib/lms/srs";
 import { useLms } from "@/lib/lms/store";
 import { speak } from "@/lib/lms/tts";
@@ -131,11 +132,9 @@ export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExi
 
           <div className="flex min-h-48 flex-col items-center justify-center">
             {!flipped && CATEGORY_IMG[word.cat] && (
-              <img
+              <ThemeImg
                 src={CATEGORY_IMG[word.cat]}
                 alt=""
-                loading="lazy"
-                decoding="async"
                 className="mb-4 h-20 w-20 rounded-2xl border border-soft object-cover shadow-sm sm:h-24 sm:w-24"
               />
             )}

@@ -450,3 +450,17 @@ html[data-textsize="xl"] { font-size: 18.5px; }
   .cert-print, .cert-print * { visibility: visible; }
   .cert-print { position: absolute; inset: 0; }
 }
+
+/* ═══ v9.4 · Modo scuro per le immagini ════════════════════════════════
+   En claro: sin cambios. En oscuro: las imágenes reciben una suave
+   reducción de luminosidad y saturación más un borde tenue, para que
+   fotos e ilustraciones respiren sobre las superficies noche de la app.
+   Los iconos ilustrados (vocab/grammatica/falsamici/strumenti) se
+   intercambian además por su variante -dark dedicada vía ThemeImg.     */
+.ita-img {
+  transition: filter 0.35s ease;
+}
+.dark .ita-img {
+  filter: brightness(0.88) saturate(0.94);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}

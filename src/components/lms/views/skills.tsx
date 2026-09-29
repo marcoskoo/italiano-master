@@ -3,12 +3,12 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, BookOpen, Check, Ear, Languages, PenLine, Play, RotateCcw, Sparkles, Square, Volume2,
+  ArrowLeft, BookOpen, Check, Languages, PenLine, Play, RotateCcw, Sparkles, Square, Volume2,
 } from "lucide-react";
-import { LISTENING } from "@/lib/lms/listening";
-import { READINGS } from "@/lib/lms/reading";
+import { LISTENING, LISTENING_IMG } from "@/lib/lms/listening";
+import { READINGS, READING_IMG } from "@/lib/lms/reading";
 import { WRITINGS } from "@/lib/lms/writing";
-import { CONVERSATION_SCENARIOS } from "@/lib/lms/conversation";
+import { CONVERSATION_SCENARIOS, CONVERSATION_IMG } from "@/lib/lms/conversation";
 import { getExercises } from "@/lib/lms/exercises";
 import { CEFR_LEVELS, type CefrLevel } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
@@ -62,7 +62,11 @@ export function ListeningView() {
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Tutti gli ascolti
         </button>
 
-        <div className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
+        <div className="overflow-hidden rounded-3xl border border-soft bg-surface">
+          {LISTENING_IMG[task.id] && (
+            <img src={LISTENING_IMG[task.id]} alt="" loading="lazy" decoding="async" className="ita-img aspect-[16/9] w-full object-cover" />
+          )}
+          <div className="p-6 sm:p-8">
           <VoiceHint />
           <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-display text-2xl font-semibold">{task.title}</h2>
@@ -140,6 +144,7 @@ export function ListeningView() {
             >
               <Check className="h-4 w-4" aria-hidden="true" /> Comprensione ({task.questions.length} domande)
             </button>
+            </div>
           </div>
         </div>
       </div>
@@ -160,18 +165,22 @@ export function ListeningView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             onClick={() => setOpenId(t.id)}
-            className="group rounded-3xl border-2 border-soft bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
+            className="group relative overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
           >
-            <div className="flex items-center justify-between">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-verde-tenue text-verde-scuro transition-colors group-hover:bg-verde group-hover:text-white dark:text-verde">
-                <Ear className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">{t.level}</span>
+            <img
+              src={LISTENING_IMG[t.id]}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <span className="absolute right-3 top-3 rounded-full bg-inchiostro/70 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-white backdrop-blur-sm">{t.level}</span>
+            <div className="p-5">
+              <p className="font-display text-lg font-semibold">{t.title}</p>
+              <p className="mt-1 text-xs text-muted-it">
+                {t.kind === "dialogo" ? `${t.dialogue?.length ?? 0} battute di dialogo` : t.kind === "dictato" ? "dettato" : `${t.words?.length ?? 0} parole`} · {t.questions.length} domande
+              </p>
             </div>
-            <p className="mt-3.5 font-display text-lg font-semibold">{t.title}</p>
-            <p className="mt-1 text-xs text-muted-it">
-              {t.kind === "dialogo" ? `${t.dialogue?.length ?? 0} battute di dialogo` : t.kind === "dictato" ? "dettato" : `${t.words?.length ?? 0} parole`} · {t.questions.length} domande
-            </p>
           </motion.button>
         ))}
       </div>
@@ -210,7 +219,11 @@ export function ReadingView() {
         <button onClick={() => setOpenId(null)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Tutte le letture
         </button>
-        <article className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
+        <article className="overflow-hidden rounded-3xl border border-soft bg-surface">
+          {READING_IMG[text.id] && (
+            <img src={READING_IMG[text.id]} alt="" loading="lazy" decoding="async" className="ita-img aspect-[16/9] w-full object-cover" />
+          )}
+          <div className="p-6 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="font-display text-2xl font-semibold sm:text-3xl">{text.title}</h2>
@@ -245,6 +258,7 @@ export function ReadingView() {
           >
             <Check className="h-4 w-4" aria-hidden="true" /> Rispondi alle domande ({text.questions.length})
           </button>
+          </div>
         </article>
       </div>
     );
@@ -267,7 +281,7 @@ export function ReadingView() {
             transition={{ delay: i * 0.05 }}
             onClick={() => (locked ? navigate("piani") : setOpenId(t.id))}
             className={cn(
-              "group relative rounded-3xl border-2 p-5 text-left transition-all",
+              "group relative overflow-hidden rounded-3xl border-2 text-left transition-all",
               locked
                 ? "border-dashed border-oro/50 bg-oro-tenue/25 dark:bg-oro-tenue/10"
                 : "border-soft bg-surface hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
@@ -278,14 +292,20 @@ export function ReadingView() {
                 🔒 PREMIUM
               </span>
             )}
-            <div className={cn("flex items-center justify-between", locked && "opacity-60")}>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-oro-tenue text-oro-scuro dark:text-oro">
-                <BookOpen className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">{t.level}</span>
+            {READING_IMG[t.id] && (
+              <img
+                src={READING_IMG[t.id]}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className={cn("ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105", locked && "opacity-60")}
+              />
+            )}
+            <span className={cn("absolute left-3 top-3 z-10 rounded-full bg-inchiostro/70 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-white backdrop-blur-sm", locked && "opacity-80")}>{t.level}</span>
+            <div className="p-5">
+              <p className={cn("font-display text-lg font-semibold leading-snug", locked && "opacity-70")}>{t.title}</p>
+              <p className="mt-1 text-xs text-muted-it">{locked ? "🔒 Lettura esclusiva PREMIUM" : `${t.genre} · ${t.minutes} min · ${t.questions.length} domande`}</p>
             </div>
-            <p className={cn("mt-3.5 font-display text-lg font-semibold leading-snug", locked && "opacity-70")}>{t.title}</p>
-            <p className="mt-1 text-xs text-muted-it">{locked ? "🔒 Lettura esclusiva PREMIUM" : `${t.genre} · ${t.minutes} min · ${t.questions.length} domande`}</p>
           </motion.button>
           );
         })}
@@ -504,7 +524,9 @@ export function ConversationView() {
               </span>
             )}
             <div className={cn("flex items-center justify-between", locked && "opacity-60")}>
-              <p className="text-3xl" aria-hidden="true">{s.emoji}</p>
+              {CONVERSATION_IMG[s.id] && (
+                <img src={CONVERSATION_IMG[s.id]} alt="" loading="lazy" decoding="async" className="ita-img h-16 w-16 rounded-2xl object-cover shadow-sm" />
+              )}
               <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">{s.level}</span>
             </div>
             <h3 className={cn("mt-3 font-display text-lg font-semibold", locked && "opacity-70")}>{s.title}</h3>

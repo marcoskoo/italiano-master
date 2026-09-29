@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Library, Play, Sparkles } from "lucide-react";
 import { VOCAB, VOCAB_BY_ID, normalizeSearch, wordsByCategory } from "@/lib/lms/vocabulary";
 import { CATEGORY_META, CATEGORY_IMG, type WordCategory } from "@/lib/lms/types";
+import { ThemeImg } from "../theme-img";
 import { useLms } from "@/lib/lms/store";
 import { newCard } from "@/lib/lms/srs";
 import { FlashcardSession } from "../flashcards";
@@ -110,13 +111,11 @@ export function VocabularyView() {
               </button>
             </div>
             {CATEGORY_IMG[openCat] && (
-              <img
+              <ThemeImg
                 src={CATEGORY_IMG[openCat]}
                 alt={CATEGORY_META[openCat].es}
                 width={128}
                 height={128}
-                loading="lazy"
-                decoding="async"
                 className="h-28 w-28 shrink-0 rounded-2xl border border-verde/20 object-cover shadow-md sm:h-32 sm:w-32"
               />
             )}
@@ -160,11 +159,9 @@ export function VocabularyView() {
                 className="group overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
               >
                 {CATEGORY_IMG[cat] && (
-                  <img
+                  <ThemeImg
                     src={CATEGORY_IMG[cat]}
                     alt=""
-                    loading="lazy"
-                    decoding="async"
                     className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 )}

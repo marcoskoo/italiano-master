@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Gamepad2, Grid3x3, ListOrdered, Sparkles, Timer, Trophy } from "lucide-react";
 import { VOCAB, wordsByCategory } from "@/lib/lms/vocabulary";
 import { CATEGORY_META, CATEGORY_IMG, type CefrLevel, type WordCategory } from "@/lib/lms/types";
+import { ThemeImg } from "../theme-img";
 import { EXERCISES } from "@/lib/lms/exercises";
 import { useLms } from "@/lib/lms/store";
 import { QuizEngine } from "../quiz-engine";
@@ -141,11 +142,9 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
           {(Array.from(new Set(VOCAB.map((w) => w.cat))) as WordCategory[]).map((c) => (
             <button key={c} onClick={() => { setCat(c); startGame(c); }} className="group overflow-hidden rounded-2xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-0.5 hover:border-verde/40 hover:shadow-lg">
               {CATEGORY_IMG[c] && (
-                <img
+                <ThemeImg
                   src={CATEGORY_IMG[c]}
                   alt=""
-                  loading="lazy"
-                  decoding="async"
                   className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               )}
@@ -168,7 +167,7 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-soft bg-surface px-5 py-3.5">
         <p className="flex items-center gap-2.5 font-display text-lg font-semibold">
           {CATEGORY_IMG[cat] && (
-            <img src={CATEGORY_IMG[cat]} alt="" className="h-9 w-9 rounded-xl object-cover" />
+            <ThemeImg src={CATEGORY_IMG[cat]} alt="" className="h-9 w-9 rounded-xl object-cover" />
           )}
           {CATEGORY_META[cat].emoji} {CATEGORY_META[cat].es}
         </p>

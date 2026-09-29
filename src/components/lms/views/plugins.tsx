@@ -7,7 +7,8 @@ import {
   Keyboard, Quote, RefreshCcw, Search, Send, Sparkles, Volume2, X,
 } from "lucide-react";
 import { PROVERBS, PROVERB_KIND_LABELS } from "@/lib/lms/proverbs";
-import { FALSE_FRIENDS } from "@/lib/lms/falsefriends";
+import { FALSE_FRIENDS, FF_GROUPS, ffGroupOf } from "@/lib/lms/falsefriends";
+import { ThemeImg } from "../theme-img";
 import { VOCAB, VOCAB_CATEGORIES } from "@/lib/lms/vocabulary";
 import type { CefrLevel, WordCategory } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
@@ -235,16 +236,24 @@ export function FalsiAmiciView() {
               )}
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <span className="truncate font-display text-lg font-semibold text-inchiostro">{f.it}</span>
-                  <span className="shrink-0 text-xs font-bold text-muted-it">≠</span>
-                  <span className="truncate font-display text-lg font-semibold text-rosso-scuro dark:text-rosso">{f.es}</span>
+                <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                  <ThemeImg
+                    src={FF_GROUPS[ffGroupOf(f.id)].img}
+                    alt={FF_GROUPS[ffGroupOf(f.id)].es}
+                    className="h-11 w-11 shrink-0 rounded-xl object-cover shadow-sm"
+                  />
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <span className="truncate font-display text-lg font-semibold text-inchiostro">{f.it}</span>
+                    <span className="shrink-0 text-xs font-bold text-muted-it">≠</span>
+                    <span className="truncate font-display text-lg font-semibold text-rosso-scuro dark:text-rosso">{f.es}</span>
+                  </div>
                 </div>
                 <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-it transition-transform", open && "rotate-180")} aria-hidden="true" />
               </div>
               <p className="mt-1.5 truncate text-xs text-muted-it">
                 <span className="font-semibold">{f.it}</span>: {f.itMeaning}
               </p>
+              <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-inchiostro/5 px-2.5 py-1 text-[10px] font-bold text-muted-it dark:bg-inchiostro/15">{FF_GROUPS[ffGroupOf(f.id)].es} · {f.level}</span>
               {open ? (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 flex flex-1 flex-col">
                   <p className="rounded-xl bg-surface p-3 text-xs leading-relaxed text-inchiostro/80">
@@ -271,7 +280,6 @@ export function FalsiAmiciView() {
               ) : (
                 <p className="mt-2 text-xs font-semibold text-muted-it">Toca para ver la trampa ↴</p>
               )}
-              <span className="mt-3 inline-flex w-fit rounded-full bg-inchiostro/5 px-2.5 py-1 text-[10px] font-bold text-muted-it">{f.level}</span>
             </motion.button>
           );
         })}

@@ -8,7 +8,8 @@ import {
   REGISTER_LABELS, cefrCoverage, searchDictionary,
 } from "@/lib/lms/dict/dictionary";
 import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
-import { CATEGORY_META, CEFR_LEVELS, type VocabWord } from "@/lib/lms/types";
+import { CATEGORY_META, CATEGORY_IMG, CEFR_LEVELS, type VocabWord } from "@/lib/lms/types";
+import { ThemeImg } from "../theme-img";
 import { useLms } from "@/lib/lms/store";
 import { newCard } from "@/lib/lms/srs";
 import { AudioButton } from "../audio-button";
@@ -199,7 +200,10 @@ export function DictionaryView() {
                 <p className="mt-2 font-mono text-sm text-muted-it">variantes: {word.alt.join(" · ")}</p>
               )}
               <p className="mt-3 text-xs font-bold uppercase tracking-widest text-muted-it">Categoría temática</p>
-              <p className="mt-1.5 text-lg">{CATEGORY_META[word.cat].emoji} {CATEGORY_META[word.cat].es}</p>
+              <p className="mt-1.5 flex items-center gap-2 text-lg">
+                <ThemeImg src={CATEGORY_IMG[word.cat] ?? ""} alt="" className="h-8 w-8 rounded-lg object-cover shadow-sm" />
+                {CATEGORY_META[word.cat].es}
+              </p>
             </div>
             <div className="rounded-2xl bg-crema-scura p-5 dark:bg-inchiostro/10">
               <p className="text-xs font-bold uppercase tracking-widest text-muted-it">Esempio</p>
@@ -464,7 +468,9 @@ export function DictionaryView() {
               <span className="mt-0.5 block truncate text-sm text-muted-it">{w.es}</span>
               <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-bold uppercase text-muted-it">
                 <span className="rounded-full bg-inchiostro/5 px-1.5 py-0.5 dark:bg-inchiostro/15">{w.level}</span>
-                <span>{CATEGORY_META[w.cat].emoji}</span>
+                <span className="inline-flex items-center">
+                  <ThemeImg src={CATEGORY_IMG[w.cat] ?? ""} alt="" className="mr-1 h-4 w-4 rounded object-cover" />
+                </span>
                 {(w.freq ?? 3) <= 2 && <span className="rounded-full bg-verde-tenue px-1.5 py-0.5 text-verde-scuro dark:text-verde">freq. alta</span>}
                 {w.register && w.register !== "neutro" && <span className="rounded-full bg-oro-tenue px-1.5 py-0.5 text-oro-scuro dark:text-oro">{REGISTER_LABELS[w.register]}</span>}
                 {srs[w.id] && <span className="text-verde-scuro dark:text-verde">· ✓ ripasso</span>}

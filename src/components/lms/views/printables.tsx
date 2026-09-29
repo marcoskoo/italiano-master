@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BookMarked, Calculator, Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 import { VOCAB, wordsByCategory } from "@/lib/lms/vocabulary";
-import { CATEGORY_META, type WordCategory } from "@/lib/lms/types";
+import { CATEGORY_META, CATEGORY_IMG, PRINTABLE_IMG, type WordCategory } from "@/lib/lms/types";
+import { ThemeImg } from "../theme-img";
 import { GRAMMAR } from "@/lib/lms/grammar";
 import { VERB_LIST, findVerb, conjugate, TENSES, PRONOUNS } from "@/lib/lms/conjugator";
 import { useLms } from "@/lib/lms/store";
@@ -145,9 +146,9 @@ export function PrintablesView() {
 
         <div className="mt-5 flex flex-wrap gap-2" role="tablist" aria-label="Tipo de hoja">
           {([
-            { id: "vocabolario", label: "Vocabulario", icon: BookMarked },
-            { id: "verbi", label: "Tabla de verbos", icon: Calculator },
-            { id: "grammatica", label: "Gramática completa", icon: Printer },
+            { id: "vocabolario", label: "Vocabulario", img: PRINTABLE_IMG.vocabolario },
+            { id: "verbi", label: "Tabla de verbos", img: PRINTABLE_IMG.verbi },
+            { id: "grammatica", label: "Gramática completa", img: PRINTABLE_IMG.grammatica },
           ] as const).map((k) => (
             <button
               key={k.id}
@@ -157,7 +158,7 @@ export function PrintablesView() {
               className={cn("inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-bold transition-all",
                 kind === k.id ? "border-verde bg-verde text-white shadow-md shadow-verde/20" : "border-soft bg-crema hover:border-verde/40")}
             >
-              <k.icon className="h-4 w-4" aria-hidden="true" /> {k.label}
+              <ThemeImg src={k.img} alt="" className={cn("h-7 w-7 rounded-lg object-cover", kind === k.id ? "ring-2 ring-white/60" : "shadow-sm")} /> {k.label}
             </button>
           ))}
         </div>
@@ -165,9 +166,12 @@ export function PrintablesView() {
         {kind === "vocabolario" && (
           <div className="mt-5">
             <label htmlFor="pr-cat" className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Categoría ({categories.length} disponibles)</label>
-            <select id="pr-cat" value={category} onChange={(e) => setCategory(e.target.value as WordCategory)} className="w-full rounded-xl border border-soft bg-crema px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-verde/40">
-              {categories.map((c) => <option key={c} value={c}>{CATEGORY_META[c].emoji} {CATEGORY_META[c].es} ({wordsByCategory(c).length})</option>)}
-            </select>
+            <div className="flex items-center gap-3">
+              <ThemeImg src={CATEGORY_IMG[category]} alt={CATEGORY_META[category].es} className="h-16 w-16 shrink-0 rounded-2xl border border-verde/20 object-cover shadow-md" />
+              <select id="pr-cat" value={category} onChange={(e) => setCategory(e.target.value as WordCategory)} className="min-w-0 flex-1 rounded-xl border border-soft bg-crema px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-verde/40 dark:bg-inchiostro/10">
+                {categories.map((c) => <option key={c} value={c}>{CATEGORY_META[c].emoji} {CATEGORY_META[c].es} ({wordsByCategory(c).length})</option>)}
+              </select>
+            </div>
           </div>
         )}
 

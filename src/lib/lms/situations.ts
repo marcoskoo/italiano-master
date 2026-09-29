@@ -160,3 +160,8 @@ SITUATIONS.push(...SITUATIONS_EXTRA);
 
 /* # Paquete de expansión v4.0: +6 situaciones (14 → 20) */
 SITUATIONS.push(...SITUATIONS_EXTRA_2);
+
+/* ── v9.4 · Imágenes por situación ────────────────────────────────── */
+export const SITUATION_IMG: Record<string, string> = Object.fromEntries(
+  SITUATIONS.map((s) => [s.id, `/images/situazioni/${s.id}.jpg`])
+);
