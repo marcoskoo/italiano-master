@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { useLms } from "@/lib/lms/store";
 import { speak, stopSpeaking, hasItalianVoice, onVoices } from "@/lib/lms/tts";
 import { useVoiceCast, SpeakerAvatar, SpeakerChip, VoiceCastNote, speakerIndexMap, uniqueSpeakers } from "../voice-cast";
-import { LETTURE, LETTURE_CATS, LETTURE_BY_ID, letturaExercises, type Lettura, type LetturaCat } from "@/lib/lms/letture";
+import { LETTURE, LETTURE_CATS, LETTURE_BY_ID, LETTURE_IMG, letturaExercises, type Lettura, type LetturaCat } from "@/lib/lms/letture";
 import type { CefrLevel } from "@/lib/lms/types";
 import { QuizEngine } from "../quiz-engine";
 import { VoiceHint } from "../audio-button";
@@ -78,6 +78,7 @@ export function LettureView() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {texts.map((t, i) => {
           const done = readingsRead.includes(t.id);
+          const img = LETTURE_IMG[t.id];
           return (
             <motion.button
               key={t.id}
@@ -86,12 +87,22 @@ export function LettureView() {
               transition={{ delay: i * 0.04 }}
               onClick={() => setOpenId(t.id)}
               className={cn(
-                "group relative rounded-3xl border-2 border-soft bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg",
+                "group relative overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg",
                 done && "border-verde/50"
               )}
             >
+              {img && (
+                <img
+                  src={img}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              )}
+              <div className={cn("p-5", img && "pt-4")}>
               {done && (
-                <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-verde text-white" title="Completata">
+                <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-verde text-white shadow-md" title="Completata">
                   <Check className="h-4 w-4" aria-hidden="true" />
                 </span>
               )}
@@ -108,6 +119,7 @@ export function LettureView() {
               <p className="mt-2.5 text-xs text-muted-it">
                 {t.lines.length} {t.cat === "dialoghi" ? "battute" : "paragrafi"} · {t.minutes} min · {t.questions.length} domande
               </p>
+              </div>
             </motion.button>
           );
         })}
@@ -261,13 +273,33 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
         <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Tutte le letture
       </button>
 
-      <article className="rounded-3xl border border-soft bg-surface p-5 sm:p-8">
+      <article className="overflow-hidden rounded-3xl border border-soft bg-surface">
+        {LETTURE_IMG[text.id] && (
+          <div className="relative">
+            <img
+              src={LETTURE_IMG[text.id]}
+              alt={text.title}
+              loading="eager"
+              decoding="async"
+              className="aspect-[16/9] w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" aria-hidden="true" />
+            <div className="absolute bottom-3 left-4 right-4">
+              <span className={cn("rounded-full border bg-surface/90 px-2.5 py-1 text-[10px] font-bold uppercase backdrop-blur", CAT_STYLES[text.cat])}>
+                {LETTURE_CATS[text.cat].emoji} {LETTURE_CATS[text.cat].label}
+              </span>
+            </div>
+          </div>
+        )}
+        <div className="p-5 sm:p-8">
         {/* cabecera */}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <span className={cn("rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase", CAT_STYLES[text.cat])}>
-              {LETTURE_CATS[text.cat].emoji} {LETTURE_CATS[text.cat].label}
-            </span>
+            {!LETTURE_IMG[text.id] && (
+              <span className={cn("rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase", CAT_STYLES[text.cat])}>
+                {LETTURE_CATS[text.cat].emoji} {LETTURE_CATS[text.cat].label}
+              </span>
+            )}
             <h2 className="mt-2.5 font-display text-2xl font-semibold sm:text-3xl">{text.title}</h2>
             <p className="mt-1 text-sm italic text-muted-it">
               {text.titleEs} · {text.level} · {text.minutes} min · {text.questions.length} domande
@@ -405,6 +437,7 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
         >
           <BookOpen className="h-4 w-4" aria-hidden="true" /> Rispondi alle domande ({text.questions.length}) · +12 XP per risposta
         </button>
+        </div>
       </article>
 
       {/* debate */}

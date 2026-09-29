@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Library, Play, Sparkles } from "lucide-react";
 import { VOCAB, VOCAB_BY_ID, normalizeSearch, wordsByCategory } from "@/lib/lms/vocabulary";
-import { CATEGORY_META, type WordCategory } from "@/lib/lms/types";
+import { CATEGORY_META, CATEGORY_IMG, type WordCategory } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { newCard } from "@/lib/lms/srs";
 import { FlashcardSession } from "../flashcards";
@@ -96,19 +96,30 @@ export function VocabularyView() {
           <button onClick={() => setOpenCat(null)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Tutte le categorie
           </button>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue to-surface p-6 dark:from-verde-tenue/30">
-            <div>
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue to-surface p-6 dark:from-verde-tenue/30">
+            <div className="min-w-0">
               <h2 className="font-display text-3xl font-semibold">
                 {CATEGORY_META[openCat].emoji} {CATEGORY_META[openCat].es}
               </h2>
               <p className="mt-1 text-sm text-muted-it">{wordsByCategory(openCat).length} parole · livello A1–C2</p>
+              <button
+                onClick={() => startCategorySession(openCat)}
+                className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03]"
+              >
+                <Play className="h-4 w-4" aria-hidden="true" /> Studia con le flashcard
+              </button>
             </div>
-            <button
-              onClick={() => startCategorySession(openCat)}
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03]"
-            >
-              <Play className="h-4 w-4" aria-hidden="true" /> Studia con le flashcard
-            </button>
+            {CATEGORY_IMG[openCat] && (
+              <img
+                src={CATEGORY_IMG[openCat]}
+                alt={CATEGORY_META[openCat].es}
+                width={128}
+                height={128}
+                loading="lazy"
+                decoding="async"
+                className="h-28 w-28 shrink-0 rounded-2xl border border-verde/20 object-cover shadow-md sm:h-32 sm:w-32"
+              />
+            )}
           </div>
 
           <div className="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -146,13 +157,23 @@ export function VocabularyView() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
                 onClick={() => setOpenCat(cat)}
-                className="group rounded-3xl border-2 border-soft bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
+                className="group overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
               >
-                <p className="text-3xl" aria-hidden="true">{CATEGORY_META[cat].emoji}</p>
-                <p className="mt-2.5 font-display text-lg font-semibold leading-tight">{CATEGORY_META[cat].es}</p>
-                <p className="mt-1.5 text-xs text-muted-it">
-                  {words.length} parole{inSrs > 0 && <span className="text-verde-scuro dark:text-verde"> · {inSrs} en repaso</span>}
-                </p>
+                {CATEGORY_IMG[cat] && (
+                  <img
+                    src={CATEGORY_IMG[cat]}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                )}
+                <div className="p-4">
+                  <p className="font-display text-base font-semibold leading-tight sm:text-lg">{CATEGORY_META[cat].es}</p>
+                  <p className="mt-1.5 text-xs text-muted-it">
+                    {words.length} parole{inSrs > 0 && <span className="text-verde-scuro dark:text-verde"> · {inSrs} en repaso</span>}
+                  </p>
+                </div>
               </motion.button>
             );
           })}

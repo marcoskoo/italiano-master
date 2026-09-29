@@ -309,6 +309,30 @@ export const LETTURE: Lettura[] = [...DIALOGHI, ...INFORMAZIONE, ...STORIA_ITALI
 
 export const LETTURE_BY_ID: Record<string, Lettura> = Object.fromEntries(LETTURE.map((l) => [l.id, l]));
 
+/* ── Imágenes por lettura (v9.2) ─────────────────────────────────────
+   Ilustraciones IA originales (diálogos/información/boom, estilo
+   editorial verde-terracotta) + fotografías históricas reales
+   verificadas (Roma, Florencia, Garibaldi, emigración, Machu Picchu,
+   Delacroix, Ruta de la Seda, Somalia 1960). 1344×768 JPEG.         */
+export const LETTURE_IMG: Record<string, string> = {
+  "dia-bar-01": "/images/letture/dia-bar-01.jpg",
+  "dia-hotel-02": "/images/letture/dia-hotel-02.jpg",
+  "dia-clima-03": "/images/letture/dia-clima-03.jpg",
+  "inf-social-04": "/images/letture/inf-social-04.jpg",
+  "inf-dieta-05": "/images/letture/inf-dieta-05.jpg",
+  "inf-mare-06": "/images/letture/inf-mare-06.jpg",
+  "inf-remoto-07": "/images/letture/inf-remoto-07.jpg",
+  "it-roma-08": "/images/letture/it-roma-08.jpg",
+  "it-rinascimento-09": "/images/letture/it-rinascimento-09.jpg",
+  "it-risorgimento-10": "/images/letture/it-risorgimento-10.jpg",
+  "it-emigrazione-11": "/images/letture/it-emigrazione-11.jpg",
+  "it-boom-12": "/images/letture/it-boom-12.jpg",
+  "mon-americhe-13": "/images/letture/mon-americhe-13.jpg",
+  "mon-rivoluzione-14": "/images/letture/mon-rivoluzione-14.jpg",
+  "mon-seta-15": "/images/letture/mon-seta-15.jpg",
+  "mon-decolonizzazione-16": "/images/letture/mon-decolonizzazione-16.jpg",
+};
+
 /** Número de letture de historia completadas (logro «Storico») */
 export function storiaReadCount(readIds: string[]): number {
   return readIds.filter((id) => id.startsWith("it-") || id.startsWith("mon-")).length;

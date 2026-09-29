@@ -64,6 +64,50 @@ export const CATEGORY_META: Record<WordCategory, { es: string; emoji: string }> 
   arte: { es: "Arte y arquitectura", emoji: "🏛️" },
 };
 
+/* ── Imágenes por categoría de vocabulario (v9.2) ────────────────────
+   Ilustraciones IA originales, estilo plano consistente con la marca
+   (verde/terracotta sobre crema), 512×512 WebP. Sustituyen a la
+   iconografía emoji en la sección Vocabulario.                       */
+export const CATEGORY_IMG: Record<WordCategory, string> = {
+  saluti: "/images/vocab/saluti.webp",
+  famiglia: "/images/vocab/famiglia.webp",
+  casa: "/images/vocab/casa.webp",
+  alimentazione: "/images/vocab/alimentazione.webp",
+  compras: "/images/vocab/compras.webp",
+  transporte: "/images/vocab/transporte.webp",
+  viaggi: "/images/vocab/viaggi.webp",
+  hotel: "/images/vocab/hotel.webp",
+  salud: "/images/vocab/salud.webp",
+  lavoro: "/images/vocab/lavoro.webp",
+  studi: "/images/vocab/studi.webp",
+  citta: "/images/vocab/citta.webp",
+  clima: "/images/vocab/clima.webp",
+  ropa: "/images/vocab/ropa.webp",
+  tecnologia: "/images/vocab/tecnologia.webp",
+  sport: "/images/vocab/sport.webp",
+  musica: "/images/vocab/musica.webp",
+  cinema: "/images/vocab/cinema.webp",
+  relazioni: "/images/vocab/relazioni.webp",
+  finanze: "/images/vocab/finanze.webp",
+  ristorante: "/images/vocab/ristorante.webp",
+  professioni: "/images/vocab/professioni.webp",
+  attualita: "/images/vocab/attualita.webp",
+  scienza: "/images/vocab/scienza.webp",
+  letteratura: "/images/vocab/letteratura.webp",
+  colori: "/images/vocab/colori.webp",
+  corpo: "/images/vocab/corpo.webp",
+  animali: "/images/vocab/animali.webp",
+  natura: "/images/vocab/natura.webp",
+  tempo: "/images/vocab/tempo.webp",
+  svago: "/images/vocab/svago.webp",
+  emozioni: "/images/vocab/emozioni.webp",
+  comunicazione: "/images/vocab/comunicazione.webp",
+  istituzioni: "/images/vocab/istituzioni.webp",
+  connettivi: "/images/vocab/connettivi.webp",
+  astratto: "/images/vocab/astratto.webp",
+  arte: "/images/vocab/arte.webp",
+};
+
 /* Categorías gramaticales según la lexicografía didáctica internacional
    (Dizionario per stranieri di base – DIB; GRADIT; DVX – Dizionario di base). */
 export type WordType =
