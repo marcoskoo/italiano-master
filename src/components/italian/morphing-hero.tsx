@@ -144,7 +144,11 @@ export function MorphingHero() {
     const start = performance.now();
 
     const tick = (now: number) => {
-      const elapsed = now - start;
+      /* rAF timestamps refer to frame start and can precede `start` when
+         the effect runs mid-frame → negative elapsed → JS modulo keeps the
+         sign → seg = -1 → RADII[-1] is undefined → the loop dies on the
+         first tick and the hero shape stays invisible. Clamp to 0.      */
+      const elapsed = Math.max(0, now - start);
       const cycle = elapsed % (SEGMENT * SHAPES.length);
       const seg = Math.floor(cycle / SEGMENT);
       const within = cycle % SEGMENT;
