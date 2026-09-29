@@ -224,3 +224,27 @@ Stage Summary:
 - Modo oscuro de imágenes totalmente operativo: ThemeImg intercambia variante -dark en las 4 familias de iconos (176 iconos con versión nocturna) + CSS .ita-img atenúa fotos.
 - Pipeline reproducible en scripts/img/v94.mjs (manifiesto completo con prompts por tema).
 - QA VLM integral: generación → recortes → producción, en claro y oscuro.
+
+---
+Task ID: 5
+Agent: main (Super Z)
+Task: v9.5 — Rediseñar el aspecto/diseño/forma de la Ruota della fortuna (pedido: "Cambiar el aspecto/diseño/forma de la rueda de Sfortuna")
+
+Work Log:
+- Localizada la rueda en premi.tsx: era un conic-gradient plano de 8 colores con emojis posicionados absolutamente y borde dorado simple (h-52).
+- Creado src/components/lms/fortune-wheel.tsx: rueda SVG premium estilo casino veneciano (viewBox 320×320, exportada SEG para la matemática del giro):
+  · Aro dorado metálico (linearGradient 4 paradas) con 20 bombillas en dos grupos alternos (fw-bulbs-a/b) que parpadean y se aceleran de 1.15s a 0.22s durante el giro (clase .fw-spin en el wrapper).
+  · 8 gajos con geometría idéntica a la lógica original (0°=arriba, horario, path M-L-A-Z), paleta fija que funciona igual en claro y oscuro: verde/crema/rosso-scuro/azzurro/verde-scuro/ghiaccio/terracotta/viola-scuro(jackpot).
+  · Etiquetas radiales (valor + emoji, leídas del centro hacia fuera, rotate(-90) con paintOrder stroke para legibilidad), separadores dorados, borde dorado perimetral y disco base oscuro de separación con el aro.
+  · Jackpot con brillo dorado pulsante (radialGradient + clase fw-jackpot).
+  · Mozzo central: anillo dorado + disco verde profundo + Stella d'Italia de 5 puntas (starPoints()).
+  · Puntero estático con rubí (path + círculos) que "tiquea" (fw-tick ±11°, 0.14s) mientras gira; halo dorado difuminado tras la rueda; sombreado cóncavo (fwDish) + reflejo especular (fwSpec) para efecto 3D.
+  · Celebración al ganar: anillo dorado expansivo + 12 destellos radiales (✨🪙⭐💎) con framer-motion, disparada por wonKey.
+- globals.css: bloque v9.5 con keyframes fw-bulb-a/b, fw-jackpot, fw-tick + prefers-reduced-motion.
+- premi.tsx: importado FortuneWheel+SEG (eliminados SEG_COLORS y SEG local), estado wonKey, wrapper h-64 con fw-spin condicional, y la leyenda "Premi: emojis" sustituida por chips individuales (emoji + label).
+- Verificación local (bun run start + agent-browser sesión nueva): SVG completo (20 bombillas, 10 paths, 16 textos, estrella, puntero, jackpot, 6 gradientes), giro con rotación 1957.5° que aterrizó el segmento correcto bajo el puntero, bombillas 0.22s + puntero fw-tick durante giro, premio "⚡ 35 XP!" + "Torna domani", chips renderizados, modo oscuro OK (colores fijos), móvil 390px sin overflow, celebración (anillo + 12 destellos) presente, 0 errores consola.
+- Deploy: commit de012cc → push → producción verificada con sesión nueva (SW limpio): rueda completa en https://italiano-master.vercel.app, giro real "🪙 15 monete!", bombillas de vuelta a 1.15s, botón "Torna domani", 0 errores.
+
+Stage Summary:
+- v9.5 LIVE: Ruota della fortuna rediseñada de conic-gradient plano a rueda de casino premium (aro dorado + bombillas animadas, gajos etiquetados radialmente, Stella d'Italia, puntero con rubí que tiquea, jackpot pulsante, celebración con destellos y chips de premios).
+- Lógica de premios/pesos/1-giro-al-día intacta; mismo feel de giro (4s cubic-bezier). Accesible (aria-label, reduced-motion) y responsive (móvil sin overflow).
