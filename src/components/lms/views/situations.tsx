@@ -6,7 +6,8 @@ import { ArrowLeft, ListChecks, MapPin, Play, Sparkles, Square, Volume2 } from "
 import { SITUATIONS } from "@/lib/lms/situations";
 import { getExercises } from "@/lib/lms/exercises";
 import { useLms } from "@/lib/lms/store";
-import { speakSequence, stopSpeaking } from "@/lib/lms/tts";
+import { speakDialogue, stopSpeaking } from "@/lib/lms/tts";
+import { useVoiceCast, SpeakerAvatar, SpeakerChip, VoiceCastNote, DialogueLineButton, speakerIndexMap, uniqueSpeakers } from "../voice-cast";
 import { QuizEngine } from "../quiz-engine";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,11 @@ export function SituationsView() {
   const [quizOpen, setQuizOpen] = useState(false);
 
   const situation = SITUATIONS.find((s) => s.id === openId);
+
+  /* reparto de voces por personaje (v9.1) */
+  const cast = useVoiceCast(situation?.dialogue ?? []);
+  const speakers = useMemo(() => uniqueSpeakers(situation?.dialogue ?? []), [situation]);
+  const sIdx = useMemo(() => speakerIndexMap((situation?.dialogue ?? []).map((d) => d.speaker)), [situation]);
 
   if (situation && quizOpen) {
     const exercises = getExercises(situation.exerciseIds);
@@ -76,25 +82,33 @@ export function SituationsView() {
 
           {/* diálogo */}
           <section className="rounded-3xl border border-soft bg-surface p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="font-display text-xl font-semibold">Dialogo</h3>
               <button
-                onClick={() => playing === null ? speakSequence(situation.dialogue.map((d) => d.it), 0.85, (i) => setPlaying(i), () => setPlaying(null)) : (stopSpeaking(), setPlaying(null))}
+                onClick={() =>
+                  playing === null
+                    ? speakDialogue(situation.dialogue, cast, { rate: 0.85, onIndex: (i) => setPlaying(i), onDone: () => setPlaying(null) })
+                    : (stopSpeaking(), setPlaying(null))
+                }
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-verde px-4 py-2 text-xs font-bold text-white transition-all hover:scale-105 dark:text-inchiostro"
               >
                 {playing === null ? <><Play className="h-3.5 w-3.5" aria-hidden="true" /> Riproduci</> : <><Square className="h-3.5 w-3.5" aria-hidden="true" /> Stop</>}
               </button>
             </div>
+            <VoiceCastNote speakers={speakers} cast={cast} className="mt-3" />
             <div className="mt-4 max-h-[420px] space-y-2.5 overflow-y-auto pr-1 scrollbar-thin">
               {situation.dialogue.map((line, i) => (
                 <div key={i} className={cn("rounded-2xl border-2 p-3.5 transition-all", playing === i ? "border-verde bg-verde-tenue" : "border-soft bg-crema")}>
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-it">{line.speaker}</p>
-                      <p className="mt-0.5 font-display text-lg leading-snug">{line.it}</p>
-                      <p className="mt-1 text-sm text-muted-it">{line.es}</p>
+                    <div className="flex min-w-0 items-start gap-2.5">
+                      {line.speaker && <SpeakerAvatar speaker={line.speaker} idx={sIdx[line.speaker] ?? 0} size="sm" active={playing === i} />}
+                      <div className="min-w-0">
+                        {line.speaker && <SpeakerChip speaker={line.speaker} idx={sIdx[line.speaker] ?? 0} active={playing === i} />}
+                        <p className="mt-1 font-display text-lg leading-snug">{line.it}</p>
+                        <p className="mt-1 text-sm text-muted-it">{line.es}</p>
+                      </div>
                     </div>
-                    <AudioButton text={line.it} size="sm" />
+                    <DialogueLineButton line={line} cast={cast} rate={0.85} className="mt-1" />
                   </div>
                 </div>
               ))}

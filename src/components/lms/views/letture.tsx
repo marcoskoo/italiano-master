@@ -13,6 +13,7 @@ import { ArrowLeft, BookOpen, Check, Coins, Lightbulb, ListFilter, MessageCircle
 import { cn } from "@/lib/utils";
 import { useLms } from "@/lib/lms/store";
 import { speak, stopSpeaking, hasItalianVoice, onVoices } from "@/lib/lms/tts";
+import { useVoiceCast, SpeakerAvatar, SpeakerChip, VoiceCastNote, speakerIndexMap, uniqueSpeakers } from "../voice-cast";
 import { LETTURE, LETTURE_CATS, LETTURE_BY_ID, letturaExercises, type Lettura, type LetturaCat } from "@/lib/lms/letture";
 import type { CefrLevel } from "@/lib/lms/types";
 import { QuizEngine } from "../quiz-engine";
@@ -152,6 +153,11 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
   const lineRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [voiceOk, setVoiceOk] = useState(true);
 
+  /* reparto de voces por personaje (v9.1): cada hablante con su propia voz TTS */
+  const speakers = useMemo(() => uniqueSpeakers(text.lines), [text.lines]);
+  const cast = useVoiceCast(text.lines);
+  const sIdx = useMemo(() => speakerIndexMap(text.lines.map((l) => l.speaker)), [text.lines]);
+
   useEffect(() => {
     const upd = () => setVoiceOk(hasItalianVoice() || typeof window === "undefined");
     upd();
@@ -171,33 +177,45 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
   // cleanup al desmontar (cambio de lettura incluido: el Reader se re-monta por key)
   useEffect(() => () => { cancelRef.current?.(); stopSpeaking(); }, []);
 
-  /* reproducir todo desde un índice: secuencia con resaltado + auto-scroll */
+  /* reproducir todo desde un índice: secuencia con resaltado + auto-scroll.
+     En los diálogos cada battute se lee con la voz de su personaje. */
   const playFrom = useCallback((start: number) => {
     cancelRef.current?.();
-    const lines = text.lines.slice(start).map((l) => l.it);
-    let i = 0;
+    let i = start;
     const next = () => {
-      if (i >= lines.length) { setPlaying(false); setActiveIdx(null); return; }
-      const idx = start + i;
+      if (i >= text.lines.length) { setPlaying(false); setActiveIdx(null); return; }
+      const idx = i;
       i += 1;
       setActiveIdx(idx);
       trackQuest("listen");
       lineRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "center" });
-      speak(lines[idx - start], { rate, onEnd: () => setTimeout(next, 320) });
+      const p = cast[text.lines[idx].speaker ?? ""];
+      speak(text.lines[idx].it, {
+        rate: rate * (p?.rateFactor ?? 1),
+        pitch: p?.pitch ?? 1,
+        voice: p?.voice ?? null,
+        onEnd: () => setTimeout(next, text.cat === "dialoghi" ? 420 : 320),
+      });
     };
     setPlaying(true);
     next();
     cancelRef.current = () => { cancelRef.current = null; stopSpeaking(); };
-  }, [text.lines, rate, trackQuest]);
+  }, [text.lines, text.cat, rate, trackQuest, cast]);
 
-  /* reproducir una sola battuta */
+  /* reproducir una sola battuta (con la voz de su personaje) */
   const playLine = useCallback((idx: number) => {
     cancelRef.current?.();
     setLinePlaying(idx);
     setActiveIdx(idx);
     trackQuest("listen");
-    speak(text.lines[idx].it, { rate, onEnd: () => { setLinePlaying(null); setActiveIdx(null); } });
-  }, [text.lines, rate, trackQuest]);
+    const p = cast[text.lines[idx].speaker ?? ""];
+    speak(text.lines[idx].it, {
+      rate: rate * (p?.rateFactor ?? 1),
+      pitch: p?.pitch ?? 1,
+      voice: p?.voice ?? null,
+      onEnd: () => { setLinePlaying(null); setActiveIdx(null); },
+    });
+  }, [text.lines, rate, trackQuest, cast]);
 
   const onFinishQuiz = useCallback((score: number, total: number) => {
     const r = markReadingDone(text.id);
@@ -290,6 +308,7 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
             🔈 Nessuna voce italiana rilevata: l&apos;audio userà la voce disponibile (meglio con Chrome o una voce it-IT installata).
           </p>
         )}
+        {isDialogue && <VoiceCastNote speakers={speakers} cast={cast} className="mt-2" />}
 
         {/* párrafos / battute */}
         <div className="mt-6 space-y-3">
@@ -308,6 +327,9 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
                 )}
               >
                 <div className="flex items-start gap-3">
+                  {isDialogue && l.speaker ? (
+                    <SpeakerAvatar speaker={l.speaker} idx={sIdx[l.speaker] ?? 0} active={active} />
+                  ) : (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -325,11 +347,29 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
                   >
                     {(active && playing) || linePlaying === i ? <Pause className="h-4 w-4" aria-hidden="true" /> : <Play className="h-4 w-4" aria-hidden="true" />}
                   </button>
+                  )}
                   <div className="min-w-0 flex-1">
                     {isDialogue && l.speaker && (
-                      <p className={cn("text-xs font-bold uppercase tracking-wider", active ? "text-verde-scuro dark:text-verde" : "text-muted-it")}>
-                        {l.speaker}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <SpeakerChip speaker={l.speaker} idx={sIdx[l.speaker] ?? 0} active={active} />
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (active && playing) { stopAll(); }
+                            else if (playing) { playFrom(i); }
+                            else { playLine(i); }
+                          }}
+                          aria-label={active ? `Fermare la battuta di ${l.speaker}` : `Ascoltare la battuta di ${l.speaker}`}
+                          className={cn(
+                            "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all",
+                            active
+                              ? "border-verde bg-verde text-white animate-pulse"
+                              : "border-verde/30 bg-verde-tenue text-verde-scuro hover:scale-110 dark:text-verde"
+                          )}
+                        >
+                          {(active && playing) || linePlaying === i ? <Pause className="h-3.5 w-3.5" aria-hidden="true" /> : <Play className="h-3.5 w-3.5" aria-hidden="true" />}
+                        </button>
+                      </div>
                     )}
                     <p className={cn("leading-[1.85] transition-colors", active ? "text-lg font-medium text-inchiostro dark:text-surface" : "text-lg")}>{l.it}</p>
                     {subs && <p className="mt-1 text-sm italic text-muted-it">{l.es}</p>}

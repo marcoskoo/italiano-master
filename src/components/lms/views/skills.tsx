@@ -12,7 +12,8 @@ import { CONVERSATION_SCENARIOS } from "@/lib/lms/conversation";
 import { getExercises } from "@/lib/lms/exercises";
 import { CEFR_LEVELS, type CefrLevel } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
-import { speakSequence, stopSpeaking, speak } from "@/lib/lms/tts";
+import { speak, stopSpeaking, speakDialogue } from "@/lib/lms/tts";
+import { useVoiceCast, SpeakerAvatar, SpeakerChip, VoiceCastNote, DialogueLineButton, speakerIndexMap, uniqueSpeakers } from "../voice-cast";
 import { PLANS, todayUsage, planLimits } from "@/lib/lms/plans";
 import { QuizEngine } from "../quiz-engine";
 import { StepReveal } from "../step-reveal";
@@ -32,10 +33,14 @@ export function ListeningView() {
   const tasks = useMemo(() => LISTENING.filter((t) => levelFilter === "all" || t.level === levelFilter), [levelFilter]);
   const task = LISTENING.find((t) => t.id === openId);
 
-  const playAll = (lines: { it: string }[], rate: number) => {
+  /* reparto de voces por personaje (v9.1): cada hablante con su propia voz TTS */
+  const cast = useVoiceCast(task?.dialogue ?? []);
+  const speakers = useMemo(() => uniqueSpeakers(task?.dialogue ?? []), [task]);
+  const sIdx = useMemo(() => speakerIndexMap((task?.dialogue ?? []).map((d) => d.speaker)), [task]);
+
+  const playAll = (lines: { it: string; speaker?: string }[], rate: number) => {
     stopSpeaking();
-    const cancel = speakSequence(lines.map((l) => l.it), rate, (i) => setPlaying(i), () => setPlaying(null));
-    return cancel;
+    return speakDialogue(lines, cast, { rate, onIndex: (i) => setPlaying(i), onDone: () => setPlaying(null) });
   };
 
   if (task && quizOpen) {
@@ -95,8 +100,9 @@ export function ListeningView() {
               ))}
             </div>
           ) : (
-            /* diálogo */
+            /* diálogo con voces por personaje */
             <div className="mt-6 space-y-2.5">
+              <VoiceCastNote speakers={speakers} cast={cast} className="mb-3" />
               {task.dialogue?.map((line, i) => (
                 <div
                   key={i}
@@ -105,19 +111,14 @@ export function ListeningView() {
                     playing === i ? "border-verde bg-verde-tenue" : "border-soft bg-crema"
                   )}
                 >
-                  <span className={cn(
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                    i % 2 === 0 ? "bg-verde text-white" : "bg-terracotta text-white"
-                  )}>
-                    {line.speaker.slice(0, 2).toUpperCase()}
-                  </span>
+                  {line.speaker && <SpeakerAvatar speaker={line.speaker} idx={sIdx[line.speaker] ?? 0} active={playing === i} />}
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-it">{line.speaker}</p>
-                    <p className="mt-0.5 font-display text-lg leading-snug">{line.it}</p>
+                    {line.speaker && <SpeakerChip speaker={line.speaker} idx={sIdx[line.speaker] ?? 0} active={playing === i} />}
+                    <p className="mt-1 font-display text-lg leading-snug">{line.it}</p>
                     {showSubs && playing === null && <p className="mt-1 text-sm text-muted-it">{line.es}</p>}
                     {showSubs && <p className={cn("mt-1 text-sm transition-opacity", playing === i ? "text-muted-it opacity-100" : "hidden")}>{line.es}</p>}
                   </div>
-                  <AudioButton text={line.it} size="sm" rate={speed} />
+                  <DialogueLineButton line={line} cast={cast} rate={speed} className="mt-1" />
                 </div>
               ))}
             </div>
