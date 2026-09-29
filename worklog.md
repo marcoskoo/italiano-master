@@ -201,3 +201,26 @@ Stage Summary:
 - v9.3 LIVE: 22 letture totales (+6 de cultura: arte, cucina, musica con fotos reales verificadas), selector de categorías de Juegos ilustrado (37 imágenes), flashcards de repaso con ilustración de categoría.
 - 6 imágenes nuevas (1,04 MB), pipeline reproducible en scripts/img/.
 - Coste adicional: 0 € (assets estáticos + contenido original).
+
+---
+Task ID: 10
+Agent: main (Super Z)
+Task: v9.4 — Completar generación de imágenes: todas las secciones + iconos Dizionario/Printables + cine/deporte/moda + modo oscuro (petición del usuario)
+
+Work Log:
+- Reconstruido el estado: el commit 8e224ea (UUID, sesión previa perdida) ya contenía las vistas actualizadas (theme-img.tsx con swap -dark, culture/grammar/dictionary/games/printables/situations/skills/plugins ilustrados) y los mapas dinámicos (CULTURE_IMG, GRAMMAR_IMG, FF_GROUPS, PRINTABLE_IMG, CATEGORY_IMG), PERO faltaban 111+ archivos de imagen → producción con 404s rotos en Cultura/Grammatica/Falsi amici.
+- scripts/img/ se había perdido (.gitignore + reset del sandbox): recreado pipeline v94.mjs (gen/dark/process/status, idempotente, daemon double-fork python para sobrevivir entre comandos, backoff 30s×n para 429).
+- Auditoría completa de referencias (estáticas + dinámicas): 74 refs estáticas, mapas por id (cultura 21, grammatica 75 con extras g3-/gx- que la primera auditoría no detectó, ascolto 30, conversazione 18, testi 30, situazioni 20, vocab 37, ff 6, strumenti 3, letture LETTURE_IMG).
+- Generación IA (1024x1024 → sharp 512 webp q85): 21 grammatica claros + 53 grammatica-3.0/gx claros + 6 falsamici + 3 strumenti; variantes oscuras vía image-edit desde el claro (mismo sujeto, fondo verde noche #2F4F4F, trazos luminosos): 22+53 grammar + 6 ff + 3 strumenti + 37 vocab = 121 darks.
+- Cultura (1344x768 ilustraciones estilo pergamino con acentos bandera italiana): 17 nuevas + 2 regeneradas por QA VLM (cul-5 daba apretón de manos en vez de gestos; cul-6 estilo inconsistente).
+- Letture: cult-cine-23 (neorrealismo) vía image-search (8 candidatas → VLM: descartadas Alamy marca de agua, Blu-ray con texto, soldado off-topic; elegida foto B/N ruedas de bicicletas 1280x720 → sharp attention-crop 1344x768).
+- QA VLM en todo el ciclo: estilo (crema #F5F0E6 / verde noche #2F4F4F), sin texto accidental, temas correctos; 8/8 OK en muestra final g3/gx.
+- Rate-limits 429 gestionados: lotes con pausas, reintentos con backoff progresivo, re-runs idempotentes.
+- Build OK, lint 0. Commit e4cc9f1 (111 imgs) + fa14cea (106 imgs) → push → producción verificada.
+- E2E producción (agent-browser): Grammatica 75/75 iconos por nivel (A1 16, A2 16, B1 15, B2 12, C1 9, C2 7), 0 rotos; MODO OSCURO: swap -dark verificado en grammatica, falsamici (87), vocabulario (37/37 allDark), printables (3); Cultura 21/21; Letture 28 imgs incl. cine-23; 0 errores consola; VLM confirma estética nocturna coherente.
+
+Stage Summary:
+- v9.4 LIVE COMPLETO: 217 imágenes nuevas (389 archivos totales, 17,5 MB). Grammatica 150/150 (75 temas × claro+oscuro incl. grammatica 3.0 A1-C2), Cultura 21/21, Falsi amici 12/12, Strumenti/Printables 6/6, Vocabulario 37+37, ascolto/conversazione/testi/situazioni completos de la sesión previa, letture con cine/deporte/moda.
+- Modo oscuro de imágenes totalmente operativo: ThemeImg intercambia variante -dark en las 4 familias de iconos (176 iconos con versión nocturna) + CSS .ita-img atenúa fotos.
+- Pipeline reproducible en scripts/img/v94.mjs (manifiesto completo con prompts por tema).
+- QA VLM integral: generación → recortes → producción, en claro y oscuro.
