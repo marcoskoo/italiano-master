@@ -14,7 +14,7 @@ import { speak } from "@/lib/lms/tts";
 import { cn } from "@/lib/utils";
 
 /* ── Plugins v5.0 · Estensioni de Italiano Master ────────────────────
-   5 · Parola nascosta — wordle italiano dal dizionario (5030 lemmi)
+   5 · Parola nascosta — wordle italiano dal dizionario (8022 lemmi)
    6 · Preposizioni lab — drill cloze a/in/di/da/su/per + articolate
    7 · Pomodoro studio — sesiones de enfoque con XP
    8 · Muse — generador de frases y retos por nivel MCER ──────────── */

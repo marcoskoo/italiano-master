@@ -2,6 +2,7 @@ import type { Course, Lesson, Unit } from "./types";
 import { EXTRA_UNITS } from "./extra/courses-extra";
 import { EXTRA_UNITS_2 } from "./extra/courses-extra2";
 import { EXTRA_UNITS_3 } from "./extra/courses-extra3";
+import { EXTRA_UNITS_4 } from "./extra/courses-extra4";
 
 /* ── Cursos · Desde cero → C2 ─────────────────────────────────────── */
 
@@ -676,6 +677,13 @@ for (const course of COURSES) {
 for (const course of COURSES) {
   const extra3 = EXTRA_UNITS_3[course.level];
   if (extra3) course.units.push(...extra3);
+}
+
+/* Paquete de expansión v7.0: +1 unidad C2 / +5 lecciones académico-literarias
+   (diccionario v4.0 · 8000 lemas) */
+for (const course of COURSES) {
+  const extra4 = EXTRA_UNITS_4[course.level];
+  if (extra4) course.units.push(...extra4);
 }
 
 export const COURSE_BY_LEVEL = (level: string): Course | undefined =>

@@ -270,7 +270,7 @@ export type ViewId =
   | "numerilab" | "verbidrill" | "pianosettimanale" | "analizzatore" | "schede"
   | "proverbi" | "falsiamici" | "dettato" | "ankiexport"
   | "parolanascosta" | "preposizioni" | "pomodoro" | "muse"
-  | "indovinelli" | "verofalso" | "proverbio";
+  | "indovinelli" | "verofalso" | "proverbio" | "cils";
 
 export interface NavParams {
   level?: CefrLevel | "zero";

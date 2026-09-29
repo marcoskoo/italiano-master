@@ -2,6 +2,7 @@ import type { Exercise } from "./types";
 import { EXERCISES_EXTRA } from "./extra/exercises-extra";
 import { EXERCISES_EXTRA_2 } from "./extra/exercises-extra2";
 import { EXERCISES_EXTRA_3 } from "./extra/exercises-extra3";
+import { EXERCISES_EXTRA_4 } from "./extra/exercises-extra4";
 
 /* ── Banca de ejercicios · motor de práctica ──────────────────────── */
 /* Nota: las citas internas usan comillas tipográficas “ ” */
@@ -221,6 +222,8 @@ EXERCISES.push(...EXERCISES_EXTRA);
 EXERCISES.push(...EXERCISES_EXTRA_2);
 /* # Paquete de expansión v6.0: +56 ejercicios (lecturas rd, escuchas ls, unidades u-a2-7/u-b1-7/u-b2-6/u-c1-5) */
 EXERCISES.push(...EXERCISES_EXTRA_3);
+/* Paquete v7.0: +10 ejercicios unidad C2 académico-literaria */
+EXERCISES.push(...EXERCISES_EXTRA_4);
 
 export const EXERCISES_BY_ID: Record<string, Exercise> = Object.fromEntries(EXERCISES.map((e) => [e.id, e]));
 

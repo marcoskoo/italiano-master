@@ -21,6 +21,7 @@ import { TutorView } from "@/components/lms/views/tutor";
 import { GamesView } from "@/components/lms/views/games";
 import { ReviewView } from "@/components/lms/views/review";
 import { ExamsView, CertificatesView, SettingsView } from "@/components/lms/views/exams";
+import { CilsView } from "@/components/lms/views/cils";
 import { PricingView } from "@/components/lms/views/pricing";
 import { AdminView } from "@/components/lms/views/admin";
 import { NumberLabView } from "@/components/lms/views/numberlab";
@@ -256,6 +257,7 @@ export default function Home() {
         {view === "giochi" && <GamesView />}
         {view === "repaso" && <ReviewView />}
         {view === "esami" && <ExamsView />}
+        {view === "cils" && <CilsView />}
         {view === "certificati" && <CertificatesView />}
         {view === "impostazioni" && <SettingsView />}
         {view === "piani" && <PricingView />}

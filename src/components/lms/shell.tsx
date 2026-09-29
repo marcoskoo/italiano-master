@@ -81,6 +81,7 @@ const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typ
     items: [
       { id: "repaso", label: "Repaso inteligente", icon: RefreshCcw },
       { id: "esami", label: "Exámenes", icon: ScrollText },
+      { id: "cils", label: "Preparazione CILS", icon: GraduationCap },
       { id: "certificati", label: "Certificados", icon: Trophy },
     ],
   },
@@ -113,6 +114,7 @@ const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   giochi: { title: "Giochi", sub: "Memoria, orden de frases, quiz relámpago e impiccato" },
   repaso: { title: "Repaso inteligente", sub: "Repetición espaciada adaptada a tu memoria" },
   esami: { title: "Esami", sub: "Pruebas por nivel con certificado al aprobar" },
+  cils: { title: "Preparazione CILS", sub: "Estructura del examen, estrategias por prueba y simulacro cronometrado con veredicto" },
   certificati: { title: "Certificati", sub: "Tus diplomas de italiano, listos para descargar" },
   impostazioni: { title: "Impostazioni", sub: "Tema, tamaño de texto, audio y perfil" },
   piani: { title: "Piani PRO · Premium · Platinum", sub: "Sblocca tutto il potenziale di Italiano Master" },
