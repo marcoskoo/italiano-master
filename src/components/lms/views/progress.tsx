@@ -6,6 +6,8 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } fro
 import { Award, BookOpen, Calendar, Flame, Library, Sparkles, TrendingUp, Trophy, Zap } from "lucide-react";
 import { useLms, BADGES, rankFor, nextRank } from "@/lib/lms/store";
 import { masteredCount, learningCount, dueCards } from "@/lib/lms/srs";
+import { ACHIEVEMENTS, ACHIEVEMENT_CATS, achievementState } from "@/lib/lms/quests";
+import type { AchievementCat } from "@/lib/lms/quests";
 import { weakTopics, topicStats, TOPIC_LABELS } from "@/lib/lms/adaptive";
 import { COURSES, totalLessons } from "@/lib/lms/courses";
 import { PLANS, planLimits } from "@/lib/lms/plans";
@@ -46,6 +48,8 @@ export function ProgressView() {
   const allStats = useMemo(() => topicStats(errorLog), [errorLog]);
   const snapshot = useLms.getState();
   const earnedCount = useMemo(() => BADGES.filter((b) => b.test(snapshot, 0)).length, [snapshot]);
+  const ach = useMemo(() => achievementState(snapshot, allLessons), [snapshot, allLessons]);
+  const achUnlocked = useMemo(() => ACHIEVEMENTS.filter((a) => a.value(ach) >= a.target).length, [ach]);
 
   const radarData = Object.entries(skillStats).map(([k, v]) => ({ skill: SKILL_LABELS[k] ?? k, value: Math.max(4, v) }));
 
@@ -248,28 +252,83 @@ export function ProgressView() {
         />
       )}
 
-      {/* insignias */}
+      {/* logros (v6.0 · con progreso por categoría) */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
         <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-          <Award className="h-5 w-5 text-terracotta" aria-hidden="true" /> Insignias · {certificates.length > 0 && `${certificates.length} certificados · `}{earnedCount}/{BADGES.length}
+          <Award className="h-5 w-5 text-terracotta" aria-hidden="true" /> Logros · {achUnlocked}/{ACHIEVEMENTS.length}
         </h2>
-        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-5">
-          {BADGES.map((b) => {
-            const earned = b.test(snapshot, 0);
+        <p className="mt-1 text-sm text-muted-it">Insignias permanentes que crecen contigo: cada barra muestra cuánto te falta para el siguiente nivel.</p>
+        <div className="mt-5 space-y-6">
+          {(Object.keys(ACHIEVEMENT_CATS) as AchievementCat[]).map((cat) => {
+            const list = ACHIEVEMENTS.filter((a) => a.cat === cat);
+            const unlocked = list.filter((a) => Math.min(a.value(ach), a.target) >= a.target).length;
             return (
-              <div
-                key={b.id}
-                className={cn(
-                  "rounded-2xl border-2 p-3.5 text-center transition-all",
-                  earned ? "border-oro/50 bg-oro-tenue" : "border-soft bg-crema-scura/50 opacity-50 dark:bg-inchiostro/5"
-                )}
-              >
-                <p className="text-2xl" aria-hidden="true">{b.emoji}</p>
-                <p className="mt-1.5 text-xs font-bold leading-tight">{b.name}</p>
-                <p className="mt-0.5 text-[10px] leading-tight text-muted-it">{b.desc}</p>
+              <div key={cat}>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-it">
+                    {ACHIEVEMENT_CATS[cat].emoji} {ACHIEVEMENT_CATS[cat].label}
+                  </h3>
+                  <span className="rounded-full bg-inchiostro/5 px-2 py-0.5 text-[10px] font-bold text-muted-it dark:bg-inchiostro/15">{unlocked}/{list.length}</span>
+                </div>
+                <div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+                  {list.map((a) => {
+                    const cur = a.value(ach);
+                    const done = cur >= a.target;
+                    const pct = Math.min(100, Math.round((cur / a.target) * 100));
+                    return (
+                      <div
+                        key={a.id}
+                        className={cn(
+                          "rounded-2xl border-2 p-3.5 transition-all",
+                          done ? "border-oro/50 bg-oro-tenue" : "border-soft bg-crema-scura/50 dark:bg-inchiostro/5"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <p className={cn("text-2xl", !done && "opacity-40 grayscale")} aria-hidden="true">{a.emoji}</p>
+                          {done ? (
+                            <span className="rounded-full bg-oro/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-oro-scuro dark:text-oro">sbloccato</span>
+                          ) : (
+                            <span className="rounded-full bg-inchiostro/5 px-2 py-0.5 font-mono text-[9px] font-bold text-muted-it dark:bg-inchiostro/15">
+                              {Math.min(cur, a.target).toLocaleString("es")}/{a.target.toLocaleString("es")}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1.5 text-xs font-bold leading-tight">{a.name}</p>
+                        <p className="mt-0.5 text-[10px] leading-tight text-muted-it">{a.desc}</p>
+                        {!done && (
+                          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-inchiostro/10 dark:bg-inchiostro/20">
+                            <div className="h-full rounded-full bg-gradient-to-r from-oro to-terracotta" style={{ width: `${pct}%` }} />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
+        </div>
+        {/* insignias clásicas de certificados */}
+        <div className="mt-6 border-t border-soft pt-5">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-it">🏆 Insignias clásicas</h3>
+          <div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:grid-cols-5">
+            {BADGES.map((b) => {
+              const earned = b.test(snapshot, 0);
+              return (
+                <div
+                  key={b.id}
+                  className={cn(
+                    "rounded-2xl border-2 p-3.5 text-center transition-all",
+                    earned ? "border-oro/50 bg-oro-tenue" : "border-soft bg-crema-scura/50 opacity-50 dark:bg-inchiostro/5"
+                  )}
+                >
+                  <p className="text-2xl" aria-hidden="true">{b.emoji}</p>
+                  <p className="mt-1.5 text-xs font-bold leading-tight">{b.name}</p>
+                  <p className="mt-0.5 text-[10px] leading-tight text-muted-it">{b.desc}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 

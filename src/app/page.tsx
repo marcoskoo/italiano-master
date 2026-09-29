@@ -32,6 +32,9 @@ import { PrintablesView } from "@/components/lms/views/printables";
 import { ProverbiView, FalsiAmiciView, DettatoView, AnkiExportView } from "@/components/lms/views/plugins";
 import { ParolaNascostaView, PreposizioniView, PomodoroView, MuseView } from "@/components/lms/views/plugins2";
 import { IndovinelliView, VeroFalsoView, ProverbioView } from "@/components/lms/views/plugins3";
+import { ShadowingView } from "@/components/lms/views/shadowing";
+import { ImporterView } from "@/components/lms/views/importer";
+import { PwaRegister, InstallBanner } from "@/components/lms/pwa";
 import { LockScreen } from "@/components/lms/lock-screen";
 
 /* ── Italiano Master · LMS completo de italiano (SPA) ─────────────── */
@@ -278,7 +281,11 @@ export default function Home() {
         {view === "indovinelli" && <IndovinelliView />}
         {view === "verofalso" && <VeroFalsoView />}
         {view === "proverbio" && <ProverbioView />}
+        {view === "shadowing" && <ShadowingView />}
+        {view === "importatore" && <ImporterView />}
       </div>
+      <PwaRegister />
+      <InstallBanner />
     </AppShell>
   );
 }

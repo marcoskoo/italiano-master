@@ -9,6 +9,8 @@ import type { PlanId } from "./plans";
 import type { AppConfig, AppConfigBundle } from "./appconfig";
 import { applyRemoteBundle } from "./overrides";
 import { telemetry } from "./remote";
+import { generateDailyQuests, QUEST_BONUS_XP, ALL_QUESTS_BONUS_XP } from "./quests";
+import type { DailyQuest, TrackType } from "./quests";
 
 export interface Account {
   id: string;
@@ -39,6 +41,15 @@ export interface PaymentRecord {
   currency: string;
   date: string;                 // ISO
   status: "completato" | "in attesa";
+}
+
+/* Texto importado para estudio (v6.0 · Importatore) */
+export interface ImportedText {
+  id: string;
+  title: string;
+  text: string;
+  date: string;          // ISO
+  words: number;
 }
 
 /* Seguridad extrema del usuario (v5.0): bloqueo con PIN + privacidad */
@@ -103,6 +114,15 @@ interface LmsState {
   security: UserSecurity;
   locked: boolean;
 
+  /* misiones diarias + logros (v6.0) */
+  quests: DailyQuest[];          // 3 misiones del día
+  questsDate: string;            // fecha de generación (yyyy-mm-dd)
+  questsAllBonus: boolean;       // bonus por completar las 3 ya otorgado
+  counters: Record<string, number>; // contadores históricos para logros
+
+  /* textos importados (v6.0) */
+  importedTexts: ImportedText[];
+
   /* actions */
   navigate: (view: ViewId, params?: NavParams) => void;
   setUserName: (name: string) => void;
@@ -126,6 +146,10 @@ interface LmsState {
   clearPin: () => void;
   lockApp: () => void;
   attemptUnlock: (pinHash: string) => boolean;
+  trackQuest: (type: TrackType, amount?: number) => void;
+  ensureDailyQuests: () => void;
+  saveImportedText: (t: { title: string; text: string; words: number }) => void;
+  deleteImportedText: (id: string) => void;
   resetAll: () => void;
   loginAccount: (account: Account, profile?: { displayName?: string; level?: string; plan?: string; xp?: number; streak?: number }) => void;
   adoptServerProgress: (progress: { xp: number; streak: number }) => void;
@@ -202,6 +226,13 @@ export const useLms = create<LmsState>()(
       security: { ...DEFAULT_SECURITY },
       locked: false,
 
+      quests: generateDailyQuests(today()),
+      questsDate: today(),
+      questsAllBonus: false,
+      counters: {},
+
+      importedTexts: [],
+
       navigate: (view, params = {}) => set({ view, navParams: params }),
 
       setUserName: (name) => set({ userName: name.trim() || "Studente" }),
@@ -237,6 +268,8 @@ export const useLms = create<LmsState>()(
           lastStudyDate: t,
           skillStats: skills,
         });
+        // misión diaria de XP (el bonus de misión vuelve a entrar por aquí y termina en profundidad finita)
+        get().trackQuest("xp", amount);
       },
 
       markLessonComplete: (lessonId, unitId) => {
@@ -246,11 +279,15 @@ export const useLms = create<LmsState>()(
           completedUnits: unitId && !s.completedUnits.includes(unitId) ? [...s.completedUnits, unitId] : s.completedUnits,
         });
         telemetry("lesson_completed", { lessonId, total: s.completedLessons.length + 1 }, s.account?.username);
+        get().trackQuest("lesson");
       },
 
       recordQuiz: (entry) => {
         set({ quizHistory: [entry, ...get().quizHistory].slice(0, 60) });
         telemetry("quiz_completed", { label: entry.label, score: entry.score, total: entry.total }, get().account?.username);
+        // misiones: partidas de juego y dictados completados
+        if (entry.kind === "juego") get().trackQuest("game");
+        if (/dettato/i.test(entry.label)) get().trackQuest("dictation");
       },
 
       recordError: (topic) => {
@@ -263,9 +300,13 @@ export const useLms = create<LmsState>()(
         const el = { ...get().errorLog };
         el[topic] = { errors: el[topic]?.errors ?? 0, correct: (el[topic]?.correct ?? 0) + 1 };
         set({ errorLog: el });
+        get().trackQuest("correct");
       },
 
-      upsertSrs: (wordId, card) => set({ srs: { ...get().srs, [wordId]: card } }),
+      upsertSrs: (wordId, card) => {
+        set({ srs: { ...get().srs, [wordId]: card } });
+        get().trackQuest("review");
+      },
 
       addCertificate: (cert) => {
         const s = get();
@@ -274,7 +315,10 @@ export const useLms = create<LmsState>()(
         telemetry("cert_earned", { level: cert.level, score: cert.score }, s.account?.username);
       },
 
-      saveWriting: (entry) => set({ writingHistory: [entry, ...get().writingHistory].slice(0, 20) }),
+      saveWriting: (entry) => {
+        set({ writingHistory: [entry, ...get().writingHistory].slice(0, 20) });
+        get().trackQuest("writing");
+      },
 
       setOnboarded: () => set({ onboarded: true }),
 
@@ -289,6 +333,7 @@ export const useLms = create<LmsState>()(
         const s = get();
         const t = today();
         set({ tutorCount: s.tutorCountDate === t ? s.tutorCount + 1 : 1, tutorCountDate: t });
+        get().trackQuest("tutor");
       },
 
       incrementWriting: () => {
@@ -318,6 +363,63 @@ export const useLms = create<LmsState>()(
         set({ security: { ...get().security, pinHash: null, pinSalt: null, failedAttempts: 0, lockoutUntil: 0 }, locked: false });
         telemetry("security_pin_disabled", {}, get().account?.username);
       },
+
+      /* ── Misiones diarias (v6.0) ──
+         Registra progreso de misión y contadores de logros. Al completar
+         una misión otorga +15 XP (bonus); las 3 completadas → +50 XP extra. */
+      ensureDailyQuests: () => {
+        const s = get();
+        const t = today();
+        if (s.questsDate !== t) {
+          set({ quests: generateDailyQuests(t), questsDate: t, questsAllBonus: false });
+        }
+      },
+
+      trackQuest: (type, amount = 1) => {
+        get().ensureDailyQuests();
+        const s = get();
+        const t = today();
+        const quests = s.quests;
+        let allBonus = s.questsAllBonus;
+
+        // contador histórico (logros)
+        const counters = { ...s.counters, [type]: (s.counters[type] ?? 0) + amount };
+
+        // progreso de misión + bonus
+        let bonusXp = 0;
+        const isQuestType = quests.some((q) => q.type === type);
+        const updated = isQuestType
+          ? quests.map((q) => {
+              if (q.type !== type || q.done) return q;
+              const progress = Math.min(q.target, q.progress + amount);
+              const done = progress >= q.target;
+              if (done) bonusXp += QUEST_BONUS_XP;
+              return { ...q, progress, done };
+            })
+          : quests;
+
+        if (!allBonus && updated.length > 0 && updated.every((q) => q.done)) {
+          bonusXp += ALL_QUESTS_BONUS_XP;
+          allBonus = true;
+        }
+
+        set({ counters, quests: updated, questsDate: t, questsAllBonus: allBonus });
+
+        // el bonus entra por addXp → también alimenta la misión de XP (recursión finita)
+        if (bonusXp > 0) get().addXp(bonusXp);
+      },
+
+      /* ── Textos importados (v6.0) ── */
+      saveImportedText: (t) => {
+        const entry: ImportedText = {
+          ...t,
+          id: `imp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+          date: new Date().toISOString(),
+        };
+        set({ importedTexts: [entry, ...get().importedTexts].slice(0, 8) });
+      },
+
+      deleteImportedText: (id) => set({ importedTexts: get().importedTexts.filter((t) => t.id !== id) }),
 
       lockApp: () => {
         if (!get().security.pinHash) return; // sin PIN no hay bloqueo posible
@@ -356,6 +458,8 @@ export const useLms = create<LmsState>()(
           view: "inicio", navParams: {},
           plan: "free", planBilling: null, planSince: null,
           tutorCount: 0, tutorCountDate: today(), writingCount: 0, writingCountDate: today(),
+          quests: generateDailyQuests(today()), questsDate: today(), questsAllBonus: false, counters: {},
+          importedTexts: [],
         }),
 
       loginAccount: (account, profile) => {

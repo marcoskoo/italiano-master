@@ -29,7 +29,7 @@ export function CilsView() {
   const [mode, setMode] = useState<Mode>({ kind: "intro" });
   const addXp = useLms((s) => s.addXp);
   const addXpRef = useRef(addXp);
-  addXpRef.current = addXp;
+  useEffect(() => { addXpRef.current = addXp; }, [addXp]);
 
   /* hooks siempre al inicio: memoriza por nivel/sección actuales (si aplica) */
   const activeLevel = mode.kind !== "intro" ? mode.level : null;

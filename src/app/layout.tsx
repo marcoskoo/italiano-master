@@ -30,8 +30,18 @@ export const metadata: Metadata = {
     "A1", "A2", "B1", "B2", "C1", "C2", "conjugador", "diccionario italiano",
   ],
   authors: [{ name: "Italiano Master" }],
+  manifest: "/manifest.json",
   icons: {
-    icon: "/italia.svg",
+    icon: [
+      { url: "/italia.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/icon-192.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Italiano Master",
   },
   openGraph: {
     title: "Italiano Master — LMS de italiano desde cero hasta C2",

@@ -24,6 +24,8 @@ export function AudioButton({ text, size = "md", rate, label, variant = "icon", 
     setPlaying(true);
     const ok = speak(text, { rate: rate ?? settingsRate, onEnd: () => setPlaying(false) });
     if (!ok) setPlaying(false);
+    // misión diaria: cada audio escuchado cuenta (v6.0)
+    if (ok) useLms.getState().trackQuest("listen");
   }, [text, rate, settingsRate]);
 
   const sizes = { sm: "h-8 w-8", md: "h-9 w-9", lg: "h-11 w-11" };

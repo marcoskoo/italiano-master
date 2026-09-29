@@ -7,7 +7,7 @@ import {
   PenLine, Printer, RefreshCcw, ScrollText, Settings, Shield, Sparkles, Timer, Trophy, Volume2,
   X, Zap, Flame, Menu, CalendarDays, Quote, AlertTriangle, Keyboard, FileSpreadsheet,
   Dices, Target, Wand2, HelpCircle, Scale, Puzzle,
-  LogIn, LogOut,
+  LogIn, LogOut, Mic, FileInput,
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
 import { useLms, rankFor } from "@/lib/lms/store";
@@ -43,6 +43,7 @@ const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typ
       { id: "scrittura", label: "Escritura", icon: PenLine },
       { id: "conversazione", label: "Conversación", icon: Languages },
       { id: "pronuncia", label: "Pronunciación", icon: Volume2 },
+      { id: "shadowing", label: "Shadowing", icon: Mic },
     ],
   },
   {
@@ -53,6 +54,7 @@ const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typ
       { id: "verbidrill", label: "Allenamento verbi", icon: Timer },
       { id: "numerilab", label: "Numeri lab", icon: Hash },
       { id: "analizzatore", label: "Analizador de frases", icon: Microscope },
+      { id: "importatore", label: "Importador de textos", icon: FileInput },
       { id: "schede", label: "Schede di studio", icon: Printer },
       { id: "situazioni", label: "Situaciones reales", icon: MapPin },
       { id: "cultura", label: "Cultura italiana", icon: Clapperboard },
@@ -135,6 +137,8 @@ const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   indovinelli: { title: "Indovinelli", sub: "18 adivinanzas italianas con pistas graduales y dato cultural incluido" },
   verofalso: { title: "Vero o Falso", sub: "12 afirmaciones rápidas de gramática, falsos amigos y cultura: racha de 5 = XP doble" },
   proverbio: { title: "Completa il proverbio", sub: "Empareja las mitades de 193 proverbi: equivalente español y contexto tras cada respuesta" },
+  shadowing: { title: "Shadowing", sub: "Escucha, repite grabando tu voz y compara: puntuación de pronunciación palabra por palabra" },
+  importatore: { title: "Importatore di testi", sub: "Convierte cualquier texto o página web en una lección interactiva con tu diccionario de 8.000 lemas" },
 };
 
 function NavItem({ id, label, icon: Icon, onNav, active }: { id: ViewId; label: string; icon: typeof Home; onNav: () => void; active: boolean }) {

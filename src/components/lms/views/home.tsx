@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, ArrowRight, BookOpen, Compass, Dices, Ear, FileSpreadsheet, Flame, GraduationCap, Keyboard, Library, Quote, RefreshCcw, Sparkles, Target, Timer, Trophy, Volume2, Wand2, Zap } from "lucide-react";
 import { MorphingHero } from "@/components/italian/morphing-hero";
@@ -11,6 +11,8 @@ import { COURSES, totalLessons } from "@/lib/lms/courses";
 import { dueCards } from "@/lib/lms/srs";
 import { CEFR_LEVELS, LEVEL_LABELS } from "@/lib/lms/types";
 import { PLANS, levelAllowed, requiredPlanForLevel, generateWeeklyPlan, planLimits } from "@/lib/lms/plans";
+import { QUEST_DEFS, ALL_QUESTS_BONUS_XP } from "@/lib/lms/quests";
+import { InstallButton } from "../pwa";
 import { PremiumBanner } from "../plan-badge";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
@@ -34,6 +36,8 @@ const PLUGINS: { id: ViewId; label: string; it: string; icon: typeof Ear; desc: 
   { id: "preposizioni", label: "Preposizioni", it: "drill", icon: Target, desc: "72 frases cloze con regla explicada" },
   { id: "pomodoro", label: "Pomodoro", it: "focus", icon: Timer, desc: "Sesiones de enfoque con XP" },
   { id: "muse", label: "Muse", it: "generatore", icon: Wand2, desc: "Retos de escritura por nivel" },
+  { id: "shadowing", label: "Shadowing", it: "voce", icon: Volume2, desc: "Escucha, graba tu voz y compara" },
+  { id: "importatore", label: "Importador", it: "testi", icon: FileSpreadsheet, desc: "Convierte cualquier texto en lección" },
 ];
 
 export function HomeView() {
@@ -50,6 +54,10 @@ export function HomeView() {
   const userName = useLms((s) => s.userName);
   const plan = useLms((s) => s.plan);
   const remoteConfig = useLms((s) => s.remoteConfig);
+  const quests = useLms((s) => s.quests);
+  const ensureDailyQuests = useLms((s) => s.ensureDailyQuests);
+
+  useEffect(() => { ensureDailyQuests(); }, [ensureDailyQuests]);
 
   const rank = rankFor(xp);
   const due = dueCards(srs).length;
@@ -122,6 +130,9 @@ export function HomeView() {
                 <dd className="mt-1 font-display text-2xl font-bold">{card.value}</dd>
               </div>
             ))}
+            <div className="col-span-2 flex items-center justify-center sm:col-span-1">
+              <InstallButton compact className="!min-h-9 !px-4 !py-1.5 text-xs" />
+            </div>
           </dl>
         </div>
         <div className="relative">
@@ -198,23 +209,44 @@ export function HomeView() {
               className={cn("h-full rounded-full", missionPct >= 100 ? "bg-verde" : "bg-gradient-to-r from-oro to-terracotta")}
             />
           </div>
-          <ul className="mt-5 space-y-2.5 text-sm">
-            <li className="flex items-center justify-between gap-3 rounded-xl bg-crema-scura px-3.5 py-2.5 dark:bg-inchiostro/10">
-              <span>📚 Completa una lección o prueba</span>
-              <button onClick={() => navigate("cursos")} className="shrink-0 font-bold text-verde-scuro underline-offset-2 hover:underline dark:text-verde">Ir →</button>
-            </li>
-            <li className="flex items-center justify-between gap-3 rounded-xl bg-crema-scura px-3.5 py-2.5 dark:bg-inchiostro/10">
-              <span>🔄 {due > 0 ? `Repasa ${Math.min(due, 10)} tarjetas vencidas` : "Añade palabras al repaso"}</span>
-              <button onClick={() => navigate("repaso")} className="shrink-0 font-bold text-verde-scuro underline-offset-2 hover:underline dark:text-verde">Ir →</button>
-            </li>
-            <li className="flex items-center justify-between gap-3 rounded-xl bg-crema-scura px-3.5 py-2.5 dark:bg-inchiostro/10">
-              <span>🎧 Escucha un diálogo con audio</span>
-              <button onClick={() => navigate("ascolto")} className="shrink-0 font-bold text-verde-scuro underline-offset-2 hover:underline dark:text-verde">Ir →</button>
-            </li>
+          <ul className="mt-5 space-y-3 text-sm">
+            {quests.map((q) => {
+              const def = QUEST_DEFS.find((d) => d.type === q.type);
+              const pct = Math.min(100, Math.round((q.progress / Math.max(1, q.target)) * 100));
+              return (
+                <li key={q.id} className={cn("rounded-xl px-3.5 py-2.5 transition-colors", q.done ? "bg-verde-tenue dark:bg-verde-tenue/30" : "bg-crema-scura dark:bg-inchiostro/10")}>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="min-w-0 flex-1 font-semibold">
+                      <span aria-hidden="true">{def?.emoji ?? "🎯"}</span> {def?.label(q.target) ?? q.type}
+                    </span>
+                    <span className={cn("shrink-0 font-mono text-xs font-bold", q.done ? "text-verde-scuro dark:text-verde" : "text-muted-it")}>
+                      {q.done ? "✓" : `${q.progress}/${q.target}`}
+                    </span>
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-inchiostro/10 dark:bg-inchiostro/20">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      className={cn("h-full rounded-full", q.done ? "bg-verde" : "bg-gradient-to-r from-oro to-terracotta")}
+                    />
+                  </div>
+                </li>
+              );
+            })}
           </ul>
-          {missionPct >= 100 && (
+          {quests.length > 0 && quests.every((q) => q.done) ? (
             <p className="mt-4 rounded-xl bg-verde-tenue px-4 py-2.5 text-center text-sm font-bold text-verde-scuro dark:text-verde">
-              🎉 Obiettivo raggiunto! Complimenti!
+              🎉 Missioni completate! +{ALL_QUESTS_BONUS_XP} XP bonus
+            </p>
+          ) : (
+            <p className="mt-3 text-center text-[11px] text-muted-it">
+              Completa las 3 misiones → +{ALL_QUESTS_BONUS_XP} XP bonus
+            </p>
+          )}
+          {missionPct >= 100 && (
+            <p className="mt-3 rounded-xl bg-verde-tenue px-4 py-2.5 text-center text-sm font-bold text-verde-scuro dark:text-verde">
+              🏁 Obiettivo giornaliero raggiunto!
             </p>
           )}
         </motion.div>
