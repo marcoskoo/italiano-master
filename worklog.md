@@ -136,3 +136,26 @@ Stage Summary:
 - Producción RESTAURADA y v9.0 LIVE: 16 letture con audio sincronizado + push notifications con cron diario + gamificación avanzada.
 - Infraestructura saneada: 1 solo proyecto conectado al repo, framework nextjs, cron registrado.
 - Deploy final: dpl_7E3k (54278ee).
+
+---
+Task ID: 7
+Agent: main (Super Z)
+Task: v9.1 — Voces múltiples por personaje en diálogos y juegos de rol (petición del usuario)
+
+Work Log:
+- Análisis de superficies con diálogos multi-hablante: letture.tsx (Dialoghi), situations.tsx (Dialogo), skills.tsx (Ascolto) — las 3 usaban UNA sola voz TTS para todos los hablantes.
+- tts.ts reescrito: initVoices ahora cachea TODAS las voces it-IT en voicePool intercaladas por género ([f1, m1, f2, m2…] → máximo contraste entre los 2 primeros personajes); heurística de género por nombre (Elsa/Federica/Alice/Luca/Diego/Cosimo… multi-plataforma); prettyVoiceName limpia "Microsoft Elsa Online (Natural) - Italian (Italy)" → "Elsa"; buildCast(speakers) asigna voz física distinta a cada personaje por orden de aparición; cuando el pool se agota rota voces con tonos de reserva (pitch 0.76/1.24/0.86/1.14 + micro-variación de velocidad); con 0 voces usa tonos de reserva desde el primer personaje. speak() acepta voice/pitch; nueva speakDialogue() con pausa 420ms entre battute.
+- voice-cast.tsx (nuevo): useVoiceCast (rebuild al llegar onvoiceschanged — Chrome carga voces async), SPEAKER_STYLES (5 colores: azzurro/terracotta/oro/viola/rosso), SpeakerAvatar (burbuja con inicial), SpeakerChip, VoiceCastNote (muestra el reparto: "Ogni personaggio ha la sua voce: Barista Elsa · Cliente Diego" o "Voci per tono" en fallback), DialogueLineButton (battuta individual con voz del personaje).
+- letture.tsx: playFrom/playLine aplican voz+pitch+rateFactor del personaje; diálogos con avatar de inicial + chip de color por hablante; VoiceCastNote bajo la barra del reproductor; gap 420ms entre turnos.
+- situations.tsx: speakSequence → speakDialogue con cast; avatares + chips; nota de reparto; botón por línea con voz del personaje.
+- skills.tsx (Ascolto): playAll → speakDialogue; mismo sistema visual.
+- globals.css: añadidos --azzurro/--viola + variantes -scuro/-tenue y --terracotta-scuro/-tenue (corregía bug latente: chips de categorías Dialoghi/Storia del mundo en letture.tsx referenciaban colores inexistentes).
+- Tests unitarios (scripts/test-voice-cast.ts, bun): Edge 4 voces → Elsa+Diego; macOS → Alice+Luca; Chrome 1 voz → pitch 1.0 vs 0.76; headless 0 voces → tonos reserva; 6 personajes/2 voces → 5 pitches únicos; cadena async voiceschanged→listener→rebuild OK.
+- E2E agent-browser local: 3 vistas con nota de reparto, botones por battuta, reproducción avanzando (Ferma + 1 línea activa), 0 errores consola. VLM confirma avatares B azul (Barista) / C naranja (Cliente). Nota: el eval de agent-browser corre en mundo aislado (los mocks de getVoices no son visibles para la página) — la lógica se validó con tests unitarios del módulo real.
+- Lint 0 errores, tsc 0 en archivos propios, build OK. Commit c665279 → push → deploy dpl_5PUq READY.
+- Verificación producción: home 200, marker buildCast en chunk e0161a9866cea271.js, Letture/Dialoghi con "Voci per tono" + botones por battuta, reproducción OK, 0 errores consola, VLM confirma avatares de colores.
+
+Stage Summary:
+- v9.1 LIVE: cada personaje de los diálogos suena con voz distinta (voces físicas si el navegador las tiene — Edge/macOS —, tono grave/agudo como fallback en Chrome de 1 voz). Diferenciación visual complementaria: avatar con inicial + chip de color por hablante en las 3 superficies de diálogos.
+- Fix latente incluido: paleta azzurro/viola/terracotta-completa en globals.css (chips de categorías de letture sin color antes).
+- Estrategia robusta garantizada en cualquier plataforma (0+ voces italianas disponibles).
