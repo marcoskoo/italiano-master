@@ -1,9 +1,9 @@
 "use client";
 
-/* ── Premi & Sfide (v9.0) ─────────────────────────────────────────────
+/* ── Premi & Sfide (v9.0 · rueda rediseñada v9.5) ─────────────────────
    Gamificación avanzada 100% gratuita:
    · 🪙 Monete: se ganan con misiones, letture y quiz perfectos
-   · 🎡 Ruota della fortuna: 1 giro al día con premios ponderados
+   · 🎡 Ruota della fortuna premium: aro dorado, bombillas y Stella d'Italia
    · 🚀 Boost XP 2× y ❄️ congelamientos comprables
    · 🏛️ Títulos de perfil y 📅 sfida del mes determinista           */
 
@@ -13,13 +13,7 @@ import { Check, Coins, Crown, Flame, Gift, Rocket, Snowflake, Sparkles, Trophy }
 import { cn } from "@/lib/utils";
 import { useLms } from "@/lib/lms/store";
 import { WHEEL_PRIZES, generateMonthlyChallenge, monthKeyFor, monthlyTemplate, MONTHLY_REWARD_COINS } from "@/lib/lms/quests";
-
-const SEG = 360 / WHEEL_PRIZES.length;
-
-const SEG_COLORS = [
-  "#128a54", "#0c5b38", "#e9a83c", "#128a54",
-  "#0c5b38", "#e9a83c", "#128a54", "#b26e12",
-];
+import { FortuneWheel, SEG } from "@/components/lms/fortune-wheel";
 
 export const SHOP_TITLES: { id: "titolo-storico" | "titolo-cicerone" | "titolo-poeta" | "titolo-navigatore"; emoji: string; name: string; desc: string; price: number }[] = [
   { id: "titolo-storico", emoji: "🏛️", name: "Storico", desc: "Per chi ha letto la storia d'Italia e del mondo", price: 150 },
@@ -50,6 +44,7 @@ export function PremiView() {
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [prizeMsg, setPrizeMsg] = useState<string | null>(null);
+  const [wonKey, setWonKey] = useState(0);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const spin = () => {
@@ -64,6 +59,7 @@ export function PremiView() {
     setTimeout(() => {
       setSpinning(false);
       setPrizeMsg(`${res.prize.emoji} ${res.prize.label}!`);
+      setWonKey((k) => k + 1);
     }, 4100);
   };
 
@@ -144,28 +140,14 @@ export function PremiView() {
           </p>
 
           <div className="mt-6 flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:justify-center">
-            <div className="relative h-52 w-52 shrink-0">
-              {/* puntero */}
-              <div className="absolute left-1/2 top-[-10px] z-10 h-0 w-0 -translate-x-1/2 border-x-[10px] border-t-[18px] border-x-transparent border-t-rosso" aria-hidden="true" />
+            <div className={cn("relative h-64 w-64 shrink-0", spinning && "fw-spin")}>
+              {/* halo dorado tras la rueda */}
               <div
-                className="h-full w-full rounded-full border-8 border-oro shadow-xl"
-                style={{
-                  background: `conic-gradient(${SEG_COLORS.map((c, i) => `${c} ${i * SEG}deg ${(i + 1) * SEG}deg`).join(", ")})`,
-                  transform: `rotate(${rotation}deg)`,
-                  transition: "transform 4s cubic-bezier(0.15, 0.9, 0.28, 1)",
-                }}
-              >
-                {WHEEL_PRIZES.map((p, i) => (
-                  <span
-                    key={p.id}
-                    className="absolute left-1/2 top-1/2 text-xl drop-shadow"
-                    style={{ transform: `translate(-50%, -50%) rotate(${i * SEG + SEG / 2}deg) translateY(-72px)` }}
-                    aria-hidden="true"
-                  >
-                    {p.emoji}
-                  </span>
-                ))}
-              </div>
+                aria-hidden="true"
+                className="absolute -inset-5 rounded-full opacity-60 blur-2xl"
+                style={{ background: "radial-gradient(closest-side, rgba(201,134,43,.4), rgba(201,134,43,.1) 62%, transparent)" }}
+              />
+              <FortuneWheel rotation={rotation} wonKey={wonKey} />
             </div>
             <div className="flex flex-col items-center gap-3">
               <button
@@ -180,7 +162,16 @@ export function PremiView() {
                 {spunToday ? "Torna domani" : spinning ? "Gira..." : "Gira la ruota!"}
               </button>
               {prizeMsg && <motion.p initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="font-display text-lg font-bold text-oro-scuro dark:text-oro">{prizeMsg}</motion.p>}
-              <p className="text-xs text-muted-it">Premi: {WHEEL_PRIZES.map((p) => p.emoji).join(" ")}</p>
+              <div className="flex max-w-[15rem] flex-wrap justify-center gap-1.5">
+                {WHEEL_PRIZES.map((p) => (
+                  <span
+                    key={p.id}
+                    className="inline-flex items-center gap-1 rounded-full border border-soft bg-crema-scura/70 px-2.5 py-1 text-[11px] font-semibold text-muted-it dark:bg-inchiostro/10"
+                  >
+                    <span aria-hidden="true">{p.emoji}</span> {p.label}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </section>

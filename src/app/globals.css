@@ -464,3 +464,39 @@ html[data-textsize="xl"] { font-size: 18.5px; }
   filter: brightness(0.88) saturate(0.94);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
+
+/* ═══ v9.5 · Ruota della fortuna premium ═══════════════════════════════
+   Bombillas del aro alternándose (se aceleran con .fw-spin mientras
+   la rueda gira), jackpot con pulso dorado y puntero que "tiquea".  */
+.fw-bulbs-a { animation: fw-bulb-a var(--fw-dur, 1.15s) ease-in-out infinite; }
+.fw-bulbs-b { animation: fw-bulb-b var(--fw-dur, 1.15s) ease-in-out infinite; }
+.fw-spin { --fw-dur: 0.22s; }
+.fw-jackpot { animation: fw-jackpot 2.6s ease-in-out infinite; }
+.fw-pointer { transform-box: view-box; transform-origin: 160px 18px; }
+.fw-spin .fw-pointer { animation: fw-tick 0.14s linear infinite; }
+
+@keyframes fw-bulb-a {
+  0%, 45% { opacity: 1; }
+  55%, 100% { opacity: 0.22; }
+}
+@keyframes fw-bulb-b {
+  0%, 45% { opacity: 0.22; }
+  55%, 100% { opacity: 1; }
+}
+@keyframes fw-jackpot {
+  0%, 100% { opacity: 0.12; }
+  50% { opacity: 0.38; }
+}
+@keyframes fw-tick {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-11deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fw-bulbs-a,
+  .fw-bulbs-b,
+  .fw-jackpot,
+  .fw-spin .fw-pointer {
+    animation: none;
+  }
+}
