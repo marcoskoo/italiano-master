@@ -314,3 +314,23 @@ Stage Summary:
 - El usuario NO necesita hacer nada: al recargar, su estado persistido (view=shadowing, level=C2) ahora renderiza 6 frases C2 reales. Si la pestaña quedó en la pantalla de error: Ricarica o reabrir.
 - Herramienta reproducible: scripts/read-blob.mjs (lectura del estado+telemetría de producción descifrado; BLOB_TOKEN por env).
 - Bonus: nivel C2 con contenido real en Shadowing (6 frases + simulacro oral CILS C2).
+
+---
+Task ID: 9
+Agent: main (Super Z)
+Task: v9.6 — Continuar la lista pendiente con imágenes REALISTAS (petición: "Continuar con la lista pendiente, y tratar de que las imágenes sean realistas")
+
+Work Log:
+- Auditoría del pendiente real: Lecturas ✓ (letture.ts + 28 imgs v9.4), TTS multi-voz ✓ (v9.1 buildCast/speakDialogue), Push ✓ (UI en Configuración v9.0 + cron Vercel 17:00 UTC), Vocabulario/flashcards/Dizionario/Printables ✓ (v9.4). Único hueco: Giochi (4 tarjetas con emojis 🧠🔤⚡🎯) — última sección sin imágenes.
+- Pipeline scripts/img/v96-giochi.mjs (recreado, el de v9.4 se perdió con el reset del workspace): 4 fotos realistas 1344x768 (estilo fotografía profesional 50mm, luz cálida, sin texto) + 4 variantes nocturnas vía image-edit desde la clara (mismo sujeto, lámpara cálida + sombras verde noche #2F4F4F) → sharp 672x384 webp q85 → public/images/giochi/ (~410 KB total, 8 archivos).
+- Subjects: memoria = memory game con pareja de espresso destapada; ordinare = manos colocando fichas scrabble de letras; quiz = pulsador rojo de concurso con chispas; impiccato = pizarra verde con muñeco de tiza.
+- QA VLM en las 8: primera pasada rechazó memoria (composición surrealista: objetos fusionados a la carta) y ordinare (fichas en blanco por conflicto del sufijo "no letters" con las fichas de letras); regeneradas ambas con prompts corregidos → 8/8 PASS (fotorrealismo, sin texto basura, anatomía correcta, ambiente nocturno coherente).
+- games.tsx: GAME_IMG map + tarjetas rediseñadas (imagen superior aspect-16/9 con hover zoom, igual que el resto de la app) sustituyendo los emojis; selectores de categoría de Memoria sin emoji redundante (imagen ya presente en tarjeta y header).
+- Entorno: el sandbox ahora mata los procesos background entre llamadas Bash (bun run start con pipe tee moría) → workaround: node server.js directo + todo el test en UNA invocación (scripts/test-v96*.sh). Nota para futuras sesiones.
+- Test local completo: claro 4/4 imgs ok; oscuro 4/4 swap -dark ok; móvil 390px sin overflow (lazy-load funciona, 4/4 tras scroll); entrada Memoria → selector con 32 imgs vocab → tablero 16 cartas + img de categoría en header; 0 errores consola. (Los fallos intermedios de click eran de sintaxis del CLI agent-browser —text=/has-text/refs no cooperan—, resueltos con click JS directo sobre el botón de tarjeta.)
+- Deploy e30d60b → producción: 8 imágenes 200 OK, claro/oscuro E2E ok, entrada al juego ok, 0 crashes.
+
+Stage Summary:
+- v9.6 LIVE: Giochi ya no usa emojis — 4 fotografías realistas con variante nocturna, diseño de tarjeta unificado con el resto de la plataforma. Con esto, TODAS las secciones de la app tienen imágenes (nav con lucide icons + 10 familias de imágenes temáticas + juegos).
+- Lista pendiente original: COMPLETA (lecturas ✓, TTS multi-voz ✓, push ✓, emoji→imagen ✓ en todas las secciones, dark mode de imágenes ✓).
+- Estilo nuevo disponible para futuras imágenes: fotografía realista (los usuarios pueden pedir regenerar otras familias en este estilo).
