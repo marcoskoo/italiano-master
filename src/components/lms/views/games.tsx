@@ -17,6 +17,14 @@ import { cn } from "@/lib/utils";
 
 type GameId = "memoria" | "ordinare" | "quiz" | "impiccato";
 
+/* v9.6 · imágenes realistas (fotografía) por juego, con variante nocturna */
+const GAME_IMG: Record<GameId, string> = {
+  memoria: "/images/giochi/memoria.webp",
+  ordinare: "/images/giochi/ordinare.webp",
+  quiz: "/images/giochi/quiz.webp",
+  impiccato: "/images/giochi/impiccato.webp",
+};
+
 export function GamesView() {
   const [game, setGame] = useState<GameId | null>(null);
   const remoteConfig = useLms((s) => s.remoteConfig);
@@ -53,10 +61,10 @@ export function GamesView() {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {[
-        { id: "memoria", emoji: "🧠", title: "Memoria", it: "gioco di memoria", desc: "Encuentra las parejas italiano–español. Menos movimientos = más puntos.", icon: Grid3x3 },
-        { id: "ordinare", emoji: "🔤", title: "Ordina la frase", it: "metti in ordine", desc: "Construye frases italianas reales tocando las palabras en orden.", icon: ListOrdered },
-        { id: "quiz", emoji: "⚡", title: "Quiz lampo", it: "quiz relámpago", desc: "Ocho preguntas rápidas: correcto pulsa verde, error pulsa rojo.", icon: Sparkles },
-        { id: "impiccato", emoji: "🎯", title: "L'impiccato", it: "il gioco dell'impiccato", desc: "Adivina la palabra italiana letra a letra antes de completar el muñeco.", icon: Gamepad2 },
+        { id: "memoria", title: "Memoria", it: "gioco di memoria", desc: "Encuentra las parejas italiano–español. Menos movimientos = más puntos.", icon: Grid3x3 },
+        { id: "ordinare", title: "Ordina la frase", it: "metti in ordine", desc: "Construye frases italianas reales tocando las palabras en orden.", icon: ListOrdered },
+        { id: "quiz", title: "Quiz lampo", it: "quiz relámpago", desc: "Ocho preguntas rápidas: correcto pulsa verde, error pulsa rojo.", icon: Sparkles },
+        { id: "impiccato", title: "L'impiccato", it: "il gioco dell'impiccato", desc: "Adivina la palabra italiana letra a letra antes de completar el muñeco.", icon: Gamepad2 },
       ].map((g, i) => (
         <motion.button
           key={g.id}
@@ -64,15 +72,23 @@ export function GamesView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.06 }}
           onClick={() => setGame(g.id as GameId)}
-          className="group rounded-3xl border-2 border-soft bg-surface p-6 text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-xl"
+          className="group overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-xl"
         >
-          <p className="text-5xl" aria-hidden="true">{g.emoji}</p>
-          <p className="mt-4 font-display text-2xl font-semibold">{g.title}</p>
-          <p className="mt-0.5 font-mono text-xs italic text-muted-it">{g.it}</p>
-          <p className="mt-3 text-sm leading-relaxed text-muted-it">{g.desc}</p>
-          <span className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl bg-verde-tenue px-4 py-2 text-sm font-bold text-verde-scuro transition-colors group-hover:bg-verde group-hover:text-white dark:text-verde">
-            <Gamepad2 className="h-4 w-4" aria-hidden="true" /> Gioca ora
-          </span>
+          <div className="overflow-hidden">
+            <ThemeImg
+              src={GAME_IMG[g.id as GameId]}
+              alt=""
+              className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+          <div className="p-6">
+            <p className="font-display text-2xl font-semibold">{g.title}</p>
+            <p className="mt-0.5 font-mono text-xs italic text-muted-it">{g.it}</p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-it">{g.desc}</p>
+            <span className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl bg-verde-tenue px-4 py-2 text-sm font-bold text-verde-scuro transition-colors group-hover:bg-verde group-hover:text-white dark:text-verde">
+              <Gamepad2 className="h-4 w-4" aria-hidden="true" /> Gioca ora
+            </span>
+          </div>
         </motion.button>
       ))}
     </div>
@@ -150,7 +166,7 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
               )}
               <div className="p-3.5">
                 <p className="flex items-center gap-1.5 text-sm font-bold">
-                  <span aria-hidden="true">{CATEGORY_META[c].emoji}</span> {CATEGORY_META[c].es}
+                  {CATEGORY_META[c].es}
                 </p>
                 <p className="mt-1 text-xs text-muted-it">{Math.min(8, wordsByCategory(c).length)} coppie</p>
               </div>
@@ -169,7 +185,7 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
           {CATEGORY_IMG[cat] && (
             <ThemeImg src={CATEGORY_IMG[cat]} alt="" className="h-9 w-9 rounded-xl object-cover" />
           )}
-          {CATEGORY_META[cat].emoji} {CATEGORY_META[cat].es}
+          {CATEGORY_META[cat].es}
         </p>
         <div className="flex items-center gap-4 text-sm font-bold">
           <span className="flex items-center gap-1.5 text-muted-it"><Timer className="h-4 w-4" aria-hidden="true" /> {elapsed}s</span>
