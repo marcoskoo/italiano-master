@@ -423,3 +423,21 @@ Stage Summary:
 - v9.8.1 LIVE: el Inicio queda alineado con la reorganización Cambridge — saludo sin marcador (personalizado si hay nombre), Continúa apunta a la siguiente unidad comunicativa real con deep-link al player (gate de plan respetado), italiano corregido ("verso la padronanza") y copy MCER/QUICK actualizado a unidades comunicativas.
 - El usuario NO necesita hacer nada: al recargar, su pantalla (como la captura) mostrará "Ciao! impariamo l'italiano." y "Continúa: Estilo y registro" (su C2 comunicativo), y el botón abre la unidad directamente.
 - Nota operativa: matar el puerto 3000 (fuser -k) antes de todo E2E local — los builds huérfanos de sesiones previas sobreviven y envenenan las pruebas.
+
+---
+Task ID: 14
+Agent: main (Super Z)
+Task: v9.9 — Reanudar el maratón de imágenes realistas (223 pendientes) tras liberarse la cuota del gateway
+
+Work Log:
+- Cuota LIBRE al inicio de la sesión (probe inmediato: CUOTA LIBRE). Pipeline v97 restaurado de tools/img/ → scripts/img/ (el reset del workspace había borrado scripts/img/).
+- Hallazgo crítico de reanudación: v97-gen.mjs salta archivos EXISTENTOS válidos → con las ilustraciones v9.4 aún en disco, "generaba 0". La reanudación correcta es: borrar los archivos viejos de la familia (git es el backup; producción no se toca hasta el push) → correr gen. Borrados: grammatica 150, falsamici 12, strumenti 6, ascolto 30, conversazione 18, cultura 21, letture 20 (SOLO los 20 con prompts; los 8 it-*/mon-* históricos quedan intactos — verificado contra SCENES_B.letture), situazioni 20, testi 30.
+- Maratón en 13 ciclos de ~9 min (límite del sandbox: 10 min/invocación, procesos background muertos entre llamadas): 2 lanes paralelos estables (grammatica | escenas), 3 lanes = 429 por concurrencia en el endpoint de EDIT (edit es más sensible que gen). Gasto total ~250 llamadas API en ~100 min → muro 429 global (misma ventana que v9.7: ~500 llamadas/~50 min compartidas con otros consumidores del gateway).
+- GENERADO Y DESPLEGADO (commit 4ae1a7c, 246 archivos): grammatica 72/75 pares light+dark · falsamici 6/6 · strumenti 3/3 · ascolto 30/30 · conversazione 18/18 · cultura 21/21 · letture 15/20 regen. Verificación v97-pending.mjs = {} (todos los archivos finales pasan sharp metadata). Producción: 11/11 imágenes muestra 200.
+- RESTAURADOS del git (estilo viejo, para no romper la sección mientras llega la próxima ventana) — 58 ítems: grammatica g3-c2-substandard/burocratico/letterario (3 pares), letture cult-cine-24 + cult-sport-25/26 + cult-moda-27/28 (5), situazioni 20/20, testi 30/30.
+- QA VLM DIFERIDO: la cuota cayó antes de poder pasar v97-qa.mjs (los 246 desplegados siguen la receta v9.6/v9.7 con ~92% de primera pasada; los fallos se detectarán en el QA de la próxima ventana y se regenerarán).
+- Nuevo script: scripts/img/v97-pending.mjs (lista ítems sin archivo final válido por familia — útil para reanudar); respaldado a tools/img/.
+
+Stage Summary:
+- v9.9 LIVE: 246/302 imágenes del manifiesto ya son fotográficas en producción (6 familias completas + grammatica/letture al 96%/75%). El sitio completo sigue renderizando (los 58 huecos llevan archivo viejo válido, no 404).
+- REANUDAR (próxima ventana de cuota): (1) borrar los 58 restaurados → node scripts/img/v97-pending.mjs para confirmar exactamente cuáles; los ids: g3-c2-substandard, g3-c2-burocratico, g3-c2-letterario (pares webp), cult-cine-24/cult-sport-25/cult-sport-26/cult-moda-27/cult-moda-28 (letture jpg), sit-* 20, rd-1..30; (2) node scripts/img/v97-auto.mjs 9.5 grammatica,letture,situazioni,testi en ciclos; (3) node scripts/img/v97-qa.mjs --families=grammatica,falsamici,strumenti,ascolto,conversazione,cultura,letture,situazioni,testi --delete-fails → regen de fallos → v97-e2e.sh → bump sw.js → push.
