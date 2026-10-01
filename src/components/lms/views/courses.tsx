@@ -38,7 +38,12 @@ export function CoursesView() {
   const remoteConfig = useLms((s) => s.remoteConfig);
   const [openLevel, setOpenLevel] = useState<string | null>(navParams.level ?? null);
   const [openLesson, setOpenLesson] = useState<string | null>(navParams.lessonId ?? null);
-  const [openUnit, setOpenUnit] = useState<string | null>(null);
+  /* v9.8.1: deep-link desde Inicio ("Continúa: <unidad>") — solo si el plan permite el nivel */
+  const [openUnit, setOpenUnit] = useState<string | null>(() => {
+    if (!navParams.unitId) return null;
+    const unit = CAMBRIDGE.flatMap((l) => l.units).find((u) => u.id === navParams.unitId);
+    return unit && levelAllowed(plan, unit.level) ? unit.id : null;
+  });
 
   /* ── unidad comunicativa Cambridge ── */
   if (openUnit) {

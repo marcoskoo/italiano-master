@@ -7,7 +7,7 @@ import { MorphingHero } from "@/components/italian/morphing-hero";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { VOCAB, VOCAB_BY_ID } from "@/lib/lms/vocabulary";
 import { pickDaily, weakTopics, TOPIC_LABELS } from "@/lib/lms/adaptive";
-import { COURSES, totalLessons } from "@/lib/lms/courses";
+import { CAMBRIDGE } from "@/lib/lms/cambridge";
 import { dueCards } from "@/lib/lms/srs";
 import { CEFR_LEVELS, LEVEL_LABELS } from "@/lib/lms/types";
 import { PLANS, levelAllowed, requiredPlanForLevel, generateWeeklyPlan, planLimits } from "@/lib/lms/plans";
@@ -21,7 +21,7 @@ import type { ViewId } from "@/lib/lms/types";
 /* ── Vista: Inicio ────────────────────────────────────────────────── */
 
 const QUICK: { id: ViewId; label: string; it: string; icon: typeof Ear; desc: string }[] = [
-  { id: "cursos", label: "Cursos", it: "corsi", icon: GraduationCap, desc: "Ruta A1→C2 con lecciones completas" },
+  { id: "cursos", label: "Cursos", it: "corsi", icon: GraduationCap, desc: "66 unidades comunicativas A1→C2 (método Cambridge)" },
   { id: "letture", label: "Letture & Storia", it: "letture", icon: BookOpen, desc: "Historia de Italia y el mundo con audio" },
   { id: "ascolto", label: "Escucha", it: "ascolto", icon: Ear, desc: "Diálogos y dictados con audio" },
   { id: "tutor", label: "Tutor IA", it: "tutor", icon: Sparkles, desc: "Conversa y corrige con Marco" },
@@ -56,8 +56,8 @@ export function HomeView() {
   const streak = useLms((s) => s.streakCount);
   const streakFreezes = useLms((s) => s.streakFreezes);
   const lastFreezeDate = useLms((s) => s.lastFreezeDate);
-  const completedLessons = useLms((s) => s.completedLessons);
   const srs = useLms((s) => s.srs);
+  const cambridgeProgress = useLms((s) => s.cambridgeProgress);
   const errorLog = useLms((s) => s.errorLog);
   const dailyXp = useLms((s) => s.dailyXp);
   const goal = useLms((s) => s.settings.dailyGoalXp);
@@ -76,23 +76,26 @@ export function HomeView() {
   const due = dueCards(srs).length;
   const wordOfDay = useMemo(() => pickDaily(VOCAB), []);
   const weaknesses = useMemo(() => weakTopics(errorLog, 3), [errorLog]);
-  const allLessons = useMemo(() => totalLessons(), []);
   const showWeekly = planLimits(plan).weeklyPlan && (remoteConfig?.features.weeklyPlan ?? true);
   const weeklyPlan = useMemo(
     () => generateWeeklyPlan(level, due, weaknesses.map((w) => TOPIC_LABELS[w.topic] ?? w.topic)),
     [level, due, weaknesses]
   );
-  // siguiente lección del nivel actual (o primera de A1/zero) — cálculo barato, sin memo
-  const nextLesson = (() => {
-    const targetLevel = level ?? "A1";
-    const course = COURSES.find((c) => c.level === (COURSES.some((c2) => c2.level === targetLevel) ? targetLevel : "A1"));
-    if (!course) return undefined;
-    for (const unit of course.units) {
-      const lesson = unit.lessons.find((l) => !completedLessons.includes(l.id));
-      if (lesson) return { lesson, course };
+  /* v9.8.1: "Continúa" apunta al curso comunicativo (metodologia Cambridge), no al
+     curso gramatical clásico. Primera unidad no completada desde el nivel del usuario;
+     si el nivel está completo, salta al siguiente. Sin memo: recorrido barato. */
+  const nextUnit = (() => {
+    const start = CAMBRIDGE.findIndex((l) => l.level === (level ?? "A1"));
+    if (start < 0) return undefined;
+    for (let i = start; i < CAMBRIDGE.length; i++) {
+      const l = CAMBRIDGE[i];
+      const u = l.units.find((unit) => !cambridgeProgress[unit.id]?.done);
+      if (u) return u;
     }
     return undefined;
   })();
+  /* v9.8.1: saludo sin nombre → "Ciao!" en vez del marcador "Studente" crudo. */
+  const firstName = userName && userName !== "Studente" ? userName.split(" ")[0].trim() : "";
 
   const missionPct = Math.min(100, Math.round((dailyXp / Math.max(1, goal)) * 100));
 
@@ -106,12 +109,14 @@ export function HomeView() {
             LMS completo · da zero a C2
           </p>
           <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-            Ciao {userName.split(" ")[0]}{activeTitle ? <span className="ml-2 align-middle text-base font-bold text-terracotta dark:text-verde">{TITLE_EMOJIS[activeTitle] ?? ""} {TITLES_SHORT[activeTitle] ?? ""}</span> : ""}, <span className="italic text-verde-scuro dark:text-verde">impariamo l&apos;italiano.</span>
+            Ciao{firstName ? ` ${firstName}` : "!"}
+            {firstName && activeTitle ? <span className="ml-2 align-middle text-base font-bold text-terracotta dark:text-verde">{TITLE_EMOJIS[activeTitle] ?? ""} {TITLES_SHORT[activeTitle] ?? ""}</span> : null}{firstName ? "," : ""}{" "}
+            <span className="italic text-verde-scuro dark:text-verde">impariamo l&apos;italiano.</span>
           </h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-it sm:text-lg">
             Un sistema integral: lecciones conectadas, las 4 destrezas, gramática paso a paso,
             pronunciación interactiva, repaso espaciado, tutor IA y certificados.{" "}
-            <span className="font-display italic text-inchiostro">La tua strada verso il dominio.</span>
+            <span className="font-display italic text-inchiostro">La tua strada verso la padronanza.</span>
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             {!placementDone ? (
@@ -119,9 +124,9 @@ export function HomeView() {
                 <Compass className="h-4 w-4" aria-hidden="true" /> Haz el test de nivel
               </button>
             ) : (
-              <button onClick={() => navigate("cursos", { level: level ?? "A1" })} className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03] hover:bg-verde-scuro active:scale-95">
+              <button onClick={() => (nextUnit ? navigate("cursos", { level: nextUnit.level, unitId: nextUnit.id }) : navigate("cursos", { level: level ?? "A1" }))} className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03] hover:bg-verde-scuro active:scale-95">
                 <GraduationCap className="h-4 w-4" aria-hidden="true" />
-                {nextLesson ? `Continúa: ${nextLesson.lesson.title}` : "Explora los cursos"}
+                {nextUnit ? `Continúa: ${nextUnit.title}` : "Explora los cursos"}
               </button>
             )}
             <button onClick={() => navigate("tutor")} className="inline-flex min-h-12 items-center gap-2 rounded-2xl border-2 border-inchiostro/15 bg-surface px-6 py-3 font-bold transition-all hover:border-verde/40 active:scale-95">
@@ -386,7 +391,7 @@ export function HomeView() {
       {/* ── NIVELES ── */}
       <section>
         <h2 className="font-display text-2xl font-semibold">I sei livelli del MCER</h2>
-        <p className="mt-1.5 text-sm text-muted-it">Cada nivel: objetivos, unidades, lecciones, vocabulario, gramática, práctica y examen.</p>
+        <p className="mt-1.5 text-sm text-muted-it">66 unidades comunicativas con misión real y evaluación por competencias.</p>
         <div className="mt-5 grid gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
           <button
             onClick={() => navigate("cursos", { level: "zero" })}
@@ -424,7 +429,7 @@ export function HomeView() {
                   {locked ? "🔒" : ""} {lv}
                 </p>
                 <p className="mt-1 text-xs text-muted-it">{locked ? `Sblocca con ${required.name}` : LEVEL_LABELS[lv]}</p>
-                {!locked && <p className="mt-2 font-mono text-[10px] text-muted-it">{totalLessons(lv)} lezioni</p>}
+                {!locked && <p className="mt-2 font-mono text-[10px] text-muted-it">{CAMBRIDGE.find((l) => l.level === lv)?.units.length ?? 0} unità comunicative</p>}
               </button>
             );
           })}

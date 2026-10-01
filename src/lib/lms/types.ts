@@ -325,6 +325,8 @@ export type ViewId =
 export interface NavParams {
   level?: CefrLevel | "zero";
   lessonId?: string;
+  /* v9.8.1: unidad comunicativa Cambridge a abrir directamente (deep-link desde Inicio) */
+  unitId?: string;
   situationId?: string;
   tutorSeed?: string;
   category?: WordCategory;

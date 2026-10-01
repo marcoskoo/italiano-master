@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "(1) **Yes.** The main banner clearly displays the title **\"Stile e registro\"** and the header indicates it is part of the **C2** level (Unit 1 of 12).\n\n(2) **Partially.** The step navigation is present, but it only shows **8 visible steps** (Motivazione through Lettura). The remaining 4 steps (Scrittura, Cultura, Missione, Autovalutatione) are likely hidden off-screen to the right or below.\n\n(3) **Yes.** There is a significant layout issue: a large **\"Installa Italiano Master\"** (Install App) pop-up/promo banner is overlapping the main content area, obscuring the start of the lesson content (step 1/12). Additionally, the step navigation bar appears truncated or overflowing, hiding the final 4 steps from immediate view.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790873306,
+  "id": "2026100200482078d0822716e74bca",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026100200482078d0822716e74bca",
+  "usage": {
+    "completion_tokens": 185,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 988,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1173
+  }
+}
