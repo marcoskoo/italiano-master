@@ -400,3 +400,26 @@ Stage Summary:
 - La app mantiene TODO lo anterior: 44 vistas, SRS, juegos, tutor IA, etc. La reorganización es aditiva en datos y sustitutiva solo en la vista Cursos.
 - Pendiente imagen API: el gateway sigue con cuota bloqueada (no se pudo generar imagen alguna esta sesión); las 66 unidades reutilizan fotos existentes.
 - Próximos pasos sugeridos: (1) certificado de nivel al completar las 12 unidades de un nivel; (2) sync remoto de cambridgeProgress ya incluido en snapshot; (3) reanudar maratón de imágenes realistas (v97) cuando la cuota se libere.
+---
+Task ID: 13
+Agent: main (Super Z)
+Task: v9.8.1 — "Corregir" (captura IMG_8131 del Inicio): correcciones sobre la pantalla de inicio tras la reorganización Cambridge v9.8
+
+Work Log:
+- Análisis de la captura (VLM multi-recorte + contraste con el código): la pantalla renderiza según diseño; los problemas reales eran de CONTENIDO desfasado tras v9.8:
+  1) "Ciao Studente," — marcador crudo del default userName="Studente" (único lugar para setear nombre: Configuración → Il tuo profilo y el formulario CILS); el titular mostraba el placeholder como si fuera el nombre del usuario.
+  2) "Continúa: Idiomaticidad y regionalismos" — el botón seguía calculando la siguiente lección del curso gramatical CLÁSICO (les-c2-1), no del nuevo Percorso comunicativo; la etiqueta no coincidía con el destino (cursos ya abre el grid Cambridge del nivel).
+  3) "La tua strada verso il dominio." — italiano mejorable: "dominio" a secas = dominio/dominación; "mastery" = "padronanza".
+  4) Copy MCER/QUICK con conteos del curso viejo ("X lezioni" por nivel, "Ruta A1→C2 con lecciones completas").
+- Fixes (home.tsx): saludo condicional (firstName = userName ≠ "Studente" → "Ciao {nombre}," con título; sin nombre → "Ciao!" — sin marcador); nextUnit = primera unidad no completada del nivel (escaneando hacia arriba si el nivel está completo) sobre CAMBRIDGE/cambridgeProgress; botón "Continúa: {unit.title}" → navigate("cursos",{level, unitId}) (deep-link); tagline → "La tua strada verso la padronanza."; MCER sub + QUICK desc + "{n} unità comunicative" en la grilla de niveles (import CAMBRIDGE, fuera COURSES/totalLessons; eliminado allLessons muerto).
+- Deep-link: NavParams.unitId (types.ts) + courses.tsx openUnit inicializado desde navParams.unitId SOLO si levelAllowed(plan, unit.level) — el paywall se respeta (free → cae al grid del nivel con locks, no abre el player).
+- sw.js → im-v9-8-1. Lint limpio; tsc sin errores en los archivos tocados (los preexistentes siguen tolerados por ignoreBuildErrors).
+- Hallazgo E2E: la primera corrida falló ("Ops! Qualcosa è andato storto") porque un build huérfano de una sesión previa retenía el puerto 3000 (server.log: "Is port 3000 in use"); la nueva build no arrancó y se testeó el build VIEJO con el estado envenenado. Fix operacional: fuser -k 3000/tcp antes de arrancar + guard "bind falló" (scripts/test-v981.sh). Con la build correcta: 0 crashes.
+- E2E local (estado idéntico al del usuario: level C2, xp 241, racha 3, sin nombre): A) premium → h1 "Ciao! impariamo l'italiano." + tagline padronanza + botón "Continúa: Estilo y registro" → click abre DIRECTO el player cu-c2-01 (Stile e registro, stepper Motivazione…Autovalutazione, 0 "Idiomaticidad"); B) free → mismo botón → grid C2 SIN player (paywall respetado); C) nombre "Marcos Koo" → "Ciao Marcos, impariamo l'italiano."; D) 390px scrollWidth=390 (sin overflow); 0 page errors. VLM confirma player C2 unità 1/12.
+- Deploy 7a232a4 → producción verificada: home 200, sw im-v9-8-1, misma prueba A en prod → "Ciao! impariamo l'italiano." + "Continúa: Estilo y registro" + player abierto + 0 page errors.
+- CUOTA DE IMÁGENES: liberada tras ~19h (probe RONDA 1: CUOTA LIBRE). Pipeline v97 restaurado de tools/img/ → scripts/img/ (manifiesto: grammar 75, listening 30, conv 18, cult 21, sit 20, rd 30, lett 28, falsamici 6, strumenti 3). Maratón iniciado en esta sesión (ver Task 14).
+
+Stage Summary:
+- v9.8.1 LIVE: el Inicio queda alineado con la reorganización Cambridge — saludo sin marcador (personalizado si hay nombre), Continúa apunta a la siguiente unidad comunicativa real con deep-link al player (gate de plan respetado), italiano corregido ("verso la padronanza") y copy MCER/QUICK actualizado a unidades comunicativas.
+- El usuario NO necesita hacer nada: al recargar, su pantalla (como la captura) mostrará "Ciao! impariamo l'italiano." y "Continúa: Estilo y registro" (su C2 comunicativo), y el botón abre la unidad directamente.
+- Nota operativa: matar el puerto 3000 (fuser -k) antes de todo E2E local — los builds huérfanos de sesiones previas sobreviven y envenenan las pruebas.
