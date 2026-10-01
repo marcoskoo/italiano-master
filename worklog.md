@@ -378,3 +378,25 @@ Stage Summary:
 - Estado: 231/231 imágenes pendientes listas para generar (pipeline idempotente persistido en dos ubicaciones: scripts/img/ local + tools/img/ en repo).
 - Bloqueo externo: cuota del gateway compartido agotada ~19h. Hipótesis principal: ventana rodante de 24h desde ~15:10-15:15 UTC del 30-sep, o reset diario ~16:00 UTC (midnight UTC+8). Liberación estimada: tarde UTC del 1-oct (≈15:15-16:00 UTC = 10:15-11:00 am hora Lima).
 - REANUDAR (una sola instrucción): `node scripts/img/v97-auto.mjs 9.5 grammatica` en ciclos; al liberarse: `node scripts/img/v97-gen.mjs --families=grammatica` → deploy parcial → resto de familias → `node scripts/img/v97-qa.mjs --families=... --dark --delete-fails` → regen de fallos → v97-e2e.sh → bump sw.js → push producción.
+
+---
+Task ID: 12
+Agent: main (Super Z)
+Task: v9.8 — "Reorganizar el curso adaptando la arquitectura pedagógica de Cambridge" (unidades comunicativas, secuencia de 12 pasos, evaluación por competencias)
+
+Work Log:
+- Análisis previo: cursos existentes = 7 niveles, 45 unidades, 120 lecciones ORIENTADAS A GRAMÁTICA. La reorganización Cambridge invierte el eje: la gramática pasa a ser herramienta enlazada (75 temas en Grammatica), y el curso se vuelve comunicativo.
+- Modelo de datos nuevo (src/lib/lms/cambridge.ts): CbUnit con 12 secciones (scenario/goals, dialogue, comprehension, chunks, grammar {inductive, rule, topicId, gaps}, pronunciation {focus, tip, pairs}, speaking {escalera 4 pasos}, reading {sourceId | letturaId | lines}, writing {task, tips, model}, culture, finalTask, review, cando) + CbLevel + SKILL_MATRIX (6 competencias × 6 niveles MCER) + CB_STEPS + helpers.
+- Contenido: 66 unidades comunicativas escritas a mano (A1 12, A2 12, B1 12, B2 12, C1 10, C2 8) en extra/cambridge-a1..c2.ts (~5000 líneas): diálogos reales con TTS multivoce, quizzes con explicación, chunks bilingües, gramática inductiva enlazada a los 75 temas, fonética con pares mínimos, escalera de speaking, lecturas enlazadas (READINGS + LETTURE), escritura con modelo, cultura, misión final y autoevaluación can-do. 66 imágenes existentes reutilizadas (sin gastar cuota de generación).
+- Store: slice cambridgeProgress {sections[], done, quizPct} + markCambridgeSection (+10 XP mapeados a la destreza correcta) + completeCambridgeUnit (+60 XP, trackQuest lesson, telemetry) + persistencia local y en snapshot remoto + reset.
+- UI: cambridge-unit.tsx (reproductor con stepper sticky de 12 pasos, diálogo con speakDialogue/buildCast, CbQuiz con feedback inmediato, chunks con audio, gramática inductiva + deep-link a grammatica, pronuncia con pares, parlato en escalera, lettura inline/linked, scrittura con contador de palabras y modelo, cultura, missione, autovalutación con can-do + quiz ≥60% → diploma de unidad).
+- courses.tsx reescrito: pathway "Percorso comunicativo" (hero + Profilo delle competenze con 6 barras y descriptores MCER del nivel del usuario + tarjetas A1–C2 con progreso + tarjeta "Primi passi" → curso zero clásico INTACTO) + grid de unidades con ThemeImg y progreso de pasos. LessonView del flujo clásico conservada para zero.
+- Fixes durante QA: minWords typo ×2 (B2), sintaxis pairs (C2), carattere cinese accidental (C2), "corso" inválido como skill → mapeo sección→destreza, overflow móvil 409px en navegación inferior del player → flex-wrap + contador a línea propia. Build OK (0 errores en archivos nuevos).
+- E2E local: 66 imágenes 200 OK; flujo completo unidad A1-1 (marcar sección, quiz comprensión 3/3, autovalutación 4/4 → Unità completata → diploma → persistencia localStorage cu-a1-01 done quizPct 100 XP+90); móvil 390px SIN overflow (post-fix); curso Da zero intacto (unidades y lecciones clásicas visibles); 0 errores consola; dark mode OK.
+- Deploy 3ff732c → producción: home 200, sw im-v9-8-0, pathway visible con 6 niveles + Profilo competenze + 66 unità, unit player con 12 tabs, imágenes de unidades 200, 0 errores consola.
+
+Stage Summary:
+- v9.8 LIVE: el curso está reorganizado con arquitectura Cambridge — 66 unidades comunicativas A1–C2 × 12 pasos pedagógicos fijos, evaluación por competencias (matriz MCER + perfil con 6 destrezas alimentado por XP), vocabulario en chunks, gramática inductiva enlazada a los 75 temas existentes, TTS multivoce en diálogos, y misiones reales por unidad. El curso "Da zero" se conserva como prólogo.
+- La app mantiene TODO lo anterior: 44 vistas, SRS, juegos, tutor IA, etc. La reorganización es aditiva en datos y sustitutiva solo en la vista Cursos.
+- Pendiente imagen API: el gateway sigue con cuota bloqueada (no se pudo generar imagen alguna esta sesión); las 66 unidades reutilizan fotos existentes.
+- Próximos pasos sugeridos: (1) certificado de nivel al completar las 12 unidades de un nivel; (2) sync remoto de cambridgeProgress ya incluido en snapshot; (3) reanudar maratón de imágenes realistas (v97) cuando la cuota se libere.
