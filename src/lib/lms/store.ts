@@ -9,6 +9,7 @@ import type { PlanId } from "./plans";
 import type { AppConfig, AppConfigBundle } from "./appconfig";
 import { applyRemoteBundle } from "./overrides";
 import { telemetry } from "./remote";
+import { CB_LEVEL_OF, CB_UNIT_XP } from "./cambridge";
 import { generateDailyQuests, QUEST_BONUS_XP, ALL_QUESTS_BONUS_XP, generateMonthlyChallenge, monthKeyFor, monthlyTemplate, MONTHLY_REWARD_COINS, spinWheelPrize, type WheelPrize } from "./quests";
 import type { DailyQuest, TrackType, MonthlyChallenge } from "./quests";
 import { weekKeyFor } from "./leagues";
@@ -79,6 +80,7 @@ export interface LmsState {
   /* content progress */
   completedLessons: string[];
   completedUnits: string[];
+  cambridgeProgress: Record<string, { sections: string[]; done: boolean; quizPct: number }>;
   quizHistory: QuizResultEntry[];
   certificates: { id: string; level: CefrLevel; date: string; score: number; label: string }[];
   writingHistory: { id: string; title: string; text: string; feedback: string; date: string }[];
@@ -152,6 +154,8 @@ export interface LmsState {
   updateSettings: (partial: Partial<Settings>) => void;
   addXp: (amount: number, skill?: keyof SkillStats) => void;
   markLessonComplete: (lessonId: string, unitId?: string) => void;
+  markCambridgeSection: (unitId: string, section: string) => void;
+  completeCambridgeUnit: (unitId: string, quizPct: number) => void;
   recordQuiz: (entry: QuizResultEntry) => void;
   recordError: (topic: Topic) => void;
   recordCorrect: (topic: Topic) => void;
@@ -229,6 +233,7 @@ export const useLms = create<LmsState>()(
 
       completedLessons: [],
       completedUnits: [],
+      cambridgeProgress: {},
       quizHistory: [],
       certificates: [],
       writingHistory: [],
@@ -348,6 +353,30 @@ export const useLms = create<LmsState>()(
         });
         // misión diaria de XP (el bonus de misión vuelve a entrar por aquí y termina en profundidad finita)
         get().trackQuest("xp", amount);
+      },
+
+      markCambridgeSection: (unitId, section) => {
+        const s = get();
+        const cur = s.cambridgeProgress[unitId] ?? { sections: [], done: false, quizPct: 0 };
+        if (cur.sections.includes(section)) return;
+        set({ cambridgeProgress: { ...s.cambridgeProgress, [unitId]: { ...cur, sections: [...cur.sections, section] } } });
+        const SKILL_BY_SECTION: Record<string, keyof SkillStats | undefined> = {
+          scenario: undefined, ascolto: "ascolto", comprensione: "ascolto", vocabolario: "vocabolario",
+          grammatica: "grammatica", pronuncia: "pronuncia", parlato: "parlato", lettura: "lettura",
+          scrittura: "scrittura", cultura: undefined, missione: "parlato", autovalutazione: undefined,
+        };
+        get().addXp(CB_UNIT_XP.section, SKILL_BY_SECTION[section]);
+        telemetry("cb_section", { unitId, section, total: cur.sections.length + 1 }, s.account?.username);
+      },
+
+      completeCambridgeUnit: (unitId, quizPct) => {
+        const s = get();
+        const cur = s.cambridgeProgress[unitId] ?? { sections: [], done: false, quizPct: 0 };
+        if (cur.done) return;
+        set({ cambridgeProgress: { ...s.cambridgeProgress, [unitId]: { ...cur, done: true, quizPct } } });
+        get().addXp(CB_UNIT_XP.unit);
+        get().trackQuest("lesson");
+        telemetry("cb_unit_completed", { unitId, quizPct, level: CB_LEVEL_OF[unitId] ?? "?" }, s.account?.username);
       },
 
       markLessonComplete: (lessonId, unitId) => {
@@ -628,6 +657,7 @@ export const useLms = create<LmsState>()(
           lastFreezeDate: str(data.lastFreezeDate, s.lastFreezeDate),
           completedLessons: arr<string>(data.completedLessons),
           completedUnits: arr<string>(data.completedUnits),
+          cambridgeProgress: rec(data.cambridgeProgress) as LmsState["cambridgeProgress"],
           quizHistory: arr<QuizResultEntry>(data.quizHistory).slice(0, 60),
           certificates: arr<LmsState["certificates"][number]>(data.certificates),
           writingHistory: arr<LmsState["writingHistory"][number]>(data.writingHistory).slice(0, 20),
@@ -683,7 +713,7 @@ export const useLms = create<LmsState>()(
         set({
           userName: "Studente", level: null, placementDone: false, xp: 0, streakCount: 0,
           lastStudyDate: null, studyDays: [], dailyXp: 0, dailyXpDate: today(),
-          completedLessons: [], completedUnits: [], quizHistory: [], certificates: [],
+          completedLessons: [], completedUnits: [], cambridgeProgress: {}, quizHistory: [], certificates: [],
           writingHistory: [], srs: {}, errorLog: {}, skillStats: { ...DEFAULT_SKILLS },
           view: "inicio", navParams: {},
           plan: "free", planBilling: null, planSince: null,
