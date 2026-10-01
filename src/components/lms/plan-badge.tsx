@@ -75,7 +75,10 @@ export function LockedOverlay({
   return (
     <div
       className={cn(
-        "absolute inset-0 z-10 flex flex-col items-center justify-center gap-2.5 rounded-[inherit] bg-crema/75 p-4 text-center backdrop-blur-[3px] dark:bg-inchiostro/75",
+        /* v9.8.2: sin dark:bg-inchiostro/75 — en oscuro --inchiostro es claro y el
+           velo premium quedaba claro con texto claro ilegible. bg-crema/75 se
+           adapta solo (oscuro #1b1814 al 75% + blur). */
+        "absolute inset-0 z-10 flex flex-col items-center justify-center gap-2.5 rounded-[inherit] bg-crema/75 p-4 text-center backdrop-blur-[3px]",
         className
       )}
     >

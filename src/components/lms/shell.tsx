@@ -317,7 +317,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="drawer-panel absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-2xl">
               <div className="flex h-16 shrink-0 items-center justify-between border-b border-soft px-4">
                 <p className="truncate font-display text-lg font-semibold">
-                  Ciao, {privacyMode ? "•••" : userName.split(" ")[0]} 👋
+                  {/* v9.8.2: invitado sin nombre → "Ciao!" en vez del marcador "Studente" */}
+                  {userName && userName !== "Studente"
+                    ? `Ciao, ${privacyMode ? "•••" : userName.split(" ")[0]} 👋`
+                    : "Ciao! 👋"}
                 </p>
                 <button onClick={() => setMenuOpen(false)} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-soft" aria-label="Cerrar menú">
                   <X className="h-5 w-5" aria-hidden="true" />
@@ -346,9 +349,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
 
         {/* ── barra inferior móvil ── */}
+        {/* v9.8.2: sin dark:bg-inchiostro/95 — en modo oscuro --inchiostro se
+            invierte a claro y la barra quedaba como un bloque claro con las
+            fichas (iconos + etiquetas claras) invisibles. bg-crema-scura
+            (#242019 en oscuro) da elevación sutil sobre el fondo #1b1814. */}
         <nav
           aria-label="Navegación rápida"
-          className="bottom-nav-in bottom-safe fixed inset-x-0 bottom-0 z-40 border-t border-soft bg-crema/95 backdrop-blur-md lg:hidden dark:bg-inchiostro/95"
+          className="bottom-nav-in bottom-safe fixed inset-x-0 bottom-0 z-40 border-t border-soft bg-crema/95 backdrop-blur-md lg:hidden dark:bg-crema-scura/95"
         >
           <div className="mx-auto flex max-w-md items-stretch px-1.5">
             <BottomNavItem label="Inicio" icon={Home} active={view === "inicio"} onClick={() => navigate("inicio")} />

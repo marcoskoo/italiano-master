@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowRight, BookOpen, Coins, Compass, Dices, Ear, FileSpreadsheet, Flame, GraduationCap, Keyboard, Library, Quote, RefreshCcw, Sparkles, Target, Timer, Trophy, Volume2, Wand2, Zap } from "lucide-react";
+import { AlertTriangle, ArrowRight, BookOpen, Coins, Compass, Dices, Ear, FileSpreadsheet, Flame, GraduationCap, Keyboard, Library, Pencil, Quote, RefreshCcw, Sparkles, Target, Timer, Trophy, Volume2, Wand2, Zap } from "lucide-react";
 import { MorphingHero } from "@/components/italian/morphing-hero";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { VOCAB, VOCAB_BY_ID } from "@/lib/lms/vocabulary";
@@ -69,6 +69,24 @@ export function HomeView() {
   const coins = useLms((s) => s.coins);
   const lastWheelDate = useLms((s) => s.lastWheelDate);
   const activeTitle = useLms((s) => s.activeTitle);
+  /* v9.8.2: saludo personalizado editable desde Inicio — antes el nombre solo
+     se podía poner en Configuración y el saludo nunca lo pedía. */
+  const setUserName = useLms((s) => s.setUserName);
+  const addXp = useLms((s) => s.addXp);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [nameJustSaved, setNameJustSaved] = useState(false);
+
+  const saveName = (e: React.FormEvent) => {
+    e.preventDefault();
+    const n = nameDraft.trim();
+    if (!n) return;
+    setUserName(n);
+    addXp(1);
+    setEditingName(false);
+    setNameJustSaved(true);
+    window.setTimeout(() => setNameJustSaved(false), 2600);
+  };
 
   useEffect(() => { ensureDailyQuests(); }, [ensureDailyQuests]);
 
@@ -108,11 +126,67 @@ export function HomeView() {
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
             LMS completo · da zero a C2
           </p>
-          <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-            Ciao{firstName ? ` ${firstName}` : "!"}
-            {firstName && activeTitle ? <span className="ml-2 align-middle text-base font-bold text-terracotta dark:text-verde">{TITLE_EMOJIS[activeTitle] ?? ""} {TITLES_SHORT[activeTitle] ?? ""}</span> : null}{firstName ? "," : ""}{" "}
-            <span className="italic text-verde-scuro dark:text-verde">impariamo l&apos;italiano.</span>
-          </h1>
+          {/* v9.8.2: saludo con nombre editable en línea (lápiz si ya hay nombre,
+              "Come ti chiami?" si es invitado sin nombre). */}
+          {editingName ? (
+            <form onSubmit={saveName} className="mt-5 flex max-w-lg flex-wrap items-center gap-2.5">
+              <span className="font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">Ciao</span>
+              <input
+                autoFocus
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                maxLength={40}
+                enterKeyHint="done"
+                placeholder="Il tuo nome…"
+                aria-label="Il tuo nome"
+                className="min-h-12 w-40 flex-1 rounded-2xl border-2 border-verde/40 bg-surface px-4 font-display text-2xl font-semibold tracking-tight outline-none transition-colors focus:border-verde sm:w-52"
+              />
+              <button
+                type="submit"
+                disabled={!nameDraft.trim()}
+                className="inline-flex min-h-12 items-center gap-1.5 rounded-2xl bg-verde px-5 py-3 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-[1.03] hover:bg-verde-scuro active:scale-95 disabled:opacity-50"
+              >
+                Salva
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditingName(false)}
+                className="inline-flex min-h-12 items-center rounded-2xl border-2 border-soft px-4 py-3 text-sm font-bold text-muted-it transition-colors hover:border-rosso/40 hover:text-rosso"
+                aria-label="Annulla"
+              >
+                ✕
+              </button>
+            </form>
+          ) : (
+            <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+              Ciao{firstName ? ` ${firstName}` : "!"}
+              {firstName && activeTitle ? <span className="ml-2 align-middle text-base font-bold text-terracotta dark:text-verde">{TITLE_EMOJIS[activeTitle] ?? ""} {TITLES_SHORT[activeTitle] ?? ""}</span> : null}{firstName ? "," : ""}{" "}
+              <span className="italic text-verde-scuro dark:text-verde">impariamo l&apos;italiano.</span>
+              {firstName && (
+                <button
+                  onClick={() => { setNameDraft(firstName); setEditingName(true); }}
+                  className="ml-2 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-soft align-middle text-muted-it transition-colors hover:border-verde/40 hover:text-verde-scuro dark:hover:text-verde"
+                  aria-label="Cambia il tuo nome"
+                  title="Cambia il tuo nome"
+                >
+                  <Pencil className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
+            </h1>
+          )}
+          {!editingName && !firstName && (
+            <button
+              onClick={() => { setNameDraft(""); setEditingName(true); }}
+              className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-dashed border-verde/40 bg-verde-tenue/60 px-5 py-2.5 text-sm font-bold text-verde-scuro transition-all hover:border-verde hover:bg-verde-tenue active:scale-95 dark:text-verde"
+            >
+              <Pencil className="h-4 w-4" aria-hidden="true" /> Come ti chiami? Personalizza il saluto
+            </button>
+          )}
+          {nameJustSaved && (
+            <p className="mt-3 inline-flex items-center gap-2 rounded-2xl bg-verde-tenue px-4 py-2 text-sm font-bold text-verde-scuro dark:text-verde" role="status">
+              💚 Nome salvato! Benvenuto/a, {firstName} · +1 XP
+            </p>
+          )}
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-it sm:text-lg">
             Un sistema integral: lecciones conectadas, las 4 destrezas, gramática paso a paso,
             pronunciación interactiva, repaso espaciado, tutor IA y certificados.{" "}

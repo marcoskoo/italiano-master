@@ -441,3 +441,23 @@ Work Log:
 Stage Summary:
 - v9.9 LIVE: 246/302 imágenes del manifiesto ya son fotográficas en producción (6 familias completas + grammatica/letture al 96%/75%). El sitio completo sigue renderizando (los 58 huecos llevan archivo viejo válido, no 404).
 - REANUDAR (próxima ventana de cuota): (1) borrar los 58 restaurados → node scripts/img/v97-pending.mjs para confirmar exactamente cuáles; los ids: g3-c2-substandard, g3-c2-burocratico, g3-c2-letterario (pares webp), cult-cine-24/cult-sport-25/cult-sport-26/cult-moda-27/cult-moda-28 (letture jpg), sit-* 20, rd-1..30; (2) node scripts/img/v97-auto.mjs 9.5 grammatica,letture,situazioni,testi en ciclos; (3) node scripts/img/v97-qa.mjs --families=grammatica,falsamici,strumenti,ascolto,conversazione,cultura,letture,situazioni,testi --delete-fails → regen de fallos → v97-e2e.sh → bump sw.js → push.
+
+---
+Task ID: 1
+Agent: main (Super Z)
+Task: v9.8.2 · "Corregir" — saludo con nombre del usuario + fichas invisibles en la barra inferior (reporte del usuario con captura IMG_8134.png)
+
+Work Log:
+- Analizada la captura IMG_8134.png (1179×2556, iPhone, iOS Safari con barra inferior expandida) por OCR por zonas + análisis de píxeles (VLM con 429 durante toda la sesión).
+- Forense de color: franja inferior crema rgb(228,224,213) = inchiostro/95 en modo oscuro (#ece7dc claro) → la app estaba en MODO OSCURO y la barra inferior renderizaba fondo CLARO con iconos/etiquetas CLARAS (text-inchiostro/55 = claro) = invisibles. Único elemento visible: el badge rojo de Repaso rgb(208,104,85) ≈ rosso oscuro #e0604f. Confirmado "las fichas no se ven en el footer".
+- Fix 1 (shell.tsx): barra inferior `dark:bg-inchiostro/95` → `dark:bg-crema-scura/95` (#242019, elevación sutil sobre fondo #1b1814). Iconos inactivos y etiquetas ya se adaptan solos (la paleta invierte --inchiostro).
+- Fix 2 (plan-badge.tsx): LockedOverlay `dark:bg-inchiostro/75` eliminado (mismo patrón: velo claro + texto claro ilegible en oscuro); bg-crema/75 se adapta solo.
+- Fix 3 (home.tsx): saludo editable — formulario inline (Ciao + input + Salva/✕) con lápiz para editar si hay nombre, botón "✏️ Come ti chiami? Personalizza il saluto" si es invitado sin nombre; guarda con setUserName + addXp(1) y confirma "Nome salvato! +1 XP".
+- Fix 4 (shell.tsx drawer): invitado sin nombre → "Ciao! 👋" en vez de "Ciao, Studente 👋".
+- Verificado: tsc sin errores en los 3 archivos tocados (errores preexistentes en cils/plugins2/plugins3/auth tolerados por ignoreBuildErrors:true), `npm run build` exitoso.
+
+Stage Summary:
+- Root cause fichas invisibles: en la paleta dark-aware --inchiostro se invierte a claro (#ece7dc); dark:bg-inchiostro/95 en la barra inferior creaba barra clara + fichas claras = invisibles en modo oscuro (patrón repetido en LockedOverlay).
+- Saludo: ahora el nombre se puede fijar/editar directamente desde Inicio (antes solo en Configuración → profilo), persiste en localStorage (store sin partialize) y se usa en Home, drawer, tutor, certificados.
+- Estado imágenes v9.9: ascolto 30/30 verificadas en producción (ls-2.jpg byte-idéntico local/prod); pendientes 58 restauradas (grammatica g3-c2 ×3, letture cult ×5, situazioni 20, testi 30) — reanudar con v97-auto cuando la cuota libere.
+- Listo para commit + push a producción.
