@@ -359,3 +359,22 @@ Stage Summary:
 - v9.7.0 PARCIAL LIVE: Vocabolario 100% fotográfico (37 categorías + variantes nocturnas) — primera familia completada del reemplazo total por imágenes realistas.
 - Pipeline v9.7 persistido y reanudable: 268 prompts fotográficos listos, motor idempotente con pool, QA VLM por lotes con borrado de fallos. Restante: 231 imágenes (grammatica 75×2, falsamici 6×2, strumenti 3×2, ascolto 30, conversazione 18, cultura 21, letture 28, situazioni 20, testi 30).
 - Limitación descubierta: el gateway compartido tiene cuota por ventana (~500 llamadas en ~50 min la agotan; bloqueo >2h). Estrategia futura: lotes más pequeños con pausas, luces antes que oscuras.
+
+---
+Task ID: 11
+Agent: main (Super Z)
+Task: v9.7 (continuación) — reanudar el maratón de imágenes realistas para las 9 familias restantes tras el reset del workspace y el bloqueo de cuota
+
+Work Log:
+- Workspace intacto tras el reinicio de sesión: imágenes desplegadas OK (vocab 74 realista + giochi 8 + ilustraciones v9.4 de las 9 familias restantes), producción 200 OK en home + muestras de imágenes.
+- Pipeline v97 RECONSTRUIDO y verificado: v97-extract.mjs (manifiesto 231 ítems: grammatica 75 —incluye prefijos g-/gx-/g3-—, ascolto 30, conversazione 18, cultura 21, letture 28 (20 regen + 8 fotos históricas reales que se conservan), situazioni 20, testi 30, falsamici 6, strumenti 3), v97-p1/p2/p3 (223 prompts fotográficos), v97-gen.mjs (motor idempotente, backoff 429 con salida limpia QUOTA), v97-qa.mjs (QA VLM lotes de 6, --delete-fails), v97-e2e.sh, v97-probe.mjs, v97-auto.mjs (sonda 120s + maratón en la misma invocación).
+- Respaldo del pipeline en el REPO (gitignored /scripts/): copiado a tools/img/ (9 archivos) → commit 6fa9720 → push. Sobrevive a futuros resets del workspace.
+- Flujo de reemplazo ensayado: backup completo de las 9 familias en scripts/img/backup-v94/ (18 MB) → borrado selectivo (307 archivos, conservando las 8 fotos históricas de letture) → restauración verificada. El árbol local quedó desplegable (git status limpio).
+- CUOTA DEL GATEWAY: totalmente bloqueada (429 en gen+edit+chat+vision+search) durante TODA la sesión — 9 ciclos de sondeo (~1h20m entre 08:00 y 10:19 UTC) + bloqueo heredado desde ~15:15 UTC del día anterior ⇒ ~19h continuas. No es reset UTC-midnight (verificado a las 08:03 UTC) ni midnight Beijing (16:11 UTC+8 del día anterior, aún bloqueado).
+- Verificado: el sandbox MATA procesos detached entre llamadas Bash (test nohup: proceso muerto tras 45s) → no es posible un maratón desatendido; todo debe ocurrir en invocaciones de ≤10 min. v97-auto.mjs está diseñado exactamente para eso (sonda → arranca solo al liberarse).
+- Producción verificada sana durante la espera: home 200, imágenes clave 200.
+
+Stage Summary:
+- Estado: 231/231 imágenes pendientes listas para generar (pipeline idempotente persistido en dos ubicaciones: scripts/img/ local + tools/img/ en repo).
+- Bloqueo externo: cuota del gateway compartido agotada ~19h. Hipótesis principal: ventana rodante de 24h desde ~15:10-15:15 UTC del 30-sep, o reset diario ~16:00 UTC (midnight UTC+8). Liberación estimada: tarde UTC del 1-oct (≈15:15-16:00 UTC = 10:15-11:00 am hora Lima).
+- REANUDAR (una sola instrucción): `node scripts/img/v97-auto.mjs 9.5 grammatica` en ciclos; al liberarse: `node scripts/img/v97-gen.mjs --families=grammatica` → deploy parcial → resto de familias → `node scripts/img/v97-qa.mjs --families=... --dark --delete-fails` → regen de fallos → v97-e2e.sh → bump sw.js → push producción.

@@ -23,7 +23,7 @@ async function probe() {
   } catch { return false; }
 }
 
-/* Fase 1: sondeo cada 60s hasta liberar o deadline */
+/* Fase 1: sondeo cada 120s hasta liberar o deadline */
 let free = false;
 let round = 0;
 while (!free && Date.now() < deadline) {
@@ -32,7 +32,7 @@ while (!free && Date.now() < deadline) {
   if (!free) {
     const left = ((deadline - Date.now()) / 60000).toFixed(1);
     console.log(`probe ${round}: bloqueada (${left} min restantes)`);
-    await new Promise((r) => setTimeout(r, Math.min(60000, Math.max(0, deadline - Date.now()))));
+    await new Promise((r) => setTimeout(r, Math.min(120000, Math.max(0, deadline - Date.now()))));
   }
 }
 if (!free) { console.log("RESULTADO: cuota bloqueada toda la invocación"); process.exit(2); }
