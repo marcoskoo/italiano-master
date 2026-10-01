@@ -1,0 +1,1832 @@
+{
+ "grammar": [
+  {
+   "id": "g-a1-genero",
+   "level": "A1",
+   "es": "Género y número del sustantivo",
+   "it": "Genere e numero del sostantivo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-a1-articoli",
+   "level": "A1",
+   "es": "Artículos determinados",
+   "it": "Articoli determinati",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-a1-presente",
+   "level": "A1",
+   "es": "Presente indicativo regular",
+   "it": "Presente indicativo regolare",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-a1-essere-avere",
+   "level": "A1",
+   "es": "Essere y avere",
+   "it": "Il verbo essere e avere",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-a1-aggettivi",
+   "level": "A1",
+   "es": "Adjetivos y concordancia",
+   "it": "Aggettivi e concordanza",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-a1-domande",
+   "level": "A1",
+   "es": "Preguntas y negación",
+   "it": "Domande e negazione",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-a2-passato-prossimo",
+   "level": "A2",
+   "es": "Passato prossimo",
+   "it": "Il passato prossimo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-a2-imperfetto",
+   "level": "A2",
+   "es": "Imperfetto vs passato prossimo",
+   "it": "Imperfetto e passato prossimo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-a2-preposizioni",
+   "level": "A2",
+   "es": "Preposiciones articuladas",
+   "it": "Preposizioni articolate",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-a2-riflessivi",
+   "level": "A2",
+   "es": "Verbos reflexivos",
+   "it": "Verbi riflessivi",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-a2-futuro",
+   "level": "A2",
+   "es": "Futuro simple y comparativos",
+   "it": "Futuro semplice e comparativi",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-b1-condizionale",
+   "level": "B1",
+   "es": "Condizionale y cortesía",
+   "it": "Il condizionale",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-b1-imperativo",
+   "level": "B1",
+   "es": "Imperativo formal e informal",
+   "it": "L'imperativo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-b1-pronomi",
+   "level": "B1",
+   "es": "Pronombres directos e indirectos",
+   "it": "Pronomi diretti e indiretti",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-b1-congiuntivo",
+   "level": "B1",
+   "es": "Congiuntivo presente (introducción)",
+   "it": "Il congiuntivo presente",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-b2-ipotetico",
+   "level": "B2",
+   "es": "Il periodo ipotetico",
+   "it": "Il periodo ipotetico",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-b2-ci-ne",
+   "level": "B2",
+   "es": "Las partículas ci y ne",
+   "it": "Le particelle ci e ne",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-b2-discorso",
+   "level": "B2",
+   "es": "Estilo indirecto y registro",
+   "it": "Il discorso indiretto",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-c1-concordanza",
+   "level": "C1",
+   "es": "Concordancia avanzada del participio",
+   "it": "La concordanza del participio",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-c1-impersonali",
+   "level": "C1",
+   "es": "Construcciones impersonales y registro",
+   "it": "Costruzioni impersonali",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-c2-stile",
+   "level": "C2",
+   "es": "Estilo, matices y variantes",
+   "it": "Stile, sfumature e varianti",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g-c2-idiomi",
+   "level": "C2",
+   "es": "Idiomaticidad y lengua literaria",
+   "it": "Idiomi e lingua letteraria",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "gx-a1-are",
+   "level": "A1",
+   "es": "Los verbos en -ARE",
+   "it": "I verbi in -are",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "gx-a2-pp",
+   "level": "A2",
+   "es": "Passato prossimo: avere o essere?",
+   "it": "Il passato prossimo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "gx-a2-riflessivi",
+   "level": "A2",
+   "es": "Los verbos reflexivos",
+   "it": "I verbi riflessivi",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "gx-b1-aspetti",
+   "level": "B1",
+   "es": "Imperfetto o passato prossimo?",
+   "it": "Imperfetto e passato prossimo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "gx-b2-congp",
+   "level": "B2",
+   "es": "Il congiuntivo passato",
+   "it": "Il congiuntivo passato",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "gx-b2-connettivi",
+   "level": "B2",
+   "es": "Conectores del texto",
+   "it": "I connettivi testuali",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "gx-c1-nominalizz",
+   "level": "C1",
+   "es": "La nominalizzazione",
+   "it": "La nominalizzazione",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "gx-c2-trapassato",
+   "level": "C2",
+   "es": "Trapassado y concordancia de tiempos",
+   "it": "Congiuntivo trapassato e concordanza",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a1-alfabeto",
+   "level": "A1",
+   "es": "Alfabeto y pronunciación",
+   "it": "Alfabeto e pronuncia",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a1-articoli-ind",
+   "level": "A1",
+   "es": "Artículos indeterminados y partitivo",
+   "it": "Articoli indeterminativi e partitivo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a1-numeri",
+   "level": "A1",
+   "es": "Números cardinales y ordinales",
+   "it": "Numeri cardinali e ordinali",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a1-ora",
+   "level": "A1",
+   "es": "La hora, los días y la fecha",
+   "it": "L'ora, i giorni e la data",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a1-avere-essere-espressioni",
+   "level": "A1",
+   "es": "Tener o ser: las expresiones de estado",
+   "it": "Avere o essere nelle espressioni",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a1-verbi-irregolari",
+   "level": "A1",
+   "es": "Irregulares esenciales I",
+   "it": "Verbi irregolari essenziali I",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a1-possessivi",
+   "level": "A1",
+   "es": "Posesivos",
+   "it": "Aggettivi e pronomi possessivi",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a1-ce-sono",
+   "level": "A1",
+   "es": "C'è y ci sono",
+   "it": "C'è e ci sono",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a1-bello-buono",
+   "level": "A1",
+   "es": "bello, buono y grande: adjetivos especiales",
+   "it": "Aggettivi con forme speciali",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a2-irregolari-venire",
+   "level": "A2",
+   "es": "Irregulares esenciales II",
+   "it": "Verbi irregolari essenziali II",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a2-modali",
+   "level": "A2",
+   "es": "Verbos modales",
+   "it": "Verbi modali",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a2-comparativo",
+   "level": "A2",
+   "es": "Comparativo y superlativo",
+   "it": "Comparativi e superlativi",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a2-pronomi-tonici",
+   "level": "A2",
+   "es": "Pronombres tónicos",
+   "it": "Pronomi tonici",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a2-indefiniti",
+   "level": "A2",
+   "es": "Indefinidos",
+   "it": "Indefiniti",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a2-trapassato",
+   "level": "A2",
+   "es": "Trapassato prossimo",
+   "it": "Trapassato prossimo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a2-progressivo",
+   "level": "A2",
+   "es": "El progresivo: stare + gerundio",
+   "it": "Stare + gerundio",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a2-posizione-aggettivo",
+   "level": "A2",
+   "es": "Posición del adjetivo",
+   "it": "La posizione dell'aggettivo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-a2-remoto-intro",
+   "level": "A2",
+   "es": "Passato remoto (reconocimiento)",
+   "it": "Passato remoto",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b1-congiuntivo-imperfetto",
+   "level": "B1",
+   "es": "Congiuntivo imperfetto",
+   "it": "Congiuntivo imperfetto",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b1-futuro-anteriore",
+   "level": "B1",
+   "es": "Futuro anteriore",
+   "it": "Futuro anteriore",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b1-imperativo-pronomi",
+   "level": "B1",
+   "es": "Imperativo con pronombres",
+   "it": "L'imperativo con i pronomi",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b1-relative",
+   "level": "B1",
+   "es": "Oraciones de relativo",
+   "it": "Le relative",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b1-passivo",
+   "level": "B1",
+   "es": "Voz pasiva",
+   "it": "Il passivo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b1-si-impersonale",
+   "level": "B1",
+   "es": "El SI impersonal y reflejo",
+   "it": "Il si impersonale",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b1-verbi-preposizioni",
+   "level": "B1",
+   "es": "Verbos + preposiciones",
+   "it": "Verbi e preposizioni",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b1-temporali",
+   "level": "B1",
+   "es": "Subordinadas temporales",
+   "it": "Le temporali",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b1-condizionale-passato",
+   "level": "B1",
+   "es": "Condizionale passato",
+   "it": "Condizionale passato",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b1-congiuntivo-uso",
+   "level": "B1",
+   "es": "Cuándo usar el subjuntivo",
+   "it": "L'uso del congiuntivo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b2-congiuntivo-trapassato",
+   "level": "B2",
+   "es": "Congiuntivo trapassato",
+   "it": "Congiuntivo trapassato",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b2-concessive",
+   "level": "B2",
+   "es": "Concesivas",
+   "it": "Le concessive",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b2-finali-causali",
+   "level": "B2",
+   "es": "Finales y causales",
+   "it": "Le finali e le causali",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b2-relative-avanzate",
+   "level": "B2",
+   "es": "Relativas avanzadas",
+   "it": "Relative avanzate",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b2-infinito-passato",
+   "level": "B2",
+   "es": "Infinito passato y usos del infinito",
+   "it": "L'infinito passato",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b2-interrogative-indirette",
+   "level": "B2",
+   "es": "Interrogativas indirectas",
+   "it": "Le interrogative indirette",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-b2-pronomi-combinati",
+   "level": "B2",
+   "es": "Pronombres combinados",
+   "it": "I pronomi combinati",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-c1-consecutive",
+   "level": "C1",
+   "es": "Oraciones consecutivas",
+   "it": "Le consecutive",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-c1-gerundio-participio",
+   "level": "C1",
+   "es": "Gerundio y participio avanzados",
+   "it": "Gerundio e participio avanzati",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-c1-dislocazioni",
+   "level": "C1",
+   "es": "La sintaxis del italiano hablado",
+   "it": "Dislocazioni e anafora",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-c1-remoto-uso",
+   "level": "C1",
+   "es": "Passato remoto vs passato prossimo",
+   "it": "Remoto o prossimo?",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-c1-verbi-fraseologici",
+   "level": "C1",
+   "es": "Verbos fraseológicos",
+   "it": "Verbi fraseologici",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-c1-formazione-parole",
+   "level": "C1",
+   "es": "Formación de palabras",
+   "it": "La formazione delle parole",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-c2-sequenza-tempi",
+   "level": "C2",
+   "es": "Concordancia total de tiempos y modos",
+   "it": "La sequenza dei tempi",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-c2-substandard",
+   "level": "C2",
+   "es": "Registro coloquial y variantes",
+   "it": "L'italiano substandard",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-c2-burocratico",
+   "level": "C2",
+   "es": "El registro burocrático y los latinismos",
+   "it": "L'italiano burocratico",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "g3-c2-letterario",
+   "level": "C2",
+   "es": "La lengua literaria",
+   "it": "La lingua letteraria",
+   "cat": "",
+   "kind": ""
+  }
+ ],
+ "listening": [
+  {
+   "id": "ls-1",
+   "level": "A1",
+   "es": "Al bar",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-2",
+   "level": "A1",
+   "es": "Presentazioni",
+   "it": "",
+   "cat": "",
+   "kind": "parole"
+  },
+  {
+   "id": "ls-3",
+   "level": "A2",
+   "es": "Alla stazione",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-4",
+   "level": "A2",
+   "es": "Dal medico",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-5",
+   "level": "B1",
+   "es": "Colloquio di lavoro",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-6",
+   "level": "A1",
+   "es": "Numeri e parole: dettato facile",
+   "it": "",
+   "cat": "",
+   "kind": "dictato"
+  },
+  {
+   "id": "ls-7",
+   "level": "A2",
+   "es": "Dettato intermedio",
+   "it": "",
+   "cat": "",
+   "kind": "dictato"
+  },
+  {
+   "id": "ls-8",
+   "level": "B1",
+   "es": "Dettato avanzato",
+   "it": "",
+   "cat": "",
+   "kind": "dictato"
+  },
+  {
+   "id": "ls-9",
+   "level": "A1",
+   "es": "En el mercado",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-10",
+   "level": "A2",
+   "es": "Check-in en el hotel",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-11",
+   "level": "A1",
+   "es": "Números y teléfono",
+   "it": "",
+   "cat": "",
+   "kind": "parole"
+  },
+  {
+   "id": "ls-12",
+   "level": "B1",
+   "es": "La entrevista",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-13",
+   "level": "B2",
+   "es": "El debate del turismo",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-14",
+   "level": "B2",
+   "es": "Dictado del telediario",
+   "it": "",
+   "cat": "",
+   "kind": "dictato"
+  },
+  {
+   "id": "ls-15",
+   "level": "A1",
+   "es": "Al banco o al tavolo",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-16",
+   "level": "A1",
+   "es": "El tren a Florencia",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-17",
+   "level": "A2",
+   "es": "En la farmacia",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-18",
+   "level": "A2",
+   "es": "Alquilar un coche",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-19",
+   "level": "B1",
+   "es": "La videochiamata",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-20",
+   "level": "B1",
+   "es": "La artesana",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-21",
+   "level": "B2",
+   "es": "Café económico",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-22",
+   "level": "C1",
+   "es": "El dialecto 2.0",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-23",
+   "level": "A1",
+   "es": "Prezzi al bar: dettato facile",
+   "it": "",
+   "cat": "",
+   "kind": "dictato"
+  },
+  {
+   "id": "ls-24",
+   "level": "A2",
+   "es": "Al ristorante: la cena completa",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-25",
+   "level": "A2",
+   "es": "Chiedere la strada",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-26",
+   "level": "B1",
+   "es": "Prenotare una visita dal medico",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-27",
+   "level": "B1",
+   "es": "La riunione di team",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-28",
+   "level": "B2",
+   "es": "Intervista radiofonica: l'emigrazione",
+   "it": "",
+   "cat": "",
+   "kind": "dialogo"
+  },
+  {
+   "id": "ls-29",
+   "level": "C1",
+   "es": "Dettato di attualità",
+   "it": "",
+   "cat": "",
+   "kind": "dictato"
+  },
+  {
+   "id": "ls-30",
+   "level": "C2",
+   "es": "Dettato letterario",
+   "it": "",
+   "cat": "",
+   "kind": "dictato"
+  }
+ ],
+ "conv": [
+  {
+   "id": "cs-1",
+   "level": "A1",
+   "es": "Conocer a alguien",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-2",
+   "level": "A1",
+   "es": "En el bar",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-3",
+   "level": "A1",
+   "es": "Pedir direcciones",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-4",
+   "level": "A2",
+   "es": "Check-in en el hotel",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-5",
+   "level": "B1",
+   "es": "Entrevista de trabajo",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-6",
+   "level": "B2",
+   "es": "Debate: ambiente y sociedad",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-7",
+   "level": "A2",
+   "es": "Hacer amistades",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-8",
+   "level": "A2",
+   "es": "Al teléfono",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-9",
+   "level": "B1",
+   "es": "Hablar del trabajo",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-10",
+   "level": "B1",
+   "es": "Disentir con elegancia",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-11",
+   "level": "B2",
+   "es": "Contar una película",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-12",
+   "level": "C1",
+   "es": "El arte del matiz",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-13",
+   "level": "A2",
+   "es": "Hacer planes por WhatsApp",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-14",
+   "level": "B1",
+   "es": "En la mesa: sobremesa y cumplidos",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-15",
+   "level": "B1",
+   "es": "Ir al médico y explicar síntomas",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-16",
+   "level": "B2",
+   "es": "Buscar piso de alquiler",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-17",
+   "level": "B2",
+   "es": "La entrevista de trabajo",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cs-18",
+   "level": "C1",
+   "es": "Debatir (con elegancia) sobre política",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  }
+ ],
+ "cult": [
+  {
+   "id": "cul-1",
+   "level": "B1",
+   "es": "El Risorgimento: nacer de la fragmentación",
+   "it": "",
+   "cat": "Historia",
+   "kind": ""
+  },
+  {
+   "id": "cul-2",
+   "level": "A2",
+   "es": "20 regiones, 20 Italias",
+   "it": "",
+   "cat": "Regiones",
+   "kind": ""
+  },
+  {
+   "id": "cul-3",
+   "level": "A2",
+   "es": "El rito del caffè",
+   "it": "",
+   "cat": "Gastronomía",
+   "kind": ""
+  },
+  {
+   "id": "cul-4",
+   "level": "B1",
+   "es": "El Renacimiento: Florencia como laboratorio",
+   "it": "",
+   "cat": "Arte",
+   "kind": ""
+  },
+  {
+   "id": "cul-5",
+   "level": "A2",
+   "es": "La gramática de las manos",
+   "it": "",
+   "cat": "Gestos",
+   "kind": ""
+  },
+  {
+   "id": "cul-6",
+   "level": "B2",
+   "es": "Dante y el nacimiento del italiano",
+   "it": "",
+   "cat": "Literatura",
+   "kind": ""
+  },
+  {
+   "id": "cul-7",
+   "level": "B2",
+   "es": "De Rossellini a Sorrentino",
+   "it": "",
+   "cat": "Cine",
+   "kind": ""
+  },
+  {
+   "id": "cul-8",
+   "level": "B1",
+   "es": "El calendario festivo",
+   "it": "",
+   "cat": "Fiestas",
+   "kind": ""
+  },
+  {
+   "id": "cul-9",
+   "level": "A2",
+   "es": "El calcio como identidad",
+   "it": "",
+   "cat": "Deportes",
+   "kind": ""
+  },
+  {
+   "id": "cul-10",
+   "level": "B1",
+   "es": "La passeggiata: el rito del paseo",
+   "it": "",
+   "cat": "Costumbres",
+   "kind": ""
+  },
+  {
+   "id": "cul-11",
+   "level": "A2",
+   "es": "I mercati rionali: mercados de barrio",
+   "it": "",
+   "cat": "Gastronomía",
+   "kind": ""
+  },
+  {
+   "id": "cul-12",
+   "level": "B1",
+   "es": "Ferragosto: el país que cierra",
+   "it": "",
+   "cat": "Tradiciones",
+   "kind": ""
+  },
+  {
+   "id": "cul-13",
+   "level": "B2",
+   "es": "La universidad italiana",
+   "it": "",
+   "cat": "Sociedad",
+   "kind": ""
+  },
+  {
+   "id": "cul-14",
+   "level": "B2",
+   "es": "Il design italiano: la belleza útil",
+   "it": "",
+   "cat": "Diseño",
+   "kind": ""
+  },
+  {
+   "id": "cul-15",
+   "level": "C1",
+   "es": "Dante y el nacimiento del italiano",
+   "it": "",
+   "cat": "Lengua",
+   "kind": ""
+  },
+  {
+   "id": "cul-16",
+   "level": "B1",
+   "es": "El Palio de Siena: caballos, contrade y orgullo",
+   "it": "",
+   "cat": "Tradizioni",
+   "kind": ""
+  },
+  {
+   "id": "cul-17",
+   "level": "B2",
+   "es": "La commedia all'italiana: reír para no llorar",
+   "it": "",
+   "cat": "Cinema",
+   "kind": ""
+  },
+  {
+   "id": "cul-18",
+   "level": "B2",
+   "es": "El Risorgimento: hacer (y deshacer) Italia",
+   "it": "",
+   "cat": "Storia",
+   "kind": ""
+  },
+  {
+   "id": "cul-19",
+   "level": "A2",
+   "es": "El rito del café: una guía de supervivencia",
+   "it": "",
+   "cat": "Tradizioni",
+   "kind": ""
+  },
+  {
+   "id": "cul-20",
+   "level": "C1",
+   "es": "La canzone d'autore: de Modugno a Conti",
+   "it": "",
+   "cat": "Musica",
+   "kind": ""
+  },
+  {
+   "id": "cul-21",
+   "level": "B1",
+   "es": "El calcio como lengua nacional",
+   "it": "",
+   "cat": "Sport",
+   "kind": ""
+  }
+ ],
+ "sit": [
+  {
+   "id": "sit-aeroporto",
+   "level": "A2",
+   "es": "En el aeropuerto",
+   "it": "All'aeroporto",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-hotel",
+   "level": "A2",
+   "es": "En el hotel",
+   "it": "In albergo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-ristorante",
+   "level": "A1",
+   "es": "En el restaurante",
+   "it": "Al ristorante",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-supermercato",
+   "level": "A1",
+   "es": "En el supermercado",
+   "it": "Al supermercato",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-medico",
+   "level": "A2",
+   "es": "En el médico",
+   "it": "Dal medico",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-taxi",
+   "level": "A1",
+   "es": "En el taxi",
+   "it": "In taxi",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-direzioni",
+   "level": "A1",
+   "es": "Pedir direcciones",
+   "it": "Chiedere indicazioni",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-banca",
+   "level": "B1",
+   "es": "En el banco",
+   "it": "In banca",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-farmacia",
+   "level": "A2",
+   "es": "En la farmacia",
+   "it": "In farmacia",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-noleggio",
+   "level": "B1",
+   "es": "Alquilar un coche",
+   "it": "Noleggiare un'auto",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-oggetti",
+   "level": "B1",
+   "es": "Objetos perdidos",
+   "it": "Oggetti smarriti",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-negozio",
+   "level": "A2",
+   "es": "Probadores y tallas",
+   "it": "Nel negozio di vestiti",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-palestra",
+   "level": "B1",
+   "es": "Apuntarse al gimnasio",
+   "it": "Iscriversi in palestra",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-cena",
+   "level": "B1",
+   "es": "La sobremesa",
+   "it": "La sobremesa",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-treno",
+   "level": "A2",
+   "es": "En la estación de tren",
+   "it": "Alla stazione",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-museo",
+   "level": "A2",
+   "es": "En el museo",
+   "it": "Al museo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-barbiere",
+   "level": "B1",
+   "es": "Del barbero a la peluquería",
+   "it": "Dal barbiere",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-vigili",
+   "level": "B2",
+   "es": "Multa y ZTL: la multa italiana",
+   "it": "La multa e la ZTL",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-agriturismo",
+   "level": "A2",
+   "es": "Agriturismo: dormir en la granja",
+   "it": "All'agriturismo",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "sit-biblioteca",
+   "level": "B1",
+   "es": "En la biblioteca",
+   "it": "In biblioteca",
+   "cat": "",
+   "kind": ""
+  }
+ ],
+ "rd": [
+  {
+   "id": "rd-1",
+   "level": "A1",
+   "es": "Una postal desde Roma",
+   "it": "Una cartolina da Roma",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-2",
+   "level": "A2",
+   "es": "El sábado en el mercado",
+   "it": "Il sabato al mercato",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-3",
+   "level": "B1",
+   "es": "La alta velocidad italiana",
+   "it": "L'alta velocità italiana",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-4",
+   "level": "B2",
+   "es": "El mito del made in Italy",
+   "it": "Il mito del made in Italy",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-5",
+   "level": "A1",
+   "es": "Mi presento",
+   "it": "Mi presento",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-6",
+   "level": "C1",
+   "es": "El silencio de Ginzburg",
+   "it": "Il silenzio di Ginzburg",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-7",
+   "level": "A1",
+   "es": "El menú del día",
+   "it": "Il menu del giorno",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-8",
+   "level": "A2",
+   "es": "Una excursión a Florencia",
+   "it": "Una gita a Firenze",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-9",
+   "level": "A2",
+   "es": "El nuevo trabajo de Luca",
+   "it": "Il nuovo lavoro di Luca",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-10",
+   "level": "B1",
+   "es": "Qué hacer en Bolonia por la noche",
+   "it": "Cosa fare a Bologna di sera",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-11",
+   "level": "B1",
+   "es": "Entrevista a una chef",
+   "it": "Intervista a una chef",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-12",
+   "level": "B2",
+   "es": "El debate del turismo en Venecia",
+   "it": "Il dibattito sul turismo a Venezia",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-13",
+   "level": "C1",
+   "es": "Por qué los italianos hablan con las manos",
+   "it": "Perché gli italiani parlano con le mani",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-14",
+   "level": "C2",
+   "es": "La lengua como paisaje",
+   "it": "La lingua come paesaggio",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-15",
+   "level": "A1",
+   "es": "En el mercado de Rialto",
+   "it": "Al mercato di Rialto",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-16",
+   "level": "A2",
+   "es": "Una semana en Bolonia",
+   "it": "Una settimana a Bologna",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-17",
+   "level": "B1",
+   "es": "El trabajo que cambia",
+   "it": "Il lavoro che cambia",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-18",
+   "level": "B2",
+   "es": "El tren que une Italia",
+   "it": "Il treno che unisce l'Italia",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-19",
+   "level": "B2",
+   "es": "Marisma amarga",
+   "it": "Maremma amara",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-20",
+   "level": "C1",
+   "es": "Las pequeñas ciudades de arte",
+   "it": "Le città d'arte minori",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-21",
+   "level": "C1",
+   "es": "El dialecto en casa",
+   "it": "Il dialetto a casa",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-22",
+   "level": "C2",
+   "es": "Por qué leer los clásicos",
+   "it": "Perché leggere i classici",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-23",
+   "level": "A1",
+   "es": "El primer día de escuela",
+   "it": "Il primo giorno di scuola",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-24",
+   "level": "A2",
+   "es": "Un fin de semana en las Cinque Terre",
+   "it": "Un weekend alle Cinque Terre",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-25",
+   "level": "B1",
+   "es": "La trattoria de la nonna Elvira",
+   "it": "La trattoria di nonna Elvira",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-26",
+   "level": "B1",
+   "es": "La entrevista de trabajo",
+   "it": "Il colloquio di lavoro",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-27",
+   "level": "B2",
+   "es": "El café en la cultura italiana",
+   "it": "Il caffè nella cultura italiana",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-28",
+   "level": "C1",
+   "es": "La ciudad lenta",
+   "it": "La città lenta",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-29",
+   "level": "C2",
+   "es": "La última parada",
+   "it": "L'ultima fermata",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "rd-30",
+   "level": "A2",
+   "es": "El mercadillo de Navidad",
+   "it": "Il mercatino di Natale",
+   "cat": "",
+   "kind": ""
+  }
+ ],
+ "lett": [
+  {
+   "id": "dia-bar-01",
+   "level": "A1",
+   "es": "Al bar: un caffè perfetto",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "dia-hotel-02",
+   "level": "A2",
+   "es": "Prenotare una camera a Firenze",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "dia-clima-03",
+   "level": "B1",
+   "es": "Aria condizionata: una discussione estiva",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "inf-social-04",
+   "level": "B1",
+   "es": "I social network e i giovani: un rapporto complicato",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "inf-dieta-05",
+   "level": "B1",
+   "es": "La dieta mediterranea: un patrimonio dell'umanità",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "inf-mare-06",
+   "level": "B2",
+   "es": "Il mare che sale: l'Italia tra erosione e adattamento",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "inf-remoto-07",
+   "level": "B2",
+   "es": "Il lavoro remoto: la rivoluzione silenziosa",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "it-roma-08",
+   "level": "B1",
+   "es": "La Roma antica: da villaggio a impero",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "it-rinascimento-09",
+   "level": "B2",
+   "es": "Il Rinascimento: quando l'Italia reinventò il mondo",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "it-risorgimento-10",
+   "level": "B2",
+   "es": "Il Risorgimento: l'Italia si fa",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "it-emigrazione-11",
+   "level": "B1",
+   "es": "L'emigrazione italiana: trenta milioni di partenze",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "it-boom-12",
+   "level": "C1",
+   "es": "Il miracolo economico: quando l'Italia cambiò in vent'anni",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "mon-americhe-13",
+   "level": "B2",
+   "es": "Le Americhe prima del 1492: mondi che non erano «nuovi»",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "mon-rivoluzione-14",
+   "level": "B2",
+   "es": "La Rivoluzione francese: libertà, uguaglianza, contemporaneità",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "mon-seta-15",
+   "level": "B1",
+   "es": "La Via della Seta: il primo globalization",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "mon-decolonizzazione-16",
+   "level": "C1",
+   "es": "La decolonizzazione: come mezzo mondo divenne indipendente",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-arte-17",
+   "level": "B2",
+   "es": "Caravaggio: la luce nell'ombra",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-arte-18",
+   "level": "B1",
+   "es": "La Cappella Sistina: il cielo di Michelangelo",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-cucina-19",
+   "level": "B1",
+   "es": "La cucina regionale: un mosaico di sapori",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-cucina-20",
+   "level": "A2",
+   "es": "La pizza: una storia napoletana",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-musica-21",
+   "level": "C1",
+   "es": "L'opera lirica: quando la musica racconta",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-musica-22",
+   "level": "B2",
+   "es": "Sanremo: la festa della canzone italiana",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-cine-23",
+   "level": "B2",
+   "es": "Il neorealismo: la cinepresa in strada",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-cine-24",
+   "level": "B2",
+   "es": "La commedia all'italiana: ridere per pensare",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-sport-25",
+   "level": "B1",
+   "es": "Il calcio: più che uno sport",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-sport-26",
+   "level": "B2",
+   "es": "Il Giro d'Italia: la corsa rosa",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-moda-27",
+   "level": "B2",
+   "es": "La moda italiana nasce a Firenze",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  },
+  {
+   "id": "cult-moda-28",
+   "level": "B1",
+   "es": "Milano capitale della moda",
+   "it": "",
+   "cat": "",
+   "kind": ""
+  }
+ ],
+ "falsamici": [
+  {
+   "id": "ff-classici",
+   "es": "Los grandes clásicos"
+  },
+  {
+   "id": "ff-corpo-casa",
+   "es": "Cuerpo, ropa y casa"
+  },
+  {
+   "id": "ff-cibo",
+   "es": "Comida y bebida"
+  },
+  {
+   "id": "ff-sociale",
+   "es": "Vida social y sentimientos"
+  },
+  {
+   "id": "ff-lavoro",
+   "es": "Trabajo, dinero y estudios"
+  },
+  {
+   "id": "ff-natura",
+   "es": "Naturaleza, tiempo y lugares"
+  }
+ ],
+ "strumenti": [
+  {
+   "id": "print-vocab",
+   "es": "Hoja de vocabulario"
+  },
+  {
+   "id": "print-verbi",
+   "es": "Hoja de verbos"
+  },
+  {
+   "id": "print-gram",
+   "es": "Hoja de gramática"
+  }
+ ]
+}
