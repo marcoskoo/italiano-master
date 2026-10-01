@@ -334,3 +334,28 @@ Stage Summary:
 - v9.6 LIVE: Giochi ya no usa emojis — 4 fotografías realistas con variante nocturna, diseño de tarjeta unificado con el resto de la plataforma. Con esto, TODAS las secciones de la app tienen imágenes (nav con lucide icons + 10 familias de imágenes temáticas + juegos).
 - Lista pendiente original: COMPLETA (lecturas ✓, TTS multi-voz ✓, push ✓, emoji→imagen ✓ en todas las secciones, dark mode de imágenes ✓).
 - Estilo nuevo disponible para futuras imágenes: fotografía realista (los usuarios pueden pedir regenerar otras familias en este estilo).
+
+---
+Task ID: 10 (en curso)
+Agent: main (Super Z)
+Task: v9.7 — "Reemplaza todas las imágenes por imágenes realistas": regenerar las 10 familias de imágenes (268 claras + 121 oscuras) en estilo fotografía realista
+
+Work Log (parcial):
+- Inventario: vocab 37×2, grammatica 75×2, falsamici 6×2, strumenti 3×2 (webp 512, con variante -dark); ascolto 30, conversazione 18, cultura 21, letture 28, situazioni 20, testi 30 (jpg 7:4, sin -dark, CSS ita-img en oscuro). giochi 4×2 ya realista (v9.6). Backup en scripts/img/backup-v94/.
+- Pipeline: scripts/img/v97-p1..p4.mjs (268 prompts fotográficos por id), v97-all.mjs, v97-gen.mjs (pool 2 workers, idempotente, --no-dark/--dark-only/--only, backoff 429), v97-qa.mjs (VLM en lotes de 6, informe incremental qa-v97-<fam>.json, --delete-fails).
+- Fotos 1344x768 → sharp 1008x576 jpg q82; iconos 1024x1024 → 512 webp q85; oscuras por image-edit (prompt nocturno v9.6).
+- QA VLM detectó y se corrigieron: vocab/casa+studi (texto basura en libros → prompts sin libros), musica (partitura ilegible → violín sin partitura), attualita (periódico → radio vintage), finanze/natura/tempo re-gen.
+- GENERADO: vocab 74/74 completo realista. grammatica 48/150 (24/75 ítems). 0 corruptos (verificación PIL).
+- ⚠️ API de imágenes con cuota por ventana: tras ~50 min de maratón entra en 429 persistente (~23:15). Estrategia: luces primero (--no-dark), pacing, oscuras al final (fallback elegante si faltan: ThemeImg onError → clara + CSS).
+
+- Cierre de la parte 1 (cuota API agotada ~23:15 UTC+8, bloqueo global >2h de gen+edit+chat+search):
+  * vocab 74/74 realista DESPLEGADO (QA VLM 34 PASS; 6 fallos detectados/regenerados: casa, studi, musica, attualita + finanze/natura/tempo; ~38 pendientes de verificación VLM — misma receta validada, verificación color/entropía OK: 2.5-4x más colores únicos que las ilustraciones viejas).
+  * grammatica: 48 generadas pero RESTAURADAS las 150 antiguas desde backup (consistencia de sección; las nuevas se regenerarán cuando la cuota se libere — los png crudos se limpiaron, prompts intactos).
+  * E2E local: 295 imágenes 200 OK; Vocabolario claro 37/37 cargadas tras scroll, 0 rotas; oscuro swap -dark OK; Grammatica/Letture/Situazioni/Cultura/Giochi snapshots OK; 0 errores.
+  * sw.js → im-v9-7-0.
+- REANUDAR (cuando la cuota se libere): `node scripts/img/v97-gen.mjs --families=grammatica --no-dark` (luces primero), luego el resto: situazioni,letture,cultura,ascolto,conversazione,testi,falsamici,strumenti; después `node scripts/img/v97-qa.mjs --families=<...> --dark --delete-fails` y regen de fallos. Backup íntegro en scripts/img/backup-v94/ (si una familia queda a medias, restaurar de ahí antes de desplegar).
+
+Stage Summary:
+- v9.7.0 PARCIAL LIVE: Vocabolario 100% fotográfico (37 categorías + variantes nocturnas) — primera familia completada del reemplazo total por imágenes realistas.
+- Pipeline v9.7 persistido y reanudable: 268 prompts fotográficos listos, motor idempotente con pool, QA VLM por lotes con borrado de fallos. Restante: 231 imágenes (grammatica 75×2, falsamici 6×2, strumenti 3×2, ascolto 30, conversazione 18, cultura 21, letture 28, situazioni 20, testi 30).
+- Limitación descubierta: el gateway compartido tiene cuota por ventana (~500 llamadas en ~50 min la agotan; bloqueo >2h). Estrategia futura: lotes más pequeños con pausas, luces antes que oscuras.
