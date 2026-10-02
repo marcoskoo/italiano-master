@@ -481,3 +481,24 @@ Stage Summary:
 - Bloqueo externo: cuota del gateway agotada ~8.8h+ (50 sondas fallidas esta sesión). Ventana estimada: ~15:15–18:50 UTC del 2-oct.
 - REANUDAR (próxima sesión): (0) si el workspace se reseteó, re-borrar los 58 ids con el one-liner documentado en Task 14 + verificar con v97-pending.mjs; (1) ciclos de v97-auto hasta LIBRE; (2) QA: `node scripts/img/v97-qa.mjs --families=grammatica,letture,situazioni,testi --delete-fails` → regen fallos; (3) v97-e2e.sh + bump sw.js im-v9-9-1 + commit; (4) push SOLO con token nuevo del usuario.
 - QA VLM de los 246 desplegados en v9.9 sigue diferido (misma cuota) — incluir en el paso (2).
+
+---
+Task ID: 3
+Agent: main (Super Z)
+Task: v9.9.1+v9.9.2 — "Continuar con las 58 imágenes": maratón completo de los 58 pendientes + QA VLM diferido de las 246 de v9.9
+
+Work Log:
+- Workspace reseteado de nuevo (scripts/ vacío, 58 archivos viejos restaurados del git) → pipeline restaurado de tools/img/, 58 re-borrados, verificados con v97-pending.
+- Cuota liberada a las ~16:10 UTC (estimación correcta). Maratón: 58/58 generados en ~1h (grammatica g3-c2 ×3 + darks, letture cult ×5, situazioni 20, testi 30).
+- BUG pipeline hallado: el reset del workspace borró DIRECTORIOS enteros (situazioni/, testi/) → gen fallaba en la escritura final ("No such file or directory") quemando llamadas API. Fix: mkdir -p antes de gen.
+- QA VLM de los 58 (nuevo flag --only añadido a v97-qa.mjs): 36 pasadas, 22 fallos → v97-fix.mjs con prompts corregidos → 22 regeneradas → re-QA iterativo (g3-c2-substandard ×3 intentos: scopa→banter café; sit-museo ×4: esculturas→pinturas→escalinata; ls-11 ×3: teléfono→silueta). LECCIÓN CLAVE: el QA compara contra el SUBJECT DEL MANIFIESTO → cualquier cambio de composición debe actualizarse en el manifiesto (fuente de verdad), no solo en el fix puntual. Los subjects no deben prescribir composiciones que el modelo no controla (conteos, ángulos, "no X").
+- QA diferido de las 246 de v9.9 (misma ventana): letture 28/28 ✓ (6+2 regen), ascolto 30/30 ✓ (14+6+3+1 regen), conversazione 18/18 ✓ (4+1), cultura 21/21 ✓ (8+2), falsamici 12/12 ✓ (ff-sociale ×4 iteraciones: copas flauta→copa de vino grande con hielo y naranja), strumenti 6/6 ✓ (lupa imposible→hojas de ejercicios).
+- grammatica (150 targets): 54 fallos detectados → 22 luces con prompts v3 regeneradas (17 completadas) + 9 oscuras restauradas del git + 5 luces y 6 oscuras pendientes cuando la cuota cayó (~20:15 UTC, ~450 llamadas en la sesión).
+- CERO HUECOS garantizado: 75/75 luces grammatica en disco (5 restauradas del git como placeholder válido), 6 oscuras ausentes caen a la luz vía ThemeImg onError (mejor que sujeto desemparejado). E2E: 309/309 imágenes 200 OK.
+- Commits: fca4fdc (58 imágenes + pipeline v9.9.1, sw im-v9-9-1) y 69135ed (QA diferido + mejoras v9.9.2). PUSH BLOQUEADO: token GitHub 401 (ver Task 2) — ambos commits listos para push cuando el usuario aporte token nuevo.
+
+Stage Summary:
+- Los 58 pendientes: COMPLETOS con QA VLM aprobado (iterativo hasta 100%).
+- Bonus QA diferido v9.9: ~60 imágenes adicionales regeneradas con calidad verificada (total sesión: ~120 nuevas + 58).
+- REANUDAR (próxima ventana de cuota): (1) `node scripts/img/v97-gen.mjs --only=g3-b2-concessive,g3-b2-pronomi-combinati,g3-c1-dislocazioni,g3-c1-formazione-parole,g3-c2-sequenza-tempi,g-a2-imperfetto` (prompts v3 YA en manifiesto; borrar antes los 5 placeholder del git: `git checkout HEAD -- ...` NO — ya están en disco, usar `rm public/images/grammatica/{ids}.webp` + rm raw); (2) darks de esas 6 + los 6 pendientes: `node scripts/img/v97-dark-fix.mjs` extendido a grammatica (o v97-gen --dark-only con raws); (3) re-QA de las 17+6 luces nuevas; (4) bump sw → commit → push (con token nuevo).
+- La app en producción sigue 100% operativa (v9.9.1 NO desplegado aún por el token; producción tiene las 246 de v9.9 + estilo viejo en los 58 — todo con archivos válidos).
