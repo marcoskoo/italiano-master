@@ -1,0 +1,62 @@
+{
+ "ff-classici": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-classici:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-cibo": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-cibo:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-sociale": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-sociale:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-lavoro": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-lavoro:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-natura": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-natura:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-corpo-casa": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ff-corpo-casa:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ }
+}

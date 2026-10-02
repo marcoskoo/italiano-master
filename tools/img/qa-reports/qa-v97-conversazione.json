@@ -1,100 +1,90 @@
 {
- "cult-cine-24": {
+ "cs-1": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-sport-25": {
+ "cs-2": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-sport-26": {
+ "cs-3": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-moda-27": {
+ "cs-4": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-moda-28": {
+ "cs-5": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "dia-bar-01": {
+ "cs-6": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "dia-hotel-02": {
+ "cs-7": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "dia-clima-03": {
+ "cs-8": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "inf-social-04": {
+ "cs-9": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "inf-dieta-05": {
+ "cs-10": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "inf-mare-06": {
+ "cs-11": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "inf-remoto-07": {
+ "cs-12": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "it-boom-12": {
+ "cs-13": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-arte-17": {
+ "cs-14": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-arte-18": {
+ "cs-15": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-cucina-19": {
+ "cs-16": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-cucina-20": {
+ "cs-17": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-musica-21": {
-  "pass": true,
-  "note": "ok",
-  "fail": null
- },
- "cult-musica-22": {
-  "pass": true,
-  "note": "ok",
-  "fail": null
- },
- "cult-cine-23": {
+ "cs-18": {
   "pass": true,
   "note": "ok",
   "fail": null

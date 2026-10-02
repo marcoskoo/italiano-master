@@ -1,100 +1,150 @@
 {
- "cult-cine-24": {
+ "ls-1": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-sport-25": {
+ "ls-2": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-sport-26": {
+ "ls-3": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-moda-27": {
+ "ls-4": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-moda-28": {
+ "ls-5": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "dia-bar-01": {
+ "ls-6": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "dia-hotel-02": {
+ "ls-7": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "dia-clima-03": {
+ "ls-8": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "inf-social-04": {
+ "ls-9": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "inf-dieta-05": {
+ "ls-10": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "inf-mare-06": {
+ "ls-11": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "inf-remoto-07": {
+ "ls-12": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "it-boom-12": {
+ "ls-13": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-arte-17": {
+ "ls-14": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-arte-18": {
+ "ls-15": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-cucina-19": {
+ "ls-16": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-cucina-20": {
+ "ls-17": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-musica-21": {
+ "ls-18": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-musica-22": {
+ "ls-19": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "cult-cine-23": {
+ "ls-20": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ls-21": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ls-22": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ls-23": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ls-24": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ls-25": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ls-26": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ls-27": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ls-28": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ls-29": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "ls-30": {
   "pass": true,
   "note": "ok",
   "fail": null

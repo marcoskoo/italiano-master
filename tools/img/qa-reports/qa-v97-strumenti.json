@@ -1,0 +1,32 @@
+{
+ "print-vocab": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "print-vocab:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "print-verbi": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "print-verbi:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "print-gram": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "print-gram:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ }
+}

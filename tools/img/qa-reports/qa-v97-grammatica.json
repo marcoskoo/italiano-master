@@ -5,9 +5,9 @@
   "fail": null
  },
  "g3-c2-substandard:dark": {
-  "pass": true,
-  "note": "ok",
-  "fail": null
+  "pass": false,
+  "note": "anatomical error: extra fingers on left man's hand",
+  "fail": "anatomy"
  },
  "g3-c2-burocratico": {
   "pass": true,
@@ -20,13 +20,733 @@
   "fail": null
  },
  "g3-c2-letterario": {
+  "pass": false,
+  "note": "subject mismatch: shows a single book instead of a library with multiple books",
+  "fail": "subject"
+ },
+ "g3-c2-letterario:dark": {
+  "pass": false,
+  "note": "subject mismatch: shows a single book instead of a library with multiple books",
+  "fail": "subject"
+ },
+ "g-a1-genero": {
   "pass": true,
   "note": "ok",
   "fail": null
  },
- "g3-c2-letterario:dark": {
+ "g-a1-genero:dark": {
   "pass": true,
   "note": "ok",
   "fail": null
+ },
+ "g-a1-articoli": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a1-articoli:dark": {
+  "pass": false,
+  "note": "frame is dark green/black instead of golden as requested",
+  "fail": "subject"
+ },
+ "g-a1-presente": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a1-presente:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a1-essere-avere": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a1-essere-avere:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a1-aggettivi": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a1-aggettivi:dark": {
+  "pass": false,
+  "note": "color swatches are dark blue/teal instead of the expected warm gradient (terracotta to olive green)",
+  "fail": "subject"
+ },
+ "g-a1-domande": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a1-domande:dark": {
+  "pass": false,
+  "note": "anatomical distortion: hand has only three fingers and a thumb",
+  "fail": "anatomy"
+ },
+ "g-a2-passato-prossimo": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a2-passato-prossimo:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a2-imperfetto": {
+  "pass": false,
+  "note": "The water flow patterns are physically impossible and look like AI artifacts; the water swirls in unnatural, disconnected loops around the rocks rather than flowing naturally.",
+  "fail": "anatomy"
+ },
+ "g-a2-imperfetto:dark": {
+  "pass": false,
+  "note": "The water surface and light reflection show unnatural, repetitive ripple patterns typical of AI generation; the physics of the water and light interaction are distorted.",
+  "fail": "anatomy"
+ },
+ "g-a2-preposizioni": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a2-preposizioni:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a2-riflessivi": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a2-riflessivi:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a2-futuro": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-a2-futuro:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-b1-condizionale": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-b1-condizionale:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-b1-imperativo": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-b1-imperativo:dark": {
+  "pass": false,
+  "note": "garbled text on sheet music",
+  "fail": "text"
+ },
+ "g-b1-pronomi": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-b1-pronomi:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-b1-congiuntivo": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-b1-congiuntivo:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-b2-ipotetico": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-b2-ipotetico:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-b2-ci-ne": {
+  "pass": false,
+  "note": "Subject mismatch: image shows a King and Queen, not pawns.",
+  "fail": "subject"
+ },
+ "g-b2-ci-ne:dark": {
+  "pass": false,
+  "note": "Subject mismatch: image shows a King and Queen, not pawns.",
+  "fail": "subject"
+ },
+ "g-b2-discorso": {
+  "pass": false,
+  "note": "Garbled text on the rotary dial (gibberish symbols/numbers).",
+  "fail": "text"
+ },
+ "g-b2-discorso:dark": {
+  "pass": false,
+  "note": "Garbled text on the rotary dial (gibberish symbols/numbers).",
+  "fail": "text"
+ },
+ "g-c1-concordanza": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-c1-concordanza:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-c1-impersonali": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-c1-impersonali:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-c2-stile": {
+  "pass": false,
+  "note": "scissors have gold handles instead of brass, and silver blades instead of brass",
+  "fail": "subject"
+ },
+ "g-c2-stile:dark": {
+  "pass": false,
+  "note": "scissors have gold handles and silver blades instead of brass",
+  "fail": "subject"
+ },
+ "g-c2-idiomi": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g-c2-idiomi:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "gx-a1-are": {
+  "pass": false,
+  "note": "garbled text on the accordion body",
+  "fail": "text"
+ },
+ "gx-a1-are:dark": {
+  "pass": false,
+  "note": "garbled text on the accordion body and distorted buttons",
+  "fail": "text"
+ },
+ "gx-a2-pp": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "gx-a2-pp:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "gx-a2-riflessivi": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "gx-a2-riflessivi:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "gx-b1-aspetti": {
+  "pass": false,
+  "note": "The burnt-out candle is not fully melted as requested; it retains most of its original shape.",
+  "fail": "subject"
+ },
+ "gx-b1-aspetti:dark": {
+  "pass": false,
+  "note": "The burnt-out candle is not fully melted as requested; it retains most of its original shape.",
+  "fail": "subject"
+ },
+ "gx-b2-congp": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "gx-b2-congp:dark": {
+  "pass": false,
+  "note": "Subject includes a floating lantern which was not in the expected description of a moon over a calm sea.",
+  "fail": "subject"
+ },
+ "gx-b2-connettivi": {
+  "pass": false,
+  "note": "looks like a 3D render or AI generation, lacks the organic texture and environmental context of a real Venetian canal photograph",
+  "fail": "realism"
+ },
+ "gx-b2-connettivi:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "gx-c1-nominalizz": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "gx-c1-nominalizz:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "gx-c2-trapassato": {
+  "pass": false,
+  "note": "gibberish garbled text visible on the wooden surface in the bottom right corner",
+  "fail": "text"
+ },
+ "gx-c2-trapassato:dark": {
+  "pass": false,
+  "note": "gibberish garbled text visible on the wooden surface in the bottom right corner",
+  "fail": "text"
+ },
+ "g3-a1-alfabeto": {
+  "pass": false,
+  "note": "Letters are garbled and nonsensical (e.g., multiple A's, Z's, N's, P's, V's, M's) instead of a clean alphabet; some letters are malformed or fused.",
+  "fail": "text"
+ },
+ "g3-a1-alfabeto:dark": {
+  "pass": false,
+  "note": "Same garbled and nonsensical letter arrangement as image 1; letters are not clean or well-formed.",
+  "fail": "text"
+ },
+ "g3-a1-articoli-ind": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-articoli-ind:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-numeri": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-numeri:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-ora": {
+  "pass": false,
+  "note": "Roman numerals are garbled (e.g., IV is rendered as VI, IX as XI)",
+  "fail": "text"
+ },
+ "g3-a1-ora:dark": {
+  "pass": false,
+  "note": "Roman numerals are garbled (e.g., IV is rendered as VI, IX as XI)",
+  "fail": "text"
+ },
+ "g3-a1-avere-essere-espressioni": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-avere-essere-espressioni:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-verbi-irregolari": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-verbi-irregolari:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-possessivi": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-possessivi:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-ce-sono": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-ce-sono:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a1-bello-buono": {
+  "pass": false,
+  "note": "The third vase is amber/orange at the bottom instead of teal as requested in the subject description.",
+  "fail": "subject"
+ },
+ "g3-a1-bello-buono:dark": {
+  "pass": false,
+  "note": "The third vase is dark blue/gray instead of teal as requested in the subject description.",
+  "fail": "subject"
+ },
+ "g3-a2-irregolari-venire": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-irregolari-venire:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-modali": {
+  "pass": false,
+  "note": "hand is holding only one chess piece, not two as requested",
+  "fail": "subject"
+ },
+ "g3-a2-modali:dark": {
+  "pass": false,
+  "note": "hand is holding only one chess piece, not two as requested",
+  "fail": "subject"
+ },
+ "g3-a2-comparativo": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-comparativo:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-pronomi-tonici": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-pronomi-tonici:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-indefiniti": {
+  "pass": false,
+  "note": "Subject is a single giant leaf, not scattered leaves",
+  "fail": "subject"
+ },
+ "g3-a2-indefiniti:dark": {
+  "pass": false,
+  "note": "Subject is a single giant leaf, not scattered leaves",
+  "fail": "subject"
+ },
+ "g3-a2-trapassato": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-trapassato:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-progressivo": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-progressivo:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-posizione-aggettivo": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-posizione-aggettivo:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-remoto-intro": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-a2-remoto-intro:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-congiuntivo-imperfetto": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-congiuntivo-imperfetto:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-futuro-anteriore": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-futuro-anteriore:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-imperativo-pronomi": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-imperativo-pronomi:dark": {
+  "pass": false,
+  "note": "anatomical distortion of hands, specifically the lower hand's fingers and thumb",
+  "fail": "anatomy"
+ },
+ "g3-b1-relative": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-relative:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-passivo": {
+  "pass": false,
+  "note": "The bread loaves are resting on a wooden cutting board, not a wooden peel (which has a long handle and is used for sliding bread into an oven).",
+  "fail": "subject"
+ },
+ "g3-b1-passivo:dark": {
+  "pass": false,
+  "note": "The bread loaves are resting on a wooden cutting board, not a wooden peel (which has a long handle and is used for sliding bread into an oven).",
+  "fail": "subject"
+ },
+ "g3-b1-si-impersonale": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-si-impersonale:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-verbi-preposizioni": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-verbi-preposizioni:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b1-temporali": {
+  "pass": false,
+  "note": "missing motion blur, train is stationary",
+  "fail": "subject"
+ },
+ "g3-b1-temporali:dark": {
+  "pass": false,
+  "note": "missing motion blur, train is stationary",
+  "fail": "subject"
+ },
+ "g3-b1-condizionale-passato": {
+  "pass": false,
+  "note": "rose appears fresh and vibrant, not wilted; stem is floating in mid-air",
+  "fail": "anatomy"
+ },
+ "g3-b1-condizionale-passato:dark": {
+  "pass": false,
+  "note": "rose is not wilted and stem is floating in mid-air",
+  "fail": "anatomy"
+ },
+ "g3-b1-congiuntivo-uso": {
+  "pass": false,
+  "note": "Subject is a single armchair, not the box seats of an opera house",
+  "fail": "subject"
+ },
+ "g3-b1-congiuntivo-uso:dark": {
+  "pass": false,
+  "note": "Subject is a single armchair with a lamp, not the box seats of an opera house",
+  "fail": "subject"
+ },
+ "g3-b2-congiuntivo-trapassato": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b2-congiuntivo-trapassato:dark": {
+  "pass": false,
+  "note": "Anatomy/physics error: a table lamp is floating/impossibly standing on the surface of the water",
+  "fail": "anatomy"
+ },
+ "g3-b2-concessive": {
+  "pass": false,
+  "note": "Subject error: the umbrella is right-side up, not turned inside out; also missing the wet cobblestone street context (replaced by rocks)",
+  "fail": "subject"
+ },
+ "g3-b2-concessive:dark": {
+  "pass": false,
+  "note": "Subject error: the umbrella is right-side up, not turned inside out; also missing the wet cobblestone street context",
+  "fail": "subject"
+ },
+ "g3-b2-finali-causali": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b2-finali-causali:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b2-relative-avanzate": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b2-relative-avanzate:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b2-infinito-passato": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b2-infinito-passato:dark": {
+  "pass": false,
+  "note": "pen is missing the gold accents and has a distorted tip",
+  "fail": "anatomy"
+ },
+ "g3-b2-interrogative-indirette": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b2-interrogative-indirette:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-b2-pronomi-combinati": {
+  "pass": false,
+  "note": "subject mismatch: stones are on a plain studio background, not a pebble beach",
+  "fail": "subject"
+ },
+ "g3-b2-pronomi-combinati:dark": {
+  "pass": false,
+  "note": "subject and anatomy: stones are on a flat surface, not a pebble beach; lamp base is distorted/impossible",
+  "fail": "anatomy"
+ },
+ "g3-c1-consecutive": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c1-consecutive:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c1-gerundio-participio": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c1-gerundio-participio:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c1-dislocazioni": {
+  "pass": false,
+  "note": "image is a framed picture, not a mirror reflecting a scene",
+  "fail": "subject"
+ },
+ "g3-c1-dislocazioni:dark": {
+  "pass": false,
+  "note": "image is a framed picture, not a mirror reflecting a scene",
+  "fail": "subject"
+ },
+ "g3-c1-remoto-uso": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c1-remoto-uso:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c1-verbi-fraseologici": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c1-verbi-fraseologici:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c1-formazione-parole": {
+  "pass": false,
+  "note": "The objects look like soft marshmallows or sugar cubes rather than heavy marble blocks; they lack the characteristic crystalline texture, veining, and scale of Carrara marble.",
+  "fail": "subject"
+ },
+ "g3-c1-formazione-parole:dark": {
+  "pass": false,
+  "note": "Same as image 3; the objects appear to be soft cubes (like marshmallows) rather than marble blocks, and the lighting does not fix the material inaccuracy.",
+  "fail": "subject"
+ },
+ "g3-c2-sequenza-tempi": {
+  "pass": false,
+  "note": "The gears are a chaotic, non-functional cluster that do not resemble the intricate, precise mechanics of a disassembled antique watch; they look like a generic 3D gear sculpture.",
+  "fail": "subject"
+ },
+ "g3-c2-sequenza-tempi:dark": {
+  "pass": false,
+  "note": "Same as image 5; the object remains a non-functional gear sculpture rather than realistic watch components, and the night lighting does not correct the subject mismatch.",
+  "fail": "subject"
  }
 }
