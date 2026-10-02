@@ -502,3 +502,22 @@ Stage Summary:
 - Bonus QA diferido v9.9: ~60 imágenes adicionales regeneradas con calidad verificada (total sesión: ~120 nuevas + 58).
 - REANUDAR (próxima ventana de cuota): (1) `node scripts/img/v97-gen.mjs --only=g3-b2-concessive,g3-b2-pronomi-combinati,g3-c1-dislocazioni,g3-c1-formazione-parole,g3-c2-sequenza-tempi,g-a2-imperfetto` (prompts v3 YA en manifiesto; borrar antes los 5 placeholder del git: `git checkout HEAD -- ...` NO — ya están en disco, usar `rm public/images/grammatica/{ids}.webp` + rm raw); (2) darks de esas 6 + los 6 pendientes: `node scripts/img/v97-dark-fix.mjs` extendido a grammatica (o v97-gen --dark-only con raws); (3) re-QA de las 17+6 luces nuevas; (4) bump sw → commit → push (con token nuevo).
 - La app en producción sigue 100% operativa (v9.9.1 NO desplegado aún por el token; producción tiene las 246 de v9.9 + estilo viejo en los 58 — todo con archivos válidos).
+
+---
+Task ID: 4
+Agent: main (Super Z)
+Task: Desbloqueo con tokens nuevos del usuario — push a producción de v9.9.1+v9.9.2 y verificación E2E completa
+
+Work Log:
+- El usuario aportó 2 tokens: GitHub (ghp_…, scopes repo+workflow, verificado 200 en /user y /repos) y Vercel (vcp_…, verificado 200 en /v2/user).
+- Push exitoso 37229d8..b62393d (5 commits: v9.9.1 maratón 58/58, v9.9.2 QA VLM diferido, worklog + 2 artefactos forenses inofensivos).
+- Deploy Vercel disparado automáticamente: dpl_9gNpvQNyJLYXTnN1taC9J2wC1DSr READY (~45 s). Dominio producción: italiano-master.vercel.app.
+- Verificación producción: home 200, sw.js im-v9-9-1, muestra de 12 imágenes nuevas byte-idénticas (grammatica g3-c2 ×3 + darks, letture cult ×3, situazioni ×3, testi ×3).
+- E2E COMPLETO (scripts/e2e-images.sh nuevo): 391/391 imágenes 200 OK y byte-idénticas local↔prod. CERO huecos.
+- Remote push URL configurada con el token nuevo (persistente en .git/config del sandbox; NUNCA commitear el token — el repo es público).
+- Pipeline v97 restaurado de tools/img/ → scripts/img/ (el reset del workspace lo había borrado).
+- Cuota del gateway: sigue 429 (probe a las 20:29 UTC 2-oct). El muro cayó ~20:15 UTC 2-oct (fin de la sesión v9.9.2) → patrón histórico (24h/21h) apunta a próxima ventana ~15:15–20:15 UTC del 3-oct (10:15 am–3:15 pm Lima).
+
+Stage Summary:
+- PRODUCCIÓN AL DÍA: v9.9.1 + v9.9.2 LIVE. Las 58 imágenes de la maratón + ~60 regeneradas por QA VLM están desplegadas y verificadas 391/391.
+- RESTANTE (cola final, ~30-50 llamadas API, cabe de sobra en una ventana): (1) borrar 6 luces placeholder del git + sus raw: g-a2-imperfetto, g3-b2-concessive, g3-b2-pronomi-combinati, g3-c1-dislocazioni, g3-c1-formazione-parole, g3-c2-sequenza-tempi (último commit 4ae1a7c = restauradas viejas; prompts v3 YA en manifiesto); (2) `node scripts/img/v97-gen.mjs --only=<esos 6 ids>`; (3) 7 darks: los 6 del v97-pending (congiuntivo-uso, concessive, pronomi-combinati, dislocazioni, formazione-parole, sequenza-tempi) + el dark viejo de imperfetto — regenerar con raws de las luces nuevas (v97-dark-fix.mjs o gen con raw); (4) re-QA VLM de las 6 luces nuevas + spot-check de las 17 de v9.9.2: `node scripts/img/v97-qa.mjs --only=<ids>` → regen fallos; (5) bump sw im-v9-9-2 + commit + push (remote YA configurado con token).
