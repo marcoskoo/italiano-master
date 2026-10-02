@@ -461,3 +461,23 @@ Stage Summary:
 - Saludo: ahora el nombre se puede fijar/editar directamente desde Inicio (antes solo en Configuración → profilo), persiste en localStorage (store sin partialize) y se usa en Home, drawer, tutor, certificados.
 - Estado imágenes v9.9: ascolto 30/30 verificadas en producción (ls-2.jpg byte-idéntico local/prod); pendientes 58 restauradas (grammatica g3-c2 ×3, letture cult ×5, situazioni 20, testi 30) — reanudar con v97-auto cuando la cuota libere.
 - Listo para commit + push a producción.
+
+---
+Task ID: 2
+Agent: main (Super Z)
+Task: v9.9 (continuación 2) — "Continuar con 58 imágenes pendientes": reanudar el maratón fotográfico en la próxima ventana de cuota
+
+Work Log:
+- Push pendiente resuelto parcialmente: v9.8.2 (37229d8, fixes saludo+footer) YA está en remote. El commit local 3f92cf6 son solo artefactos forenses de upload/ (capturas OCR) — no crítico.
+- ⚠️ TOKEN GITHUB EXPIRADO: ghp_Zb6As… responde 401 Bad credentials (fetch anónimo sigue funcionando porque el repo es público; push imposible). DESBLOQUEO: el usuario debe generar un nuevo token (Settings → Developer settings → Personal access tokens) y pasarlo; sin él, las imágenes pueden generarse y commitearse localmente pero NO desplegarse a producción.
+- Pipeline v97 restaurado de tools/img/ → scripts/img/ (10 archivos, incl. v97-manifest.json y v97-pending.mjs).
+- Los 58 ítems viejos restaurados del git fueron BORRADOS localmente (61 archivos: grammatica g3-c2-substandard/burocratico/letterario ×2 webp, letture cult-cine-24 + cult-sport-25/26 + cult-moda-27/28 jpg, situazioni 20 sit-*, testi 30 rd-*) + raw/ limpiado. v97-pending.mjs confirma exactamente los 58 pendientes. Estado ARMADO: gen los generará al primer arranque. Backup = git local (sin commit); producción NO tocada (imágenes viejas siguen 200 OK).
+- CUOTA: 10 ciclos de v97-auto.mjs 9.5 grammatica,letture,situazioni,testi (~95 min, 50 sondas, 02:30–03:45 UTC aprox) — 429 persistente en TODAS. Acumulado del muro: ~8.8h desde ~18:50 UTC del 1-oct (fin del maratón v9.9 de ~250 llamadas).
+- Análisis de ventana (datos históricos): muro v9.7 15:15 UTC 30-sep → libre ~15:40 UTC 1-oct (v9.8.1 probe RONDA 1) ⇒ patrón de reset diario ~15:15 UTC o ventana ~24h. El maratón v9.9 (16:48–18:50 UTC 1-oct) agotó la ventana fresca → próximo reset estimado ~15:15 UTC 2-oct (10:15 am Lima), caso pesimista 18:50 UTC (1:50 pm Lima).
+- Verificado sano durante la espera: producción home 200, sw 200, imágenes viejas 200.
+
+Stage Summary:
+- Estado ARMADO y SEGURO: 58 ítems borrados localmente (producción intacta con estilo viejo válido), pipeline idempotente listo, un solo comando reanuda: `node scripts/img/v97-auto.mjs 9.5 grammatica,letture,situazioni,testi` en ciclos hasta que la sonda dé LIBRE.
+- Bloqueo externo: cuota del gateway agotada ~8.8h+ (50 sondas fallidas esta sesión). Ventana estimada: ~15:15–18:50 UTC del 2-oct.
+- REANUDAR (próxima sesión): (0) si el workspace se reseteó, re-borrar los 58 ids con el one-liner documentado en Task 14 + verificar con v97-pending.mjs; (1) ciclos de v97-auto hasta LIBRE; (2) QA: `node scripts/img/v97-qa.mjs --families=grammatica,letture,situazioni,testi --delete-fails` → regen fallos; (3) v97-e2e.sh + bump sw.js im-v9-9-1 + commit; (4) push SOLO con token nuevo del usuario.
+- QA VLM de los 246 desplegados en v9.9 sigue diferido (misma cuota) — incluir en el paso (2).
