@@ -31,6 +31,7 @@ const args = Object.fromEntries(process.argv.slice(2).map((a) => {
   return m ? [m[1], m[2] ?? true] : [a, true];
 }));
 const famSel = args.families ? args.families.split(",") : Object.keys(FAMILIES);
+const onlyIds = args.only ? new Set(args.only.split(",")) : null;
 const WANT_DARK = !!args.dark;
 const DELETE_FAILS = !!args["delete-fails"];
 const BATCH = args.batch ? parseInt(args.batch) : 6;
@@ -50,6 +51,7 @@ async function buildTargets() {
     const F = FAMILIES[fam];
     if (!F) continue;
     for (const [id, subject] of Object.entries(F.prompts)) {
+      if (onlyIds && !onlyIds.has(id)) continue;
       const ext = F.type === "icon" ? "webp" : "jpg";
       const light = path.join(PUB, F.dir, `${id}.${ext}`);
       if (fs.existsSync(light)) targets.push({ fam, id, subject, path: light, kind: "light" });

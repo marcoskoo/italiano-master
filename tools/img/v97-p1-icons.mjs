@@ -86,7 +86,7 @@ export const ICONS = {
     "g3-c1-verbi-fraseologici": "hands rolling fresh pasta dough with a wooden rolling pin on a floured board",
     "g3-c1-formazione-parole": "white marble blocks in the Carrara marble quarry against blue sky",
     "g3-c2-sequenza-tempi": "intricate brass clock gears of a disassembled antique watch on dark wood",
-    "g3-c2-substandard": "an Italian card game of scopa in progress on a café table with coins",
+    "g3-c2-substandard": "two elderly Italian men in animated conversation at a neighborhood café table, gesturing expressively, espresso cups on the marble table, warm afternoon Rome light",
     "g3-c2-burocratico": "a neat stack of official folders with a rubber stamp and wax seal on a desk",
     "g3-c2-letterario": "an antique library with old leather-bound books in warm dim light",
   },

@@ -1,0 +1,102 @@
+{
+ "sit-aeroporto": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-hotel": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-ristorante": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-medico": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-taxi": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-direzioni": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-banca": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-farmacia": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-noleggio": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-oggetti": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-negozio": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-palestra": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-cena": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-treno": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-museo": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-barbiere": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-vigili": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-agriturismo": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-biblioteca": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "sit-supermercado": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ }
+}

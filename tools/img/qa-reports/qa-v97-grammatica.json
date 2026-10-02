@@ -1,0 +1,32 @@
+{
+ "g3-c2-substandard": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c2-substandard:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c2-burocratico": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c2-burocratico:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c2-letterario": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "g3-c2-letterario:dark": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ }
+}
