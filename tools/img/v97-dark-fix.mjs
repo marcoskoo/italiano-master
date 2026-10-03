@@ -12,8 +12,13 @@ const ALL = [
   { dir: "strumenti", id: "print-vocab" },
   { dir: "falsamici", id: "ff-sociale" },
   { dir: "falsamici", id: "ff-cibo" },
+  { dir: "grammatica", id: "g3-b1-congiuntivo-uso" },
 ];
-const TARGETS = argIds.size ? ALL.filter((t) => argIds.has(t.id)) : ALL;
+/* CLI acepta ids sueltos (compat) o pares dir:id */
+const pairs = [...argIds].filter((a) => a.includes(":"));
+const TARGETS = pairs.length
+  ? pairs.map((p) => { const [dir, id] = p.split(":"); return { dir, id }; })
+  : argIds.size ? ALL.filter((t) => argIds.has(t.id)) : ALL;
 
 const zai = await ZAI.create();
 for (const t of TARGETS) {
