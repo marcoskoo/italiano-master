@@ -7,6 +7,10 @@
 import type { CefrLevel } from "./types";
 import { STORIA_ITALIA, STORIA_MONDO } from "./letture-storia";
 import { CULTURA } from "./letture-cultura";
+import { DIALOGHI_EXTRA } from "./letture-extra";
+import { INFORMAZIONE_EXTRA } from "./letture-extra2";
+import { STORIA_ITALIA_EXTRA, STORIA_MONDO_EXTRA } from "./letture-extra3";
+import { CULTURA_EXTRA } from "./letture-extra4";
 
 export type LetturaCat = "dialoghi" | "informazione" | "storia-italia" | "storia-mondo" | "cultura";
 
@@ -306,8 +310,14 @@ const INFORMAZIONE: Lettura[] = [
   },
 ];
 
-/** Biblioteca completa (28 letture: v9.0 + v9.3 + v9.4) */
-export const LETTURE: Lettura[] = [...DIALOGHI, ...INFORMAZIONE, ...STORIA_ITALIA, ...STORIA_MONDO, ...CULTURA];
+/** Biblioteca completa (43 letture: v9.0 + v9.3 + v9.4 + v9.10) */
+export const LETTURE: Lettura[] = [
+  ...DIALOGHI, ...DIALOGHI_EXTRA,
+  ...INFORMAZIONE, ...INFORMAZIONE_EXTRA,
+  ...STORIA_ITALIA, ...STORIA_ITALIA_EXTRA,
+  ...STORIA_MONDO, ...STORIA_MONDO_EXTRA,
+  ...CULTURA, ...CULTURA_EXTRA,
+];
 
 export const LETTURE_BY_ID: Record<string, Lettura> = Object.fromEntries(LETTURE.map((l) => [l.id, l]));
 
@@ -345,6 +355,22 @@ export const LETTURE_IMG: Record<string, string> = {
   "cult-sport-26": "/images/letture/cult-sport-26.jpg",
   "cult-moda-27": "/images/letture/cult-moda-27.jpg",
   "cult-moda-28": "/images/letture/cult-moda-28.jpg",
+  /* v9.10 · 15 letture nuevas */
+  "dia-mercato-04": "/images/letture/dia-mercato-04.jpg",
+  "dia-treno-05": "/images/letture/dia-treno-05.jpg",
+  "dia-farmacia-06": "/images/letture/dia-farmacia-06.jpg",
+  "dia-cena-07": "/images/letture/dia-cena-07.jpg",
+  "inf-street-08": "/images/letture/inf-street-08.jpg",
+  "inf-turismo-09": "/images/letture/inf-turismo-09.jpg",
+  "inf-ia-10": "/images/letture/inf-ia-10.jpg",
+  "inf-spreco-11": "/images/letture/inf-spreco-11.jpg",
+  "it-venezia-13": "/images/letture/it-venezia-13.jpg",
+  "it-galileo-14": "/images/letture/it-galileo-14.jpg",
+  "mon-mali-17": "/images/letture/mon-mali-17.jpg",
+  "mon-industriale-18": "/images/letture/mon-industriale-18.jpg",
+  "mon-muro-19": "/images/letture/mon-muro-19.jpg",
+  "cult-dante-29": "/images/letture/cult-dante-29.jpg",
+  "cult-ferrante-30": "/images/letture/cult-ferrante-30.jpg",
 };
 
 /** Número de letture de historia completadas (logro «Storico») */
