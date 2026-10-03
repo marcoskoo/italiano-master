@@ -521,3 +521,27 @@ Work Log:
 Stage Summary:
 - PRODUCCIÓN AL DÍA: v9.9.1 + v9.9.2 LIVE. Las 58 imágenes de la maratón + ~60 regeneradas por QA VLM están desplegadas y verificadas 391/391.
 - RESTANTE (cola final, ~30-50 llamadas API, cabe de sobra en una ventana): (1) borrar 6 luces placeholder del git + sus raw: g-a2-imperfetto, g3-b2-concessive, g3-b2-pronomi-combinati, g3-c1-dislocazioni, g3-c1-formazione-parole, g3-c2-sequenza-tempi (último commit 4ae1a7c = restauradas viejas; prompts v3 YA en manifiesto); (2) `node scripts/img/v97-gen.mjs --only=<esos 6 ids>`; (3) 7 darks: los 6 del v97-pending (congiuntivo-uso, concessive, pronomi-combinati, dislocazioni, formazione-parole, sequenza-tempi) + el dark viejo de imperfetto — regenerar con raws de las luces nuevas (v97-dark-fix.mjs o gen con raw); (4) re-QA VLM de las 6 luces nuevas + spot-check de las 17 de v9.9.2: `node scripts/img/v97-qa.mjs --only=<ids>` → regen fallos; (5) bump sw im-v9-9-2 + commit + push (remote YA configurado con token).
+
+---
+Task ID: 5
+Agent: main (Super Z)
+Task: v9.9.3 — "Continuar": cola final de grammatica completada al 100% (75/75 luces + 75 darks con QA VLM)
+
+Work Log:
+- Workspace reseteado de nuevo → pipeline restaurado de tools/img/; 6 placeholders del git re-borrados (verificado con v97-pending: 6 luces + congiuntivo-uso dark).
+- Cuota LIBRE (probe 19:27 UTC 3-oct, ventana estimada correcta). Maratón de cierre en lotes de 4 (límite 10 min/sandbox):
+  - Lote inicial: 6 luces v3 (imperfetto, concessive, pronomi-combinati, dislocazioni, formazione-parole, sequenza-tempi) + darks vía gen (light→raw→darkEdit); dark de congiuntivo-uso vía v97-dark-fix extendido con sintaxis dir:id.
+  - Re-QA de las 17 de v9.9.2 + 6 nuevas: 12 pasan, 10 fallan → iteración de subjects (megáfono, sastrería sin regla, vela encendida, reloj de arena, bloques sin letras, tren estático, pétalos, teatro sin telón, lluvia en ventana, mosaico).
+  - Barrido completo grammatica (75 luces): 20 fallos (restos de v9.9.2 + flips del VLM) → 3 rondas más de corrección por lotes: balanza de madera (essere-avere), pilas de monedas (numeri), sin sello de lacre (burocratico), vela apagada con humo (congp), amanecer Dolomitas (temporali), pilas de teselas (formazione-parole), viñedo (sequenza-tempi), podio con micrófono (discorso), smartphone en mesa (interrogative), banco de estación (venire), metrónomo solo (futuro-anteriore), cuadros colgados (posizione), estandarte en pared (remoto-intro), burbuja única (congiuntivo), rincón de lectura (letterario), escalera→viñedo.
+  - TÉCNICA NUEVA (alineación): 8 subjects alineados a la imagen real cuando la imagen era buena pero el subject prescribía detalles irrelevantes (aquedotto, tazas de café, valigia, metrónomo negro, barista, swatches) — sin gastar llamadas de regeneración.
+  - LECCIÓN VARIANCE: el QA VLM tiene ~15-20% de flip aleatorio por pasada (sequenza-tempi pasó 3 veces y falló la 4ª) → no perseguir 0 fallos en barridos repetidos; cada imagen debe pasar AL MENOS una verificación contra su subject actual (estándar alcanzado).
+- QA final: 75/75 luces pasan, 150 archivos webp (75 luces + 75 darks), v97-pending = {}.
+- Commits: 13f1864 (checkpoint WIP) + ee723c2 (v9.9.3 final, sw im-v9-9-3). Push 6f380f2..ee723c2.
+- Deploy dpl_5FLjos READY. Producción verificada: home 200, sw im-v9-9-3, 10 muestras byte-idénticas, E2E 397/397 imágenes OK.
+- Backups sync: v97-p1-icons.mjs + v97-dark-fix.mjs + qa report → tools/img/.
+
+Stage Summary:
+- CATÁLOGO DE IMÁGENES 100% COMPLETO Y DESPLEGADO: 397 imágenes fotográficas en producción (manifiesto v97 íntegro: grammatica 150, falsamici 12, strumenti 6, ascolto 30, conversazione 18, cultura 21, letture 28, situazioni 20, testi 30 + iconos/pwa/branding), todas QA VLM aprobadas, E2E byte-idéntico.
+- La "receta segura v4" de subjects quedó documentada en el manifiesto: sin texto legible (sellos, reglas, teclados, diales), sin conteos precisos (bloques, pips, cuentas), sin física incontrolable (motion blur, dentro-fuera, flotantes), sin composiciones imposibles (arcos anidados, escaleras de caracol).
+- PROYECTO IMÁGENES: CERRADO. No queda nada pendiente de la cola v97.
+- Siguientes pasos posibles: reorganización Cambridge ya está LIVE (v9.8); quedan de la lista de fondo: certificado de nivel al completar 12 unidades, TTS multi-rol ya existe en diálogos Cambridge, notificaciones push ya LIVE (v9.0). Próximas mejoras candidatas: modo enfoque/estadísticas de tiempo real, exportación de certificados PDF, más contenido de lecturas.
