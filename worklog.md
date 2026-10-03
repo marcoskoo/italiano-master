@@ -545,3 +545,27 @@ Stage Summary:
 - La "receta segura v4" de subjects quedó documentada en el manifiesto: sin texto legible (sellos, reglas, teclados, diales), sin conteos precisos (bloques, pips, cuentas), sin física incontrolable (motion blur, dentro-fuera, flotantes), sin composiciones imposibles (arcos anidados, escaleras de caracol).
 - PROYECTO IMÁGENES: CERRADO. No queda nada pendiente de la cola v97.
 - Siguientes pasos posibles: reorganización Cambridge ya está LIVE (v9.8); quedan de la lista de fondo: certificado de nivel al completar 12 unidades, TTS multi-rol ya existe en diálogos Cambridge, notificaciones push ya LIVE (v9.0). Próximas mejoras candidatas: modo enfoque/estadísticas de tiempo real, exportación de certificados PDF, más contenido de lecturas.
+
+---
+Task ID: 6
+Agent: main (Super Z)
+Task: v9.10 — "Ampliar las lecturas con más contenido": +15 letture nuevas (28→43) con imágenes QA VLM y deploy
+
+Work Log:
+- Diagnóstico de la biblioteca: 28 letture (dialoghi 3, informazione 4, storia-italia 5, storia-mondo 4, cultura 12) con niveles desbalanceados (A1:1, A2:2, C1:3, C2:0).
+- Contenido nuevo (4 archivos): letture-extra.ts (4 dialoghi: mercato A1, treno A2, farmacia B1, cena B1), letture-extra2.ts (4 informazione: street food A2, overturismo B1, IA B2, spreco alimentare C1), letture-extra3.ts (2 storia-italia: Serenissima B1, Galileo B2 + 3 storia-mondo: Mansa Musa B1, Rivoluzione industriale B2, Muro di Berlino C1), letture-extra4.ts (2 cultura: Dante C1, Elena Ferrante C2). Cada una con líneas it+es, speaker en diálogos, glosario 4-6, preguntas MC con why, discuss 3.
+- Correcciones de italiano aplicadas (elisión l'esempio, attraccare, autori, oltretomba, posizione radicale, ecc.).
+- Integración en letture.ts: LETTURE 43 (merge de 10 arrays), LETTURE_IMG +15 entradas, historiaReadCount cubre los nuevos it-/mon- (logro «Storico»). Verificado con tsx: 43 sin duplicados, sin incompletas.
+- Workspace reseteado de nuevo → pipeline v97 restaurado tools/img→scripts/img; e2e-images.sh recreado.
+- Subjects v97 (receta segura v4) para las 15 + manifiesto lett=43, en tools/img y scripts/img sincronizados.
+- Cuota LIBRE a la primera sonda. Generación 15/15 (2 lotes, 0 fallos).
+- QA VLM ronda 1: 8 pasan, 7 fallan (tableros de estación con texto, cajas de farmacia, manos deformes, toppings mal, multitud en Venecia, texto en poppa de góndola, peatones deformes) → subjects alineados a composiciones seguras (sin tableros/estantes, sin manos, ingredientes clásicos, escenas vacías) → regen → 6/7 → dia-cena-07 (lasaña con textura de spaghetti) → subject cambiado a platter de pasta → regen → 15/15 APROBADAS.
+- sw bump im-v9-9-3→im-v9-10-0, build OK, commit b9be8f4, push, deploy dpl_4z7vpQGXr READY.
+- Verificación producción: home 200, sw im-v9-10-0, chunk de datos con contenido nuevo (Ferrante/Mansa Musa/Muro di Berlino) 200 byte-idéntico, E2E 412/412 imágenes OK.
+- QA report respaldado en tools/img/qa-reports/qa-v97-letture-v910.json.
+
+Stage Summary:
+- BIBLIOTECA LETTURE AMPLIADA: 43 lecturas (dialoghi 7, informazione 8, storia-italia 7, storia-mondo 7, cultura 14 · niveles A1:2 A2:4 B1:15 B2:15 C1:6 C2:1), 100% desplegada y verificada.
+- Catálogo de imágenes: 412 en producción (28+15 letture, 30 testi, 150 grammatica, resto familias), E2E byte-idéntico.
+- Producción LIVE en italiano-master.vercel.app con sw im-v9-10-0.
+- Ideas siguientes de la lista de fondo: más testi graduados (rd-31+, requiere ejercicios ex-let), certificados PDF, modo enfoque/estadísticas, TTS multi-rol en más vistas.
