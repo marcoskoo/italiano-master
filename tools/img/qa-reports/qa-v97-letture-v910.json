@@ -1,0 +1,77 @@
+{
+ "dia-mercato-04": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "dia-treno-05": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "dia-farmacia-06": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "dia-cena-07": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "inf-street-08": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "inf-turismo-09": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "inf-ia-10": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "inf-spreco-11": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "it-venezia-13": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "it-galileo-14": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "mon-mali-17": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "mon-industriale-18": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "mon-muro-19": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "cult-dante-29": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ },
+ "cult-ferrante-30": {
+  "pass": true,
+  "note": "ok",
+  "fail": null
+ }
+}
