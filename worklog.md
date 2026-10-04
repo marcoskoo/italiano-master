@@ -653,3 +653,25 @@ Stage Summary:
 - Commit 914bd99 "fix v9.11.1: texto invisible sobre fondos blancos en modo oscuro" (7 archivos, +38/-7) → push → deploy READY → verificado en prod
 - Patrón de bug documentado: superficies blancas fijas + colores adaptativos requieren .force-light o overrides dark:
 - Nota: StepSolutions no está importado por ninguna vista (código huérfano, fix preventivo aplicado igualmente)
+
+---
+Task ID: 1
+Agent: main (Super Z)
+Task: "agrega 3 lecturas y su comprensión lectora en cada lección, con espacios en blanco para completar seleccionando palabras que tiene que inferir"
+
+Work Log:
+- Interpretación: "cada lección" = las 66 unidades comunicativas Cambridge (flujo principal de Cursos A1–C2) → 66 × 3 = 198 lecturas nuevas
+- Diseño de datos: CbClozeText (párrafos IT con marcadores {n} + traducción ES) y CbClozeGap (3 opciones plausibles, solo 1 encaja por contexto — inferencia léxica, no gramática) en cambridge.ts
+- Contenido creado en 6 archivos (readings-cloze-{a1,a2,b1,b2,c1,c2}.ts): lecturas temáticamente alineadas a cada unidad, con nivel lingüístico creciente (A1 frases simples → C2 lengua literaria/ironía/retórica)
+- Combinador readings-cloze.ts con CB_CLOZE[unitId]
+- Componente ClozeReadings (cloze-readings.tsx): pestañas por lectura, huecos inline tocables, panel sticky de opciones, feedback acierto (verde inline)/error (rojo + tachado + pista), toggle traducción ES, audio TTS por párrafo (texto sin marcadores), +5 XP por lectura, marca sección lettura al completar las 3
+- Integración en cambridge-unit.tsx paso 8: cloze arriba, lectura extensa del curso (READINGS/LETTURE) en details colapsable
+- Validación automática (scripts/validate-cloze.py): marcadores vs gaps, answers en rango, opciones únicas, IDs únicos → 198/198 ✓; corregidos errores reales: comillas dobles sin escapar en B1 (3 líneas, sintaxis TS rota), marcador {1} duplicado en a2-09-1, marcador {5} faltante en a2-03-1, ~60 mezclas ES/IT en traducciones, erratas varias (incl. un carácter chino 取代 en C1)
+- Verificación local: interacción completa (acierto/error/reintento), XP, modos claro/oscuro, A1 (free) y C2 (plan platinum simulado vía localStorage)
+- SW bump im-v9-11-1 → im-v9-12-0; commit d5020b2; deploy dpl_DmUz5GqR7rj9quhs6oKrn1zHxsJ READY
+- Verificación producción: SW im-v9-12-0 servido, código cloze en chunk 16q_jd7dlpp-z.js, navegación completa y UI funcional confirmada
+
+Stage Summary:
+- 198 lecturas nuevas con comprensión cloze inferencial: 3 por cada una de las 66 unidades (A1:36, A2:36, B1:36, B2:36, C1:30, C2:24)
+- El paso Lettura de cada unidad ahora enseña con inferencia contextual: el estudiante deduce la palabra por el sentido, no por la gramática
+- Patrón de autoría: marcadores {n} en texto IT + gaps[] con 3 opciones; validador reutilizable en scripts/validate-cloze.py
