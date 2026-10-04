@@ -66,3 +66,4 @@ server.log
 tool-results/
 .push-subs.json
 .env*.local
+.security-env-new.txt

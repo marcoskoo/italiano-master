@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { hashPassword, logAdminAction, requireAdmin } from "@/lib/admin/server";
+import { logAdminAction, randomDemoPasswordHash, requireAdmin } from "@/lib/admin/server";
 import { db } from "@/lib/admin/store";
 
 export const runtime = "nodejs";
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       await db.user.create({
         data: {
           ...d,
-          passwordHash: hashPassword(d.username, "italiano123"),
+          passwordHash: randomDemoPasswordHash(), // demo: contraseña aleatoria, nadie inicia sesión con estas cuentas
           role: "student",
           active: true,
           lastSeen: new Date(Date.now() - Math.floor(Math.random() * 3 * 86400000)),

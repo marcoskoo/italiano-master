@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
+import { getClientIp, rateLimit } from "@/lib/admin/security";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -156,6 +157,16 @@ function offlineReply(mode: Mode, level: string, messages: TutorRequest["message
 
 export async function POST(req: Request) {
   try {
+    // v9.10.1 (auditoría): rate limit — sin esto, cualquiera podía martillar
+    // el endpoint y quemar la cuota de la API de IA (TUTOR_API_KEY / SDK).
+    const rl = rateLimit(`tutor:${getClientIp(req)}`, { limit: 20, windowMs: 60_000, blockMs: 120_000 });
+    if (!rl.ok) {
+      return NextResponse.json(
+        { error: "Il tutor ha bisogno di una pausa. Riprova tra poco." },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } },
+      );
+    }
+
     const body = (await req.json()) as TutorRequest;
     const { messages, level = "A1", mode = "chat", userName = "Studente" } = body;
 
@@ -163,12 +174,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "messages requerido" }, { status: 400 });
     }
 
-    const systemPrompt = buildSystemPrompt(level, mode, userName);
+    // v9.10.1: límites de payload — evita abuso de coste y prompt-stuffing masivo
+    if (messages.length > 30) {
+      return NextResponse.json({ error: "Demasiados mensajes (máx. 30)" }, { status: 413 });
+    }
+    const safeMessages = messages
+      .filter((m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+      .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }))
+      .slice(-30);
+    if (safeMessages.length === 0) {
+      return NextResponse.json({ error: "messages requerido" }, { status: 400 });
+    }
+    const safeLevel = LEVEL_PROFILE[level] ? level : "A1";
+    const safeMode: Mode = mode === "chat" || mode === "correct" || mode === "roleplay" ? mode : "chat";
+    const safeUserName = String(userName).slice(0, 40).replace(/[\n\r<>]/g, "") || "Studente";
+
+    const systemPrompt = buildSystemPrompt(safeLevel, safeMode, safeUserName);
 
     // 1) API externa configurable (producción)
     if (process.env.TUTOR_API_BASE && process.env.TUTOR_API_KEY) {
       try {
-        const reply = await callExternalApi(systemPrompt, messages);
+        const reply = await callExternalApi(systemPrompt, safeMessages);
         if (reply) return NextResponse.json({ reply });
       } catch {
         // continúa con el siguiente backend
@@ -181,7 +207,7 @@ export async function POST(req: Request) {
       const completion = await zai.chat.completions.create({
         messages: [
           { role: "assistant", content: systemPrompt },
-          ...messages.map((m) => ({ role: m.role, content: m.content })),
+          ...safeMessages.map((m) => ({ role: m.role, content: m.content })),
         ],
         thinking: { type: "disabled" },
       });
@@ -192,7 +218,7 @@ export async function POST(req: Request) {
     }
 
     // 3) Marco offline
-    return NextResponse.json({ reply: offlineReply(mode, level, messages, userName), offline: true });
+    return NextResponse.json({ reply: offlineReply(safeMode, safeLevel, safeMessages, safeUserName), offline: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error desconocido";
     return NextResponse.json({ error: `El tutor no está disponible ahora: ${msg}` }, { status: 500 });

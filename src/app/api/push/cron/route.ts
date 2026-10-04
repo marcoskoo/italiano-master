@@ -4,14 +4,21 @@ import { listSubscriptions, sendToSubs, dailyMessage, pushConfigured } from "@/l
 export const runtime = "nodejs";
 
 /* GET /api/push/cron → recordatorio diario a todos los suscritos.
-   Protegido: cabecera x-vercel-cron (invocación de Vercel) o
-   Authorization: Bearer PUSH_CRON_SECRET.                             */
+   Endurecido v9.10.1: si CRON_SECRET (o PUSH_CRON_SECRET) está definida,
+   se EXIGE `Authorization: Bearer <secret>` — la cabecera x-vercel-cron
+   por sí sola es falsificable desde fuera y permitía a cualquiera
+   disparar el envío masivo. Vercel adjunta automáticamente el header
+   Bearer con el valor de CRON_SECRET en cada invocación programada.   */
 export async function GET(req: Request) {
   try {
-    const secret = process.env.PUSH_CRON_SECRET;
+    const secret = process.env.CRON_SECRET || process.env.PUSH_CRON_SECRET;
+    const authHeader = req.headers.get("authorization");
+    const authOk = secret ? authHeader === `Bearer ${secret}` : false;
     const isVercelCron = req.headers.get("x-vercel-cron") === "1" || req.headers.get("x-vercel-cron") === "true";
-    const authOk = secret ? req.headers.get("authorization") === `Bearer ${secret}` : false;
-    if (!isVercelCron && !authOk) {
+    // sin secret configurado solo se acepta la cabecera de Vercel (dev);
+    // con secret configurado, SIEMPRE se exige el Bearer.
+    const authorized = secret ? authOk : isVercelCron;
+    if (!authorized) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
     if (!pushConfigured()) return NextResponse.json({ error: "Push no configurado" }, { status: 503 });

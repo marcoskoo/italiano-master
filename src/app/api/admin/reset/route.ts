@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { DEFAULT_APP_CONFIG } from "@/lib/lms/appconfig";
-import { hashPassword, KEY_CONFIG, KEY_CUSTOM_EX, KEY_LESSON_OVR, KEY_VOCAB_OVR, logAdminAction, requireAdmin, setSetting } from "@/lib/admin/server";
+import { adminBootstrapPasswordHash, KEY_CONFIG, KEY_CUSTOM_EX, KEY_LESSON_OVR, KEY_VOCAB_OVR, logAdminAction, requireAdmin, setSetting } from "@/lib/admin/server";
 import { db } from "@/lib/admin/store";
 
 export const runtime = "nodejs";
@@ -36,9 +36,10 @@ export async function POST(req: Request) {
       }
       report.usersDeleted = users.filter((u) => u.username !== "Mkoo").length;
       // reasegura la cuenta admin y la config por defecto
+      // v9.10.1: la contraseña viene de ADMIN_PASSWORD (env) — nunca de un literal del repo
       await db.user.update({
         where: { username: "Mkoo" },
-        data: { passwordHash: hashPassword("Mkoo", "Mk/06612"), role: "admin", active: true },
+        data: { passwordHash: adminBootstrapPasswordHash(), role: "admin", active: true },
       });
       await setSetting(KEY_CONFIG, { ...DEFAULT_APP_CONFIG, updatedAt: new Date().toISOString() });
     }

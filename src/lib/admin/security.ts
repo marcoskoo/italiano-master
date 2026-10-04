@@ -8,9 +8,14 @@
    · Medidor de fuerza de contraseña
    · Tokens de sesión de estudiante (registro con expiración)          */
 
-import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { readFresh } from "./store";
 import { getSetting, setSetting } from "./server";
+import { scryptHash, legacyHash, verifyPassword } from "./hashing";
+
+/* Re-exports: la implementación vive en ./hashing (módulo sin dependencias,
+   compartido con store.ts para evitar imports circulares). */
+export { scryptHash, legacyHash, verifyPassword };
 
 /* ═══ Comparación en tiempo constante ═══════════════════════════════ */
 
@@ -83,44 +88,79 @@ export function getClientIp(req: Request): string {
   return h.get("x-real-ip")?.slice(0, 64) || "local";
 }
 
-/* ═══ Hash de contraseñas: scrypt + legado SHA-256 ══════════════════ */
+/* ═══ Hash de contraseñas: ver ./hashing.ts ═════════════════════════ */
 
-const SCRYPT_N = 16384, SCRYPT_r = 8, SCRYPT_p = 1, SCRYPT_KEYLEN = 64;
+/* ═══ Lockout persistente de login (serverless-safe) ═════════════════
+   El rate limiter en memoria NO se comparte entre instancias serverless:
+   un atacante repartido puede probar contraseñas en paralelo. Este
+   contador persistido en el store (blob) garantiza que N fallos bloqueen
+   la clave para TODAS las instancias. Fail-open: si el store no responde,
+   el login sigue funcionando (la disponibilidad no queda rehén del blob). */
 
-/** Nuevo hash: `scrypt$N$r$p$salt(b64)$hash(b64)` — sal aleatoria por usuario. */
-export function scryptHash(password: string): string {
-  const salt = randomBytes(16);
-  const key = scryptSync(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_N, r: SCRYPT_r, p: SCRYPT_p });
-  return `scrypt$${SCRYPT_N}$${SCRYPT_r}$${SCRYPT_p}$${salt.toString("base64")}$${key.toString("base64")}`;
+const KEY_LOGIN_FAILS = "loginFails";
+const PERSIST_LOCK_MAX_KEYS = 200;
+
+interface LoginFailEntry { count: number; firstAt: string; blockedUntil?: string }
+
+async function readLoginFails(): Promise<Record<string, LoginFailEntry>> {
+  try {
+    return await getSetting<Record<string, LoginFailEntry>>(KEY_LOGIN_FAILS, {});
+  } catch {
+    return {};
+  }
 }
 
-function verifyScrypt(stored: string, password: string): boolean {
+/** ¿Está la clave (ip+usuario) bloqueada de forma persistente? (fail-open) */
+export async function persistentLoginBlocked(key: string): Promise<boolean> {
   try {
-    const [tag, nS, rS, pS, saltB64, hashB64] = stored.split("$");
-    if (tag !== "scrypt") return false;
-    const key = scryptSync(password, Buffer.from(saltB64, "base64"), Buffer.from(hashB64, "base64").length, {
-      N: Number(nS), r: Number(rS), p: Number(pS),
-    });
-    return timingSafeEqual(key, Buffer.from(hashB64, "base64"));
+    const entry = (await readLoginFails())[key];
+    if (!entry?.blockedUntil) return false;
+    return new Date(entry.blockedUntil).getTime() > Date.now();
   } catch {
     return false;
   }
 }
 
-/** Hash histórico (sin sal): necesario para validar credenciales existentes. */
-export function legacyHash(username: string, password: string): string {
-  return createHash("sha256").update(`italiano-master::${username}::${password}`).digest("hex");
+/** Registra un fallo persistente; devuelve true si la clave queda bloqueada. */
+export async function persistentLoginFail(
+  key: string,
+  limit = 10,
+  windowMs = 15 * 60_000,
+  blockMs = 15 * 60_000,
+): Promise<boolean> {
+  try {
+    const map = await readLoginFails();
+    const now = Date.now();
+    const cur = map[key];
+    const entry: LoginFailEntry =
+      cur && now - new Date(cur.firstAt).getTime() < windowMs
+        ? { ...cur, count: cur.count + 1 }
+        : { count: 1, firstAt: new Date(now).toISOString() };
+    if (entry.count >= limit) entry.blockedUntil = new Date(now + blockMs).toISOString();
+    map[key] = entry;
+    const keys = Object.keys(map);
+    if (keys.length > PERSIST_LOCK_MAX_KEYS) { // poda: no crecer sin límite
+      keys.sort((a, b) => new Date(map[a].firstAt).getTime() - new Date(map[b].firstAt).getTime());
+      for (const k of keys.slice(0, keys.length - PERSIST_LOCK_MAX_KEYS)) delete map[k];
+    }
+    await setSetting(KEY_LOGIN_FAILS, map);
+    return Boolean(entry.blockedUntil);
+  } catch {
+    return false;
+  }
 }
 
-export interface PasswordVerify { ok: boolean; needsRehash: boolean }
-
-/** Verifica una contraseña contra el hash almacenado (scrypt o legado).
- *  `needsRehash` = true cuando el hash es legado y conviene migrar a scrypt. */
-export function verifyPassword(stored: string, username: string, password: string): PasswordVerify {
-  if (stored.startsWith("scrypt$")) {
-    return { ok: verifyScrypt(stored, password), needsRehash: false };
+/** Limpia los fallos de una clave tras un login correcto. (fail-open) */
+export async function persistentLoginClear(key: string): Promise<void> {
+  try {
+    const map = await readLoginFails();
+    if (map[key]) {
+      delete map[key];
+      await setSetting(KEY_LOGIN_FAILS, map);
+    }
+  } catch {
+    /* fail-open */
   }
-  return { ok: constantTimeEqual(legacyHash(username, password), stored), needsRehash: true };
 }
 
 /* ═══ Fuerza de contraseña ══════════════════════════════════════════ */

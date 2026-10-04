@@ -15,6 +15,7 @@ import fs from "fs/promises";
 import path from "path";
 import { get as blobGet, put as blobPut } from "@vercel/blob";
 import { weekKeyFor, promoteLeague, demoteLeague, PROMOTION_SLOTS, DEMOTION_RATIO, MIN_ACTIVE_DEMOTION } from "@/lib/lms/leagues";
+import { scryptHash } from "./hashing";
 
 /* ── modelos (idénticos a las tablas anteriores) ────────────────────── */
 
@@ -70,11 +71,40 @@ const BLOB_PATHNAME = "italiano-master/state.json";
 const DATA_FILE = path.join(process.cwd(), "db", "app-data.json");
 const MAX_TELEMETRY = 2000;
 
-/* ── hash de contraseñas (mismo esquema histórico: mantiene los hashes
-     existentes válidos tras la migración) ───────────────────────────── */
+/* ── hash de contraseñas ────────────────────────────────────────────
+   v9.10.1 (auditoría): NINGUNA contraseña por defecto vive en el código
+   fuente (el repositorio es público y los literales históricos permitían
+   entrar como admin en producción). La cuenta admin se inicializa desde
+   ADMIN_PASSWORD (env, scrypt con sal) o con una contraseña ALEATORIA
+   imposible de conocer si la variable no está definida.               */
 
-export function hashPassword(username: string, password: string): string {
-  return createHash("sha256").update(`italiano-master::${username}::${password}`).digest("hex");
+/** Hash de arranque para la cuenta admin: ADMIN_PASSWORD (env) o aleatorio. */
+export function adminBootstrapPasswordHash(): string {
+  const env = process.env.ADMIN_PASSWORD;
+  if (env && env.length >= 8) return scryptHash(env);
+  return scryptHash(randomBytes(24).toString("base64url"));
+}
+
+/** Hash para cuentas demo: contraseña aleatoria, nadie debe poder entrar. */
+export function randomDemoPasswordHash(): string {
+  return scryptHash(randomBytes(24).toString("base64url"));
+}
+
+/* v9.10.1 · Rotación ONE-TIME de la contraseña admin filtrada históricamente:
+   si ADMIN_PASSWORD está definida y la cuenta admin aún guarda el hash del
+   literal que se publicó en el repo (comparado como DIGEST precalculado, sin
+   repetir el literal), se rota a scrypt(ADMIN_PASSWORD).
+   Si el admin ya cambió su contraseña (hash distinto), no se toca nada. */
+const LEAKED_ADMIN_HASH_DIGEST =
+  "e637279bbdd822f21b8726b4f8ee7cc8e8e6c6d727259c6066f09b4cc095b9bd"; // sha256(italiano-master::Mkoo::<filtrada>)
+export function rotateLeakedAdminPassword(d: StoreData): boolean {
+  const envPw = process.env.ADMIN_PASSWORD;
+  if (!envPw || envPw.length < 8) return false;
+  const idx = d.users.findIndex((u) => u.role === "admin");
+  if (idx === -1) return false;
+  if (d.users[idx].passwordHash !== LEAKED_ADMIN_HASH_DIGEST) return false;
+  d.users[idx].passwordHash = scryptHash(envPw);
+  return true;
 }
 
 /* ── semilla para despliegues nuevos ────────────────────────────────── */
@@ -97,7 +127,7 @@ function seedData(): StoreData {
     weekKey: weekKeyFor(),
     league: "diamante",
     active: true,
-    passwordHash: hashPassword("Mkoo", "Mk/06612"),
+    passwordHash: adminBootstrapPasswordHash(), // ADMIN_PASSWORD (env) o aleatoria — nunca un literal
     lastSeen: new Date(now),
     createdAt: new Date(now - 120 * day),
   };
@@ -124,7 +154,7 @@ function seedData(): StoreData {
     weekKey: weekKeyFor(),
     league,
     active: true,
-    passwordHash: hashPassword(username, "italiano123"),
+    passwordHash: randomDemoPasswordHash(), // demo: contraseña aleatoria, nadie inicia sesión con estas cuentas
     lastSeen: new Date(now - Math.floor(Math.random() * 3 * day)),
     createdAt: new Date(now - (60 - i * 9) * day),
   }));
@@ -285,6 +315,10 @@ async function init(): Promise<void> {
     const fromBlob = await loadFromBlob();
     trace.push(`loadFromBlob=${fromBlob ? "ok" : "null"}`);
     if (fromBlob) {
+      if (rotateLeakedAdminPassword(fromBlob)) {
+        const saved = await saveToBlob(fromBlob);
+        trace.push(`rotateLeakedAdmin=${saved ? "ok" : "failed"}`);
+      }
       commit(fromBlob, "blob");
       trace.push("commit=blob(fromBlob)");
       return;
@@ -292,6 +326,7 @@ async function init(): Promise<void> {
   }
   const fromFile = await loadFromFile();
   trace.push(`loadFromFile=${fromFile ? "ok" : "null"}`);
+  if (fromFile) rotateLeakedAdminPassword(fromFile); // dev/sandbox: se persiste abajo vía saveToFile
   const base = fromFile ?? seedData();
   if (hasBlob) {
     const saved = await saveToBlob(base);

@@ -6,7 +6,7 @@ import { db, readFresh } from "@/lib/admin/store";
 import { DEFAULT_APP_CONFIG, type AppConfig, type BillingConfig } from "@/lib/lms/appconfig";
 import { constantTimeEqual, isValidBic, isValidIban, normalizeIban } from "@/lib/admin/security";
 
-export { hashPassword } from "./store";
+export { adminBootstrapPasswordHash, randomDemoPasswordHash } from "./store";
 
 export const KEY_CONFIG = "config";
 export const KEY_ADMIN_TOKEN = "adminToken";

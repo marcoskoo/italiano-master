@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/admin/store";
 import { getAppConfig, issueAdminToken, logEvent } from "@/lib/admin/server";
-import { getClientIp, legacyHash, rateLimit, scryptHash, verifyPassword } from "@/lib/admin/security";
+import { getClientIp, legacyHash, rateLimit, scryptHash, verifyPassword, persistentLoginBlocked, persistentLoginFail, persistentLoginClear } from "@/lib/admin/security";
 
 export const runtime = "nodejs";
 
@@ -44,6 +44,17 @@ export async function POST(req: Request) {
       );
     }
 
+    // v9.10.1: lockout PERSISTENTE compartido entre instancias serverless
+    // (el limitador en memoria no viaja entre lambdas; este sí).
+    const persistKey = `login:p:${ip}:${username.toLowerCase()}`;
+    if (await persistentLoginBlocked(persistKey)) {
+      await logEvent(ip, username.slice(0, 64), "login_rate_limited");
+      return NextResponse.json(
+        { error: "Cuenta temporalmente bloqueada por intentos fallidos. Reintenta en unos minutos." },
+        { status: 429, headers: { "Retry-After": "900" } },
+      );
+    }
+
     const user = await db.user.findUnique({ where: { username } });
 
     // igualación de tiempos: se verifica un hash ficticio cuando el usuario no existe
@@ -54,14 +65,17 @@ export async function POST(req: Request) {
       ok = v.ok;
       needsRehash = v.ok && v.needsRehash;
     } else {
-      verifyPassword(legacyHash("ghost", "no-user", "timing-equalizer"), "ghost", password);
+      verifyPassword(legacyHash("ghost", "timing-equalizer"), "ghost", password);
     }
 
     // mensaje unificado: no revela si el usuario existe o si la cuenta está desactivada
     if (!ok || !user || !user.active) {
       await logEvent(ip, username.slice(0, 64), "login_failed");
+      await persistentLoginFail(persistKey, Math.max(6, maxAttempts * 2), lockMs, lockMs); // contador compartido
       return NextResponse.json({ error: "Credenciales incorrectas" }, { status: 401 });
     }
+
+    await persistentLoginClear(persistKey); // login correcto: reinicia el contador persistente
 
     // migración transparente: hash legado → scrypt con sal
     if (needsRehash) {
