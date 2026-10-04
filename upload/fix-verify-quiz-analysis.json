@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Yes, all text on the white quiz card is readable dark-on-white. There is no invisible cream text. The text (including the question, options, and score chip) uses dark gray or black colors that provide high contrast against the white background.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1791081437,
+  "id": "2026100410371588013027981244f6",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026100410371588013027981244f6",
+  "usage": {
+    "completion_tokens": 51,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1477,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1528
+  }
+}

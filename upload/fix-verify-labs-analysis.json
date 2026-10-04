@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "IMAGE1: Yes, all text on the white card (title, axis labels, vowel symbols) is dark-on-white and fully readable. No invisible text.\nIMAGE2: Yes, all text on the game cards (titles, subtitles, descriptions) is light-on-dark (on dark card surfaces), not on white. No invisible text.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1791081422,
+  "id": "20261004103659129bedf29131459f",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20261004103659129bedf29131459f",
+  "usage": {
+    "completion_tokens": 69,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2903,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2972
+  }
+}

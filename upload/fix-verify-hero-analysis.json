@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "YES. The text inside the white bubbles is clearly readable. The words I can read in the bubbles are:\n\n*   **ciao** / **hello**\n*   **sole** / **sun**\n*   **amore** / **love**\n*   **arte** / **art**\n*   **cibo** / **food**\n*   **musica** / **music**",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1791081388,
+  "id": "20261004103625a5853860b61d48f8",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20261004103625a5853860b61d48f8",
+  "usage": {
+    "completion_tokens": 81,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1527,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1608
+  }
+}
