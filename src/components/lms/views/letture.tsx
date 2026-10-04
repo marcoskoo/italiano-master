@@ -18,6 +18,8 @@ import { LETTURE, LETTURE_CATS, LETTURE_BY_ID, LETTURE_IMG, letturaExercises, ty
 import type { CefrLevel } from "@/lib/lms/types";
 import { QuizEngine } from "../quiz-engine";
 import { VoiceHint } from "../audio-button";
+import { HoverWords } from "../hover-words";
+import { MindCollection } from "../mind-library";
 
 const LEVELS: (CefrLevel | "tutti")[] = ["tutti", "A1", "A2", "B1", "B2", "C1", "C2"];
 const RATES = [0.75, 0.9, 1, 1.2];
@@ -33,6 +35,8 @@ const CAT_STYLES: Record<LetturaCat, string> = {
 export function LettureView() {
   const [cat, setCat] = useState<LetturaCat | "tutte">("tutte");
   const [level, setLevel] = useState<CefrLevel | "tutti">("tutti");
+  /* v9.14: modo biblioteca clásica o colección Meditazione e consapevolezza */
+  const [collection, setCollection] = useState<"libri" | "mente">(() => (useLms.getState().navParams.mindId ? "mente" : "libri"));
   // deep-link inicial (navParams.letturaId): la vista se monta ya en la lettura pedida
   const [openId, setOpenId] = useState<string | null>(() => {
     const p = useLms.getState().navParams.letturaId;
@@ -49,9 +53,38 @@ export function LettureView() {
 
   if (text) return <Reader key={text.id} text={text} onBack={() => setOpenId(null)} />;
 
+  if (collection === "mente") {
+    return (
+      <div className="space-y-6">
+        <VoiceHint />
+        <MindCollection initialId={useLms.getState().navParams.mindId} onBack={() => setCollection("libri")} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <VoiceHint />
+
+      {/* colección temática v9.14 */}
+      <button
+        onClick={() => setCollection("mente")}
+        className="group flex w-full flex-wrap items-center gap-4 rounded-3xl border-2 border-oro/35 bg-gradient-to-r from-oro-tenue/80 via-crema to-verde-tenue/50 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-oro/60 hover:shadow-lg dark:from-oro-tenue/25 dark:via-inchiostro/10 dark:to-verde-tenue/10 sm:p-5"
+      >
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-surface text-2xl shadow-sm">🧘</span>
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-2 font-display text-base font-bold">
+            Meditazione e consapevolezza
+            <span className="rounded-full bg-oro px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">198 letture</span>
+          </span>
+          <span className="mt-0.5 block text-sm leading-relaxed text-muted-it">
+            Meditación, espiritualidad, aquí y ahora, relajación física y mental · A1–C2 · 7 estrategias de comprensión · traducción al pasar el cursor
+          </span>
+        </span>
+        <span className="shrink-0 rounded-xl bg-verde px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-verde/25 transition-transform group-hover:scale-105">
+          Esplora
+        </span>
+      </button>
 
       {/* filtros por categoría */}
       <div className="flex flex-wrap gap-2">
@@ -404,7 +437,7 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
                         </button>
                       </div>
                     )}
-                    <p className={cn("leading-[1.85] transition-colors", active ? "text-lg font-medium text-inchiostro dark:text-surface" : "text-lg")}>{l.it}</p>
+                    <p className={cn("leading-[1.85] transition-colors", active ? "text-lg font-medium text-inchiostro dark:text-surface" : "text-lg")}><HoverWords text={l.it} /></p>
                     {subs && <p className="mt-1 text-sm italic text-muted-it">{l.es}</p>}
                   </div>
                 </div>

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   BookOpen, CheckCircle2, Circle, Ear, Eye, EyeOff, HelpCircle, Lightbulb,
-  ListOrdered, Music4, Search, Sparkles, Target,
+  ListOrdered, MousePointerClick, Music4, Search, Sparkles, Target,
 } from "lucide-react";
 import type { MindIdeas, MindIntruder, MindQuiz, MindReading, MindSequence, MindVF } from "@/lib/lms/cambridge-mind";
 import { MIND_THEME_LABEL } from "@/lib/lms/cambridge-mind";
@@ -12,6 +12,7 @@ import { MIND_READINGS } from "@/lib/lms/extra/readings-mind";
 import { useLms } from "@/lib/lms/store";
 import { speak } from "@/lib/lms/tts";
 import { AudioButton } from "./audio-button";
+import { HoverWords } from "./hover-words";
 import { cn } from "@/lib/utils";
 
 /* ═══ v9.13 · Letture tematiche: meditazione, spiritualità, qui e ora,
@@ -386,7 +387,7 @@ function ListenBlock({ audioIt, intro, questions, answers, onPick }: {
         </div>
         {revealed && (
           <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-xl bg-surface p-4 text-base leading-[1.9]">
-            {audioIt}
+            <HoverWords text={audioIt} />
           </motion.p>
         )}
       </div>
@@ -398,7 +399,7 @@ function ListenBlock({ audioIt, intro, questions, answers, onPick }: {
 }
 
 /* ── Lectura individual ──────────────────────────────────────────── */
-function MindReadingCard({ reading, onCompleted }: { reading: MindReading; onCompleted: () => void }) {
+export function MindReadingCard({ reading, onCompleted }: { reading: MindReading; onCompleted: () => void }) {
   const [phase, setPhase] = useState<"predict" | "read">("predict");
   const [predictPick, setPredictPick] = useState<number | null>(null);
   const [showEs, setShowEs] = useState(false);
@@ -525,12 +526,16 @@ function MindReadingCard({ reading, onCompleted }: { reading: MindReading; onCom
         </div>
       </div>
 
-      {/* texto */}
+      {/* texto · pasa el cursor (o toca) una palabra para ver su traducción */}
+      <p className="mb-3 rounded-xl bg-crema-scura px-3.5 py-2 text-xs font-semibold text-muted-it dark:bg-inchiostro/10">
+        <MousePointerClick className="mr-1.5 inline h-3.5 w-3.5 text-verde" aria-hidden="true" />
+        Pasa el cursor (o toca) cualquier palabra subrayada para ver su traducción y escucharla.
+      </p>
       <div className="mt-4 space-y-5">
         {reading.paragraphs.map((p, i) => (
           <div key={i}>
             <div className="flex items-start gap-2">
-              <p className="flex-1 text-base leading-[1.95]">{p.it}</p>
+              <p className="flex-1 text-base leading-[1.95]"><HoverWords text={p.it} /></p>
               <AudioButton text={p.it} size="sm" />
             </div>
             {showEs && <p className="mt-1.5 text-sm italic leading-relaxed text-muted-it">{p.es}</p>}

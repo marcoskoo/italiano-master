@@ -334,6 +334,7 @@ export interface NavParams {
   wordId?: string;      // entrada del diccionario a abrir
   grammarId?: string;   // tema de gramática a abrir
   letturaId?: string;   // lettura (v9.0) a abrir
+  mindId?: string;      // lectura temática (v9.14, colección Meditazione e consapevolezza)
 }
 
 /* ── v9.4 · Imágenes de las 3 hojas de estudio (Printables) ───────── */
