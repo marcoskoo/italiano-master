@@ -15,6 +15,8 @@ import { useLms } from "@/lib/lms/store";
 import { buildCast, speak, stopSpeaking, speakDialogue, type SpeakerVoice } from "@/lib/lms/tts";
 import { AudioButton } from "./audio-button";
 import { ClozeReadings } from "./cloze-readings";
+import { MindReadings } from "./mind-readings";
+import { GRAMMAR_DRILLS } from "@/lib/lms/extra/grammar-drills";
 import { ThemeImg } from "./theme-img";
 import { cn } from "@/lib/utils";
 
@@ -25,19 +27,47 @@ import { cn } from "@/lib/utils";
 
 const STEP_ICONS = [Lightbulb, Ear, ListChecks, Library, BookOpen, Volume2, Mic2, BookOpen, PenLine, Globe2, Sparkles, Target];
 
+/* ── v9.13 · Mezcla estable de opciones en los quizzes ──────────────
+   Permutación determinística por texto de pregunta: la opción correcta
+   no queda siempre en la misma posición entre renders.               */
+function cbHash(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function cbPerm(seed: number, len: number): number[] {
+  let a = seed >>> 0;
+  const rnd = () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const idx = Array.from({ length: len }, (_, i) => i);
+  for (let i = len - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [idx[i], idx[j]] = [idx[j], idx[i]];
+  }
+  return idx;
+}
+
 /* ── Mini-quiz inline (comprensión / gaps / repaso) ───────────────── */
 function CbQuiz({ items, title, onPass, passPct = 60 }: { items: CbQuizItem[]; title?: string; onPass?: (score: number, total: number) => void; passPct?: number }) {
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const shuffled = useMemo(() => items.map((it) => {
+    const perm = cbPerm(cbHash(it.q), it.options.length);
+    return { q: it.q, options: perm.map((i) => it.options[i]), answer: perm.indexOf(it.answer), explain: it.explain };
+  }), [items]);
   const answered = Object.keys(answers).length;
-  const score = items.reduce((n, it, i) => n + (answers[i] === it.answer ? 1 : 0), 0);
-  const finished = answered === items.length;
-  const passed = finished && score / items.length * 100 >= passPct;
+  const score = shuffled.reduce((n, it, i) => n + (answers[i] === it.answer ? 1 : 0), 0);
+  const finished = answered === shuffled.length;
+  const passed = finished && score / shuffled.length * 100 >= passPct;
 
   return (
     <div>
       {title && <h3 className="mb-4 font-display text-lg font-semibold">{title}</h3>}
       <div className="space-y-4">
-        {items.map((it, i) => (
+        {shuffled.map((it, i) => (
           <div key={i} className={cn("rounded-2xl border-2 p-4 transition-colors", answers[i] === undefined ? "border-soft bg-surface" : answers[i] === it.answer ? "border-verde/50 bg-verde-tenue/40" : "border-rosso/40 bg-rosso-tenue/20")}>
             <p className="font-semibold leading-snug">{i + 1}. {it.q}</p>
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -73,12 +103,12 @@ function CbQuiz({ items, title, onPass, passPct = 60 }: { items: CbQuizItem[]; t
       </div>
       {finished && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("mt-5 rounded-2xl p-4 text-center", passed ? "bg-verde-tenue" : "bg-rosso-tenue/30")}>
-          <p className="font-display text-lg font-bold">{score}/{items.length} · {Math.round(score / items.length * 100)}%</p>
-          <p className="text-sm text-muted-it">{passed ? "Superado ✔" : `Necesitas ${Math.ceil(items.length * passPct / 100)} aciertos — reintenta las falladas arriba`}</p>
+          <p className="font-display text-lg font-bold">{score}/{shuffled.length} · {Math.round(score / shuffled.length * 100)}%</p>
+          <p className="text-sm text-muted-it">{passed ? "Superato ✔" : `Necesitas ${Math.ceil(shuffled.length * passPct / 100)} aciertos — reintenta las falladas arriba`}</p>
           {onPass && passed && <AutoPass onPass={() => onPass(score, items.length)} />}
         </motion.div>
       )}
-      {!finished && <p className="mt-3 text-center text-xs font-semibold text-muted-it">{answered}/{items.length} respondidas</p>}
+      {!finished && <p className="mt-3 text-center text-xs font-semibold text-muted-it">{answered}/{shuffled.length} respondidas</p>}
     </div>
   );
 }
@@ -290,6 +320,13 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                 {unit.grammar.rule.map((r, i) => <p key={i} className="leading-relaxed">{r}</p>)}
               </div>
               <CbQuiz items={unit.grammar.gaps} title="Metti alla prova" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+              {/* v9.13 · allenamiento extra: trasformazioni + correzione errori */}
+              {GRAMMAR_DRILLS[unit.id] && (
+                <>
+                  <CbQuiz items={GRAMMAR_DRILLS[unit.id].transform} title="Allenamento extra · Trasformazioni" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+                  <CbQuiz items={GRAMMAR_DRILLS[unit.id].errors} title="Correggi l'errore · detective grammaticale" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+                </>
+              )}
               {unit.grammar.topicId && (
                 <button
                   onClick={() => navigate("grammatica", { grammarId: unit.grammar!.topicId } as never)}
@@ -348,7 +385,9 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           {stepId === "lettura" && (
             <div className="space-y-5">
               <SectionTitle icon={<BookOpen className="h-5 w-5 text-oro" aria-hidden="true" />} n={8} title="Lettura · Leer en contexto" />
-              {/* v9.12 · 3 letture con cloze inferencial por unidad */}
+              {/* v9.13 · 3 letture tematiche (meditazione/spiritualità/qui-ora/relax) con 7 strategie */}
+              <MindReadings unitId={unit.id} />
+              {/* v9.12 · 3 letture cloze (inferenza lessicale contestuale) */}
               <ClozeReadings unitId={unit.id} />
               <details className="group rounded-3xl border border-soft bg-surface">
                 <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-5 py-3 text-sm font-bold text-muted-it transition-colors hover:text-verde">

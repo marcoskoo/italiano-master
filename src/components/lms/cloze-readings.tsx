@@ -21,6 +21,40 @@ function stripMarkers(s: string) {
   return s.replace(GAP_RE, "");
 }
 
+/* ── Mezcla estable de opciones ────────────────────────────────────
+   v9.13: los datos se autoran con la correcta en primera posición;
+   sin este shuffle el estudiante aprendería "elige siempre la primera".
+   La permutación es determinística por (id de lectura, nº de hueco):
+   estable entre renders y sin problemas de hidratación.          */
+function hashStr(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function seededPerm(seed: number, len: number): number[] {
+  let a = seed >>> 0;
+  const rnd = () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const idx = Array.from({ length: len }, (_, i) => i);
+  for (let i = len - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [idx[i], idx[j]] = [idx[j], idx[i]];
+  }
+  return idx;
+}
+interface ShuffledGap { options: string[]; answer: number; why?: string; correctWord: string; }
+function shuffleGaps(text: CbClozeText): ShuffledGap[] {
+  const seed = hashStr(text.id);
+  return text.gaps.map((g, gi) => {
+    const perm = seededPerm(seed + gi * 7919, g.options.length);
+    return { options: perm.map((i) => g.options[i]), answer: perm.indexOf(g.answer), why: g.why, correctWord: g.options[g.answer] };
+  });
+}
+
 /* ── Un hueco inline ─────────────────────────────────────────────── */
 function Gap({
   n, state, onClick,
@@ -58,13 +92,14 @@ function ClozeReadingCard({
   const [active, setActive] = useState<number | null>(null);
   const [showEs, setShowEs] = useState(false);
   const [done, setDone] = useState(false);
+  const gaps = useMemo(() => shuffleGaps(text), [text]);
 
   const solvedCount = Object.keys(picks).length;
-  const total = text.gaps.length;
+  const total = gaps.length;
   const allSolved = solvedCount === total;
 
   const choose = (n: number, oi: number) => {
-    const gap = text.gaps[n - 1];
+    const gap = gaps[n - 1];
     if (!gap || picks[n] !== undefined) return;
     if (oi === gap.answer) {
       const next = { ...picks, [n]: oi };
@@ -118,13 +153,13 @@ function ClozeReadingCard({
                         const n = parseInt(seg, 10);
                         const solved = picks[n] !== undefined;
                         const isWrong = wrong[n] !== undefined;
-                        const gap = text.gaps[n - 1];
+                        const gap = gaps[n - 1];
                         return solved ? (
                           <span
                             key={k}
                             className="mx-1 inline-flex items-center gap-1 rounded-lg bg-verde px-2 py-0.5 font-semibold text-white"
                           >
-                            {gap.options[gap.answer]}
+                            {gap.correctWord}
                           </span>
                         ) : (
                           <Gap
@@ -160,7 +195,7 @@ function ClozeReadingCard({
             Completa il hueco {active} · deduci la palabra por el contexto
           </p>
           <div className="grid gap-2 sm:grid-cols-3">
-            {text.gaps[active - 1].options.map((op, oi) => {
+            {gaps[active - 1].options.map((op, oi) => {
               const isWrongPick = wrong[active] === oi;
               return (
                 <button
@@ -181,7 +216,7 @@ function ClozeReadingCard({
           </div>
           {wrong[active] !== undefined && (
             <p className="mt-2 text-xs font-semibold text-rosso">
-              No es «{text.gaps[active - 1].options[wrong[active]]}» — busca la palabra que encaja con el sentido de la frase.
+              No es «{gaps[active - 1].options[wrong[active]]}» — busca la palabra que encaja con el sentido de la frase.
             </p>
           )}
         </motion.div>
