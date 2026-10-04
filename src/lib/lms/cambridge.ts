@@ -15,6 +15,23 @@ import { CB_C2 } from "./extra/cambridge-c2";
 
 export interface CbQuizItem { q: string; options: string[]; answer: number; explain?: string; }
 
+/* v9.12 · Lecturas con comprensión cloze (inferencia léxica contextual):
+   el texto italiano lleva marcadores {1} {2}… que el reproductor convierte
+   en huecos; el estudiante deduce la palabra correcta por el contexto. */
+export interface CbClozeGap {
+  options: string[];        // 3 opciones plausibles (solo una encaja)
+  answer: number;           // índice de la correcta
+  why?: string;             // feedback breve (ES) del porqué
+}
+export interface CbClozeText {
+  id: string;               // "cz-a1-01-1"
+  title: string;            // IT
+  titleEs: string;          // ES
+  minutes: number;
+  paragraphs: { it: string; es: string }[]; // it contiene marcadores {n}
+  gaps: CbClozeGap[];       // gaps[n-1] corresponde al marcador {n}
+}
+
 export interface CbUnit {
   id: string;                    // "cu-a1-01"
   n: number;                     // nº de unidad dentro del nivel

@@ -14,6 +14,7 @@ import { GRAMMAR_IMG } from "@/lib/lms/grammar";
 import { useLms } from "@/lib/lms/store";
 import { buildCast, speak, stopSpeaking, speakDialogue, type SpeakerVoice } from "@/lib/lms/tts";
 import { AudioButton } from "./audio-button";
+import { ClozeReadings } from "./cloze-readings";
 import { ThemeImg } from "./theme-img";
 import { cn } from "@/lib/utils";
 
@@ -347,6 +348,16 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           {stepId === "lettura" && (
             <div className="space-y-5">
               <SectionTitle icon={<BookOpen className="h-5 w-5 text-oro" aria-hidden="true" />} n={8} title="Lettura · Leer en contexto" />
+              {/* v9.12 · 3 letture con cloze inferencial por unidad */}
+              <ClozeReadings unitId={unit.id} />
+              <details className="group rounded-3xl border border-soft bg-surface">
+                <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-5 py-3 text-sm font-bold text-muted-it transition-colors hover:text-verde">
+                  <BookOpen className="h-4 w-4 shrink-0 text-oro" aria-hidden="true" />
+                  Lettura estesa del corso (opcional)
+                  <span className="ml-auto text-xs font-normal opacity-70 group-open:hidden">mostra</span>
+                  <span className="ml-auto hidden text-xs font-normal opacity-70 group-open:inline">nascondi</span>
+                </summary>
+                <div className="space-y-4 border-t border-soft p-5">
               {reading ? (
                 <>
                   <div className="rounded-2xl border-l-4 border-oro bg-oro-tenue/30 p-5">
@@ -396,6 +407,8 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   ))}
                 </div>
               ) : null}
+                </div>
+              </details>
               {unit.reading.question && (
                 <div className="rounded-2xl bg-verde-tenue/50 p-5">
                   <p className="font-semibold">🤔 {unit.reading.question}</p>
