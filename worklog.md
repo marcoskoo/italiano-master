@@ -615,3 +615,21 @@ Stage Summary:
 - LETTURE: 58 lecturas (A1:4 A2:9 B1:17 B2:18 C1:8 C2:2 · dialoghi 10, informazione 11, storia-italia 9, storia-mondo 9, cultura 19), 15 imágenes nuevas QA VLM aprobadas, catálogo completo 427 imágenes.
 - SEGURIDAD: CSP estricta con nonce en producción (sin unsafe-inline/unsafe-eval en scripts), X-Permitted-Cross-Domain-Policies, 0 vulns npm, credenciales rotadas operativas, residuales documentados (localStorage tokens = decisión documentada, IBAN público = by design).
 - Pendiente deploy: commit + push (remote ya configurado con token) → Vercel → verificación producción (CSP header con nonce en prod, E2E imágenes, smoke admin).
+
+---
+Task ID: 8 (cierre v9.11)
+Agent: main (Super Z)
+Task: Deploy v9.11 a producción + verificación E2E completa
+
+Work Log:
+- Commit 249e33f → push → deploy dpl_4EATsWvjxCq6PeykFV6Tvf9DmnKe READY (~45 s).
+- Producción verificada: home 200, CSP con nonce por-request SIN unsafe-inline/unsafe-eval en script-src, nonce presente en los scripts inline del HTML, sw im-v9-11-0, 6 headers de seguridad presentes (HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, X-Permitted-Cross-Domain-Policies).
+- E2E imágenes: 427/427 OK byte-idénticas (412 previas + 15 nuevas).
+- Smoke tests seguridad: credenciales viejas 401 ✓, cron sin auth 401 ✓, SSRF 169.254.169.254 y localhost 403 ✓, /api/app-config 200 ✓.
+- Navegador producción (agent-browser, sesión limpia): 0 violaciones CSP en consola, título correcto, "58 letture disponibles", contenido nuevo visible (anni di piombo B2, vichinghi A2), imágenes 200.
+
+Stage Summary:
+- v9.11 LIVE en italiano-master.vercel.app: biblioteca de lecturas ampliada a 58 (+15, prioridad principiantes A1/A2) y CSP estricta con nonce (ciber-seguridad residual cerrada).
+- Catálogo de imágenes: 427 en producción, E2E byte-idéntico, CERO huecos.
+- Residuales de seguridad restantes (documentados, aceptables): tokens en localStorage (patrón Bearer SPA; mitigación real = CSP estricta ya aplicada), IBAN público en app-config (by design).
+- Siguientes pasos candidatos: certificados PDF, modo enfoque/estadísticas, más testi graduados (rd-31+), TTS multi-rol en más vistas.
