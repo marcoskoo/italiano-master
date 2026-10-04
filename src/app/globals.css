@@ -119,6 +119,37 @@
   --surface: #211d18;
 }
 
+/* Componentes con superficies blancas fijas (laboratorios interactivos, chips
+   del hero): re-fijan la paleta a los valores claros para que los textos
+   adaptativos (text-inchiostro, text-verde-scuro…) sigan siendo legibles
+   cuando el tema global es oscuro. Las custom properties se resuelven por
+   herencia en cada elemento, así la re-declaración más cercana gana sobre
+   la de html.dark. */
+.force-light {
+  --verde: #128a54;
+  --verde-scuro: #0a5c38;
+  --verde-tenue: #e7f4ec;
+  --rosso: #c0392b;
+  --rosso-scuro: #96261d;
+  --rosso-tenue: #f9eae7;
+  --oro: #c9862b;
+  --oro-scuro: #9c6512;
+  --oro-tenue: #f9f0dd;
+  --terracotta: #c96f45;
+  --terracotta-scuro: #9a4e2e;
+  --terracotta-tenue: #f8ece4;
+  --azzurro: #3a7ca5;
+  --azzurro-scuro: #275e80;
+  --azzurro-tenue: #e8f2f8;
+  --viola: #7c5cbf;
+  --viola-scuro: #5b4094;
+  --viola-tenue: #efeaf9;
+  --crema: #faf6ee;
+  --crema-scura: #f1eadd;
+  --inchiostro: #26221e;
+  --surface: #ffffff;
+}
+
 @theme {
   --animate-float: float 7s ease-in-out infinite;
   --animate-dot-breathe: dot-breathe 3s ease-in-out infinite;

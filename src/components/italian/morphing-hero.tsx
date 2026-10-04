@@ -195,11 +195,11 @@ export function MorphingHero() {
         {FLOATING_WORDS.map((w) => (
           <div
             key={w.it}
-            className={`animate-float absolute z-10 hidden items-center gap-1.5 rounded-full border border-stone-200/80 bg-white/85 px-3 py-1.5 shadow-sm backdrop-blur-sm sm:flex ${w.className}`}
+            className={`force-light animate-float absolute z-10 hidden items-center gap-1.5 rounded-full border border-stone-200/80 bg-white/85 px-3 py-1.5 shadow-sm backdrop-blur-sm sm:flex ${w.className}`}
             style={{ animationDelay: w.delay }}
           >
             <span className="font-display text-sm italic text-inchiostro">{w.it}</span>
-            <span className="text-[11px] text-stone-400">{w.en}</span>
+            <span className="text-[11px] font-semibold text-stone-500">{w.en}</span>
           </div>
         ))}
 

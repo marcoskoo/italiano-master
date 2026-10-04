@@ -139,7 +139,7 @@ export function StepSolutions() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="force-light mx-auto max-w-3xl">
       {/* problem tabs */}
       <div className="mb-5 grid gap-2 sm:grid-cols-3" role="tablist" aria-label="Problemi di grammatica">
         {PROBLEMS.map((p, i) => (

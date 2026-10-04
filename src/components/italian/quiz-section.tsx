@@ -157,7 +157,7 @@ export function QuizSection() {
           : "Riproviamo! Every maestro began here.";
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="force-light mx-auto max-w-3xl">
       <div
         className={`relative overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-5 shadow-sm transition-shadow sm:p-8 ${
           cardFlash === "good" ? "card-flash-good" : cardFlash === "bad" ? "card-flash-bad" : ""

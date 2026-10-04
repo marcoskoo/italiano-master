@@ -210,7 +210,7 @@ export function IntonationStudio() {
     "[&_[data-slot=slider-range]]:bg-verde [&_[data-slot=slider-thumb]]:border-verde [&_[data-slot=slider-thumb]]:bg-white";
 
   return (
-    <div className="rounded-3xl border border-stone-200/80 bg-white p-5 shadow-sm sm:p-7">
+    <div className="force-light rounded-3xl border border-stone-200/80 bg-white p-5 shadow-sm sm:p-7">
       {/* header */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>

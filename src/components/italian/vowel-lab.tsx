@@ -188,7 +188,7 @@ export function VowelLab() {
   const v = readout.nearest;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8">
+    <div className="force-light grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8">
       {/* ── Chart card ─────────────────────────────────────────── */}
       <div className="rounded-3xl border border-stone-200/80 bg-white p-4 shadow-sm sm:p-6">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
