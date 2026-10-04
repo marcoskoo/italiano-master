@@ -569,3 +569,25 @@ Stage Summary:
 - Catálogo de imágenes: 412 en producción (28+15 letture, 30 testi, 150 grammatica, resto familias), E2E byte-idéntico.
 - Producción LIVE en italiano-master.vercel.app con sw im-v9-10-0.
 - Ideas siguientes de la lista de fondo: más testi graduados (rd-31+, requiere ejercicios ex-let), certificados PDF, modo enfoque/estadísticas, TTS multi-rol en más vistas.
+
+---
+Task ID: sec-1
+Agent: main (Super Z)
+Task: Auditoría de seguridad completa + corrección de vulnerabilidades (v9.10.1)
+
+Work Log:
+- Auditoría de código: 21 rutas API, lib admin (server/store/security), push, SW, CSP, headers, .gitignore, historial git.
+- VULN CRÍTICA confirmada en producción: credenciales admin hardcodeadas (Mkoo/Mk/06612) en repo GitHub PÚBLICO → login admin exitoso verificado con curl.
+- Fix crítico 1: nuevo módulo src/lib/admin/hashing.ts (scrypt+legacy sin imports circulares); store.ts/reset/seed sin literales — admin se inicializa desde ADMIN_PASSWORD (env) o aleatorio; demos con password aleatorio; rotación one-time con marcador adminPwRotated (detecta legacy SHA-256 Y scrypt del filtrado).
+- Fix crítico 2: dependencias 18 vulns → 0 (npm audit --omit=dev): next 16.1.1→16.3.8 (2 critical), eliminados @mdxeditor/editor+next-auth+react-syntax-highlighter+uuid (no usados), sharp→0.35.5, overrides js-cookie/lodash/lodash-es/picomatch anidados, cirugía bun.lock para picomatch 4.0.3 anidados.
+- Fix HIGH: /api/import anti-SSRF — dns.lookup valida IPs (bloquea loopback/privadas/link-local/CGNAT/ULA/multicast), redirects manuales re-validados por salto (máx 3), rate limit 10/min.
+- Fix MED: /api/tutor rate limit 20/min + caps (≤30 msgs, 4KB/msg, sanitize userName/level/mode); /api/push/cron exige Bearer CRON_SECRET si existe (x-vercel-cron solo sin secret); login con lockout PERSISTENTE en blob (fail-open, máx 200 claves); push subscribe/unsubscribe rate limit 15/min.
+- Fix LOW: eliminada ruta /api raíz "Hello world"; sw im-v9-10-1.
+- Env vars creadas en Vercel (API): ADMIN_PASSWORD (generada fuerte) + CRON_SECRET (Vercel adjunta Bearer automáticamente al cron).
+- Tests: scripts/test-security-fix.ts 18/18 OK (roundtrip scrypt, legacy, rotación legacy/scrypt/propia/idempotencia, no-literales).
+- Deploy: b4c3a94 + fix 5a3f6a3, ambos READY.
+
+Stage Summary:
+- E2E producción: login VIEJO 401 ✅ · login NUEVO 200 (admin) ✅ · revoke_all ejecutado (todas las sesiones del periodo filtrado invalidadas, incluidas las de verificación) ✅ · cron sin auth/secret falso 401 ✅ · SSRF 169.254.169.254/localhost/10.x bloqueados, URL pública OK ✅ · /api raíz 404 ✅ · tutor smoke OK con filtrado de roles ✅ · E2E imágenes 412/412 ✅ · home 200, sw im-v9-10-1 ✅.
+- Nueva contraseña admin guardada en .security-env-new.txt (gitignored) y entregada al usuario en el chat. Para rotarla de nuevo: cambiarla desde el Panel Admin (el marcador impide que la env la pise).
+- Residual documentado: CSP con unsafe-inline/unsafe-eval (requiere test de navegador para endurecer con nonces), tokens en localStorage (estándar para Bearer SPA), IBAN público en app-config (by design para transferencias).
