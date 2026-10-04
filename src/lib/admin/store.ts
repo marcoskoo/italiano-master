@@ -15,7 +15,7 @@ import fs from "fs/promises";
 import path from "path";
 import { get as blobGet, put as blobPut } from "@vercel/blob";
 import { weekKeyFor, promoteLeague, demoteLeague, PROMOTION_SLOTS, DEMOTION_RATIO, MIN_ACTIVE_DEMOTION } from "@/lib/lms/leagues";
-import { scryptHash } from "./hashing";
+import { scryptHash, verifyPassword } from "./hashing";
 
 /* ── modelos (idénticos a las tablas anteriores) ────────────────────── */
 
@@ -90,21 +90,31 @@ export function randomDemoPasswordHash(): string {
   return scryptHash(randomBytes(24).toString("base64url"));
 }
 
-/* v9.10.1 · Rotación ONE-TIME de la contraseña admin filtrada históricamente:
-   si ADMIN_PASSWORD está definida y la cuenta admin aún guarda el hash del
-   literal que se publicó en el repo (comparado como DIGEST precalculado, sin
-   repetir el literal), se rota a scrypt(ADMIN_PASSWORD).
-   Si el admin ya cambió su contraseña (hash distinto), no se toca nada. */
-const LEAKED_ADMIN_HASH_DIGEST =
-  "e637279bbdd822f21b8726b4f8ee7cc8e8e6c6d727259c6066f09b4cc095b9bd"; // sha256(italiano-master::Mkoo::<filtrada>)
+/* v9.10.1 · Rotación ONE-TIME de la contraseña admin (auditoría):
+   Si ADMIN_PASSWORD (env) está definida y la cuenta admin aún no ha sido
+   "gestionada" (marcador `adminPwRotated`), se comprueba si su hash
+   corresponde a ADMIN_PASSWORD:
+     · coincide  → solo se marca (nada que rotar).
+     · no coincide → el hash actual procede del password publicado en el
+       repo público (en forma legacy SHA-256 o ya migrada a scrypt): se
+   impone scrypt(ADMIN_PASSWORD). Tras ello, el marcador garantiza que
+   NUNCA más se toca el hash desde aquí — los cambios de contraseña
+   posteriores se hacen solo desde el Panel Admin.                    */
+const KEY_ADMIN_PW_ROTATED = "adminPwRotated";
 export function rotateLeakedAdminPassword(d: StoreData): boolean {
   const envPw = process.env.ADMIN_PASSWORD;
   if (!envPw || envPw.length < 8) return false;
   const idx = d.users.findIndex((u) => u.role === "admin");
   if (idx === -1) return false;
-  if (d.users[idx].passwordHash !== LEAKED_ADMIN_HASH_DIGEST) return false;
-  d.users[idx].passwordHash = scryptHash(envPw);
-  return true;
+  if (d.settings.some((s) => s.key === KEY_ADMIN_PW_ROTATED)) return false; // ya gestionada
+  const matches = verifyPassword(d.users[idx].passwordHash, d.users[idx].username, envPw).ok;
+  if (!matches) {
+    // el hash guardado NO es el de ADMIN_PASSWORD → era el password filtrado
+    // (legacy o scrypt): se rota.
+    d.users[idx].passwordHash = scryptHash(envPw);
+  }
+  d.settings.push({ key: KEY_ADMIN_PW_ROTATED, value: new Date().toISOString() });
+  return true; // hay que persistir (hash y/o marcador)
 }
 
 /* ── semilla para despliegues nuevos ────────────────────────────────── */
