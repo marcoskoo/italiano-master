@@ -675,3 +675,27 @@ Stage Summary:
 - 198 lecturas nuevas con comprensión cloze inferencial: 3 por cada una de las 66 unidades (A1:36, A2:36, B1:36, B2:36, C1:30, C2:24)
 - El paso Lettura de cada unidad ahora enseña con inferencia contextual: el estudiante deduce la palabra por el sentido, no por la gramática
 - Patrón de autoría: marcadores {n} en texto IT + gaps[] con 3 opciones; validador reutilizable en scripts/validate-cloze.py
+
+---
+Task ID: 2
+Agent: main (Super Z)
+Task: v9.13 — Cada unidad: gramática reforzada con ejercicios + 3 lecturas temáticas (meditación/espiritualidad/qui-e-ora/relax) con las 7 estrategias de comprensión lectora y de escucha
+
+Work Log:
+- Interpretación del pedido: cada unidad Cambridge (66, A1-C2) debe contener (a) explicación gramatical CON ejercicios que aseguren la comprensión y (b) lecturas sobre meditación, espiritualidad, permanecer en el aquí y ahora, y pautas de relajación física y mental, con comprensión lectora Y de escucha mediante: cuestionarios (literal/inferencial/crítico), idea principal/secundarias, reconstrucción de secuencias, predicción desde el título, completamiento contextual, búsqueda del intruso y V/F con justificación.
+- BUG CRÍTICO v9.12 descubierto: los 991 gaps cloze tenían answer:0 (correcta siempre primera) y el componente no mezclaba → fix: permutación con semilla estable (hash del id de lectura + nº hueco) en cloze-readings.tsx.
+- Nuevo módulo cambridge-mind.ts (tipos MindReading: predict/quiz(kind)/vf/ideas/intruder/sequence/listen) + 6 archivos de datos readings-mind-{a1..c2}.ts = 198 lecturas (3/unidad), todas bilingües IT/ES, temáticas y alineadas al nivel lingüístico (A1 presente simple → C2 registro literario/retórico).
+- Distribución de estrategias por unidad: L1 = predizione + cuestionario (lit/inf/crít) + V/F con justificación; L2 = predizione + idea principal/secundarias + intruso; L3 = predizione + ordenamiento temporal + ascolto (audio TTS con texto oculto + preguntas). El completamiento contextual queda cubierto por las 198 cloze v9.12 que conviven en el paso 8.
+- Grammatica rafforzata: grammar-drills.ts con 66 unidades × 2 ejercicios extra (1 trasformazione + 1 correzione dell'errore) alineados con el foco gramatical de cada unidad → paso 5 ahora = explicación inductiva + regla + gaps (3) + trasformazioni + correzione errori.
+- Componente mind-readings.tsx: fase de predicción → texto IT con TTS por párrafo + traducción ES opcional → bloques de estrategias con feedback inline; +5 XP por lectura, marca sección lettura al completar las 3.
+- Shuffle con semilla estable aplicado a TODAS las opciones (CbQuiz de la unidad, cloze v9.12, quiz/predicción/ideas/intruso temáticos): fin del patrón "la correcta siempre primera".
+- Validador scripts/validate-mind.ts (bun): 198/198 lecturas, 132/132 drills, ids únicos y con formato esperado, kinds válidos, answers en rango, párrafos ≥2, escucha ≥2 preguntas, estructura por índice (L1 quiz+vf, L2 ideas+intruso, L3 secuencia+escucha), detección de español en texto IT (é excluido: sé/né/perché legítimos). Corregidos durante la validación: comillas dobles sin escapar (b2-10-2, c1-04-3, c2-03-3), campos explain sobrantes (6), 3 quiz sin why en c1-01-1, "nostalgía" ES en IT, "llamada mientras" ES en drill, opciones de a2-07-3 con placeholders.
+- Build OK. E2E local (standalone server + agent-browser): navegación completa Cursos→A1→Unidad 1→paso 8; flujo ínteractivo predicción→lectura→cuestionario (3 badges: Literal/Inferencial/Crítica)→V/F→completada +5 XP; pestaña 2 ideas+intruso completadas; pestaña 3 secuencia (5 eventos ordenados y verificados) + ascolto; banner "Tutte e tre le letture completate" +25 XP totales; paso 5 con los 3 quizzes (Metti alla prova + Trasformazioni + Correggi l'errore); shuffle verificado (correcta en 3ª posición); dark mode con contraste correcto (texto crema sobre superficie translúcida).
+- sw bump im-v9-12-0 → im-v9-13-0. Commit 986d2ad → push → deploy dpl_CtZg6YDDQvMHfGVnZ8dq8dgnQpiK READY.
+- Verificación producción: SW im-v9-13-0 servido, home 200, componente mind ("Tre letture di consapevolezza") y drills ("Correggi l'errore") presentes en chunk 3n1uz24cn0nlx.js, E2E: unidad 1 paso 8 con "Il mio primo respiro", predicción→lectura→cuestionario con badges Literal/Inferencial/Crítica y V/F funcionando; screenshot respaldado (upload/prod-mind-v913.png, upload/mind-dark-step8.png).
+
+Stage Summary:
+- v9.13 LIVE en italiano-master.vercel.app: 198 lecturas temáticas (meditación, espiritualidad, qui e ora, relax físico y mental) con las 7 estrategias de comprensión lectora + escucha TTS, 3 por unidad en las 66 unidades A1-C2.
+- Gramática por unidad ahora: explicación inductiva + regla + 3 gaps + 1 trasformación + 1 corrección de errores (132 ejercicios nuevos alineados a cada foco gramatical).
+- Fix de producción v9.12 (respuestas cloze siempre en primera posición) + mezcla estable de opciones en todos los quizzes de la app.
+- Total nuevo contenido: 198 lecturas × (texto bilingüe + predicción + 3-4 ejercicios por lectura) ≈ 665 bloques de estrategia + 132 drills.
