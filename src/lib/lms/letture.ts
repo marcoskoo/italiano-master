@@ -11,6 +11,9 @@ import { DIALOGHI_EXTRA } from "./letture-extra";
 import { INFORMAZIONE_EXTRA } from "./letture-extra2";
 import { STORIA_ITALIA_EXTRA, STORIA_MONDO_EXTRA } from "./letture-extra3";
 import { CULTURA_EXTRA } from "./letture-extra4";
+import { DIALOGHI_EXTRA5, INFORMAZIONE_EXTRA5 } from "./letture-extra5";
+import { STORIA_ITALIA_EXTRA6, STORIA_MONDO_EXTRA6 } from "./letture-extra6";
+import { CULTURA_EXTRA7 } from "./letture-extra7";
 
 export type LetturaCat = "dialoghi" | "informazione" | "storia-italia" | "storia-mondo" | "cultura";
 
@@ -310,13 +313,13 @@ const INFORMAZIONE: Lettura[] = [
   },
 ];
 
-/** Biblioteca completa (43 letture: v9.0 + v9.3 + v9.4 + v9.10) */
+/** Biblioteca completa (58 letture: v9.0 + v9.3 + v9.4 + v9.10 + v9.11) */
 export const LETTURE: Lettura[] = [
-  ...DIALOGHI, ...DIALOGHI_EXTRA,
-  ...INFORMAZIONE, ...INFORMAZIONE_EXTRA,
-  ...STORIA_ITALIA, ...STORIA_ITALIA_EXTRA,
-  ...STORIA_MONDO, ...STORIA_MONDO_EXTRA,
-  ...CULTURA, ...CULTURA_EXTRA,
+  ...DIALOGHI, ...DIALOGHI_EXTRA, ...DIALOGHI_EXTRA5,
+  ...INFORMAZIONE, ...INFORMAZIONE_EXTRA, ...INFORMAZIONE_EXTRA5,
+  ...STORIA_ITALIA, ...STORIA_ITALIA_EXTRA, ...STORIA_ITALIA_EXTRA6,
+  ...STORIA_MONDO, ...STORIA_MONDO_EXTRA, ...STORIA_MONDO_EXTRA6,
+  ...CULTURA, ...CULTURA_EXTRA, ...CULTURA_EXTRA7,
 ];
 
 export const LETTURE_BY_ID: Record<string, Lettura> = Object.fromEntries(LETTURE.map((l) => [l.id, l]));
@@ -371,6 +374,22 @@ export const LETTURE_IMG: Record<string, string> = {
   "mon-muro-19": "/images/letture/mon-muro-19.jpg",
   "cult-dante-29": "/images/letture/cult-dante-29.jpg",
   "cult-ferrante-30": "/images/letture/cult-ferrante-30.jpg",
+  /* v9.11 · 15 letture nuevas */
+  "dia-pizzeria-08": "/images/letture/dia-pizzeria-08.jpg",
+  "dia-dottore-09": "/images/letture/dia-dottore-09.jpg",
+  "dia-appartamento-10": "/images/letture/dia-appartamento-10.jpg",
+  "inf-trasporti-12": "/images/letture/inf-trasporti-12.jpg",
+  "inf-energia-13": "/images/letture/inf-energia-13.jpg",
+  "inf-bufale-14": "/images/letture/inf-bufale-14.jpg",
+  "it-medioevo-15": "/images/letture/it-medioevo-15.jpg",
+  "it-piombo-16": "/images/letture/it-piombo-16.jpg",
+  "mon-vichinghi-20": "/images/letture/mon-vichinghi-20.jpg",
+  "mon-spazio-21": "/images/letture/mon-spazio-21.jpg",
+  "cult-gelato-31": "/images/letture/cult-gelato-31.jpg",
+  "cult-ferragosto-32": "/images/letture/cult-ferragosto-32.jpg",
+  "cult-calcio-33": "/images/letture/cult-calcio-33.jpg",
+  "cult-teatro-34": "/images/letture/cult-teatro-34.jpg",
+  "cult-design-35": "/images/letture/cult-design-35.jpg",
 };
 
 /** Número de letture de historia completadas (logro «Storico») */

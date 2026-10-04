@@ -3,6 +3,12 @@ import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
+/* Renderizado dinámico (v9.11): necesario para la CSP con nonce —
+   el HTML debe generarse por-request para incrustar el nonce en los
+   scripts inline del payload RSC. Coste: un render serverless por
+   visita (la app es una SPA de una sola ruta).                    */
+export const dynamic = "force-dynamic";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

@@ -1565,134 +1565,6 @@
   ],
   "lett": [
     {
-      "id": "dia-bar-01",
-      "level": "A1",
-      "es": "Al bar: un caffè perfetto",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "dia-hotel-02",
-      "level": "A2",
-      "es": "Prenotare una camera a Firenze",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "dia-clima-03",
-      "level": "B1",
-      "es": "Aria condizionata: una discussione estiva",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "inf-social-04",
-      "level": "B1",
-      "es": "I social network e i giovani: un rapporto complicato",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "inf-dieta-05",
-      "level": "B1",
-      "es": "La dieta mediterranea: un patrimonio dell'umanità",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "inf-mare-06",
-      "level": "B2",
-      "es": "Il mare che sale: l'Italia tra erosione e adattamento",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "inf-remoto-07",
-      "level": "B2",
-      "es": "Il lavoro remoto: la rivoluzione silenziosa",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "it-roma-08",
-      "level": "B1",
-      "es": "La Roma antica: da villaggio a impero",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "it-rinascimento-09",
-      "level": "B2",
-      "es": "Il Rinascimento: quando l'Italia reinventò il mondo",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "it-risorgimento-10",
-      "level": "B2",
-      "es": "Il Risorgimento: l'Italia si fa",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "it-emigrazione-11",
-      "level": "B1",
-      "es": "L'emigrazione italiana: trenta milioni di partenze",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "it-boom-12",
-      "level": "C1",
-      "es": "Il miracolo economico: quando l'Italia cambiò in vent'anni",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "mon-americhe-13",
-      "level": "B2",
-      "es": "Le Americhe prima del 1492: mondi che non erano «nuovi»",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "mon-rivoluzione-14",
-      "level": "B2",
-      "es": "La Rivoluzione francese: libertà, uguaglianza, contemporaneità",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "mon-seta-15",
-      "level": "B1",
-      "es": "La Via della Seta: il primo globalization",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "mon-decolonizzazione-16",
-      "level": "C1",
-      "es": "La decolonizzazione: come mezzo mondo divenne indipendente",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
       "id": "cult-arte-17",
       "level": "B2",
       "es": "Caravaggio: la luce nell'ombra",
@@ -1709,33 +1581,9 @@
       "kind": ""
     },
     {
-      "id": "cult-cucina-19",
-      "level": "B1",
-      "es": "La cucina regionale: un mosaico di sapori",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "cult-cucina-20",
+      "id": "cult-calcio-33",
       "level": "A2",
-      "es": "La pizza: una storia napoletana",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "cult-musica-21",
-      "level": "C1",
-      "es": "L'opera lirica: quando la musica racconta",
-      "it": "",
-      "cat": "",
-      "kind": ""
-    },
-    {
-      "id": "cult-musica-22",
-      "level": "B2",
-      "es": "Sanremo: la festa della canzone italiana",
+      "es": "El fútbol: una pasión nacional",
       "it": "",
       "cat": "",
       "kind": ""
@@ -1757,17 +1605,57 @@
       "kind": ""
     },
     {
-      "id": "cult-sport-25",
+      "id": "cult-cucina-19",
       "level": "B1",
-      "es": "Il calcio: più che uno sport",
+      "es": "La cucina regionale: un mosaico di sapori",
       "it": "",
       "cat": "",
       "kind": ""
     },
     {
-      "id": "cult-sport-26",
-      "level": "B2",
-      "es": "Il Giro d'Italia: la corsa rosa",
+      "id": "cult-cucina-20",
+      "level": "A2",
+      "es": "La pizza: una storia napoletana",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "cult-dante-29",
+      "level": "C1",
+      "es": "Dante y la Divina Comedia: un viaje al más allá",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "cult-design-35",
+      "level": "C1",
+      "es": "El diseño italiano: la belleza de los objetos cotidianos",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "cult-ferragosto-32",
+      "level": "A2",
+      "es": "Ferragosto: las ciudades vacías y el mar lleno",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "cult-ferrante-30",
+      "level": "C2",
+      "es": "Elena Ferrante y la Nápoles literaria",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "cult-gelato-31",
+      "level": "A1",
+      "es": "El helado artesanal: un pequeño placer italiano",
       "it": "",
       "cat": "",
       "kind": ""
@@ -1789,25 +1677,57 @@
       "kind": ""
     },
     {
-      "id": "dia-mercato-04",
-      "level": "A1",
-      "es": "En el mercado: un kilo de melocotones",
+      "id": "cult-musica-21",
+      "level": "C1",
+      "es": "L'opera lirica: quando la musica racconta",
       "it": "",
       "cat": "",
       "kind": ""
     },
     {
-      "id": "dia-treno-05",
-      "level": "A2",
-      "es": "En la taquilla: un tren a Verona",
+      "id": "cult-musica-22",
+      "level": "B2",
+      "es": "Sanremo: la festa della canzone italiana",
       "it": "",
       "cat": "",
       "kind": ""
     },
     {
-      "id": "dia-farmacia-06",
+      "id": "cult-sport-25",
       "level": "B1",
-      "es": "En la farmacia: algo para la tos",
+      "es": "Il calcio: più che uno sport",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "cult-sport-26",
+      "level": "B2",
+      "es": "Il Giro d'Italia: la corsa rosa",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "cult-teatro-34",
+      "level": "C1",
+      "es": "La commedia dell'arte: las máscaras que todavía hacen reír",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "dia-appartamento-10",
+      "level": "B2",
+      "es": "Alquilar un apartamento: una negociación exigente",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "dia-bar-01",
+      "level": "A1",
+      "es": "Al bar: un caffè perfetto",
       "it": "",
       "cat": "",
       "kind": ""
@@ -1821,17 +1741,81 @@
       "kind": ""
     },
     {
-      "id": "inf-street-08",
-      "level": "A2",
-      "es": "El street food italiano: comer por la calle",
+      "id": "dia-clima-03",
+      "level": "B1",
+      "es": "Aria condizionata: una discussione estiva",
       "it": "",
       "cat": "",
       "kind": ""
     },
     {
-      "id": "inf-turismo-09",
+      "id": "dia-dottore-09",
+      "level": "A2",
+      "es": "Del médico: ¡vaya dolor de garganta!",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "dia-farmacia-06",
       "level": "B1",
-      "es": "¿Demasiado turismo? Venecia busca un equilibrio",
+      "es": "En la farmacia: algo para la tos",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "dia-hotel-02",
+      "level": "A2",
+      "es": "Prenotare una camera a Firenze",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "dia-mercato-04",
+      "level": "A1",
+      "es": "En el mercado: un kilo de melocotones",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "dia-pizzeria-08",
+      "level": "A1",
+      "es": "Por teléfono: una pizza a domicilio",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "dia-treno-05",
+      "level": "A2",
+      "es": "En la taquilla: un tren a Verona",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "inf-bufale-14",
+      "level": "C2",
+      "es": "Bulos y verificación de datos: defenderse de las noticias falsas",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "inf-dieta-05",
+      "level": "B1",
+      "es": "La dieta mediterranea: un patrimonio dell'umanità",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "inf-energia-13",
+      "level": "B2",
+      "es": "La transición energética: sol, viento y facturas",
       "it": "",
       "cat": "",
       "kind": ""
@@ -1845,6 +1829,30 @@
       "kind": ""
     },
     {
+      "id": "inf-mare-06",
+      "level": "B2",
+      "es": "Il mare che sale: l'Italia tra erosione e adattamento",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "inf-remoto-07",
+      "level": "B2",
+      "es": "Il lavoro remoto: la rivoluzione silenziosa",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "inf-social-04",
+      "level": "B1",
+      "es": "I social network e i giovani: un rapporto complicato",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
       "id": "inf-spreco-11",
       "level": "C1",
       "es": "El desperdicio de alimentos: un desafío global",
@@ -1853,9 +1861,41 @@
       "kind": ""
     },
     {
-      "id": "it-venezia-13",
+      "id": "inf-street-08",
+      "level": "A2",
+      "es": "El street food italiano: comer por la calle",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "inf-trasporti-12",
+      "level": "A2",
+      "es": "Moverse por Italia: trenes, buses y metro",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "inf-turismo-09",
       "level": "B1",
-      "es": "La Serenísima: la república del mar",
+      "es": "¿Demasiado turismo? Venecia busca un equilibrio",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "it-boom-12",
+      "level": "C1",
+      "es": "Il miracolo economico: quando l'Italia cambiò in vent'anni",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "it-emigrazione-11",
+      "level": "B1",
+      "es": "L'emigrazione italiana: trenta milioni di partenze",
       "it": "",
       "cat": "",
       "kind": ""
@@ -1869,9 +1909,65 @@
       "kind": ""
     },
     {
-      "id": "mon-mali-17",
+      "id": "it-medioevo-15",
       "level": "B1",
-      "es": "Mansa Musa y el imperio de Malí",
+      "es": "Los comunas: cuando las ciudades se gobernaban solas",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "it-piombo-16",
+      "level": "B2",
+      "es": "Los años de plomo: la Italia del miedo",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "it-rinascimento-09",
+      "level": "B2",
+      "es": "Il Rinascimento: quando l'Italia reinventò il mondo",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "it-risorgimento-10",
+      "level": "B2",
+      "es": "Il Risorgimento: l'Italia si fa",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "it-roma-08",
+      "level": "B1",
+      "es": "La Roma antica: da villaggio a impero",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "it-venezia-13",
+      "level": "B1",
+      "es": "La Serenísima: la república del mar",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "mon-americhe-13",
+      "level": "B2",
+      "es": "Le Americhe prima del 1492: mondi che non erano «nuovi»",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "mon-decolonizzazione-16",
+      "level": "C1",
+      "es": "La decolonizzazione: come mezzo mondo divenne indipendente",
       "it": "",
       "cat": "",
       "kind": ""
@@ -1885,6 +1981,14 @@
       "kind": ""
     },
     {
+      "id": "mon-mali-17",
+      "level": "B1",
+      "es": "Mansa Musa y el imperio de Malí",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
       "id": "mon-muro-19",
       "level": "C1",
       "es": "1989: la caída del Muro de Berlín",
@@ -1893,17 +1997,33 @@
       "kind": ""
     },
     {
-      "id": "cult-dante-29",
-      "level": "C1",
-      "es": "Dante y la Divina Comedia: un viaje al más allá",
+      "id": "mon-rivoluzione-14",
+      "level": "B2",
+      "es": "La Rivoluzione francese: libertà, uguaglianza, contemporaneità",
       "it": "",
       "cat": "",
       "kind": ""
     },
     {
-      "id": "cult-ferrante-30",
-      "level": "C2",
-      "es": "Elena Ferrante y la Nápoles literaria",
+      "id": "mon-seta-15",
+      "level": "B1",
+      "es": "La Via della Seta: il primo globalization",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "mon-spazio-21",
+      "level": "B1",
+      "es": "La carrera espacial: del Sputnik a la Estación",
+      "it": "",
+      "cat": "",
+      "kind": ""
+    },
+    {
+      "id": "mon-vichinghi-20",
+      "level": "A2",
+      "es": "Los vikingos: navegantes del Norte",
       "it": "",
       "cat": "",
       "kind": ""
