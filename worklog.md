@@ -633,3 +633,23 @@ Stage Summary:
 - Catálogo de imágenes: 427 en producción, E2E byte-idéntico, CERO huecos.
 - Residuales de seguridad restantes (documentados, aceptables): tokens en localStorage (patrón Bearer SPA; mitigación real = CSP estricta ya aplicada), IBAN público en app-config (by design).
 - Siguientes pasos candidatos: certificados PDF, modo enfoque/estadísticas, más testi graduados (rd-31+), TTS multi-rol en más vistas.
+
+---
+Task ID: 1
+Agent: main (Super Z)
+Task: Corregir bug reportado por usuario: "no se ve el texto en el fondo blanco" (captura del hero de Inicio en modo oscuro)
+
+Work Log:
+- Analizada la captura subida (upload/pasted_image_1791081080484.png) con VLM: burbujas blancas del MorphingHero con texto invisible
+- Diagnóstico raíz: burbujas con bg-white/85 fijo + text-inchiostro adaptativo → en dark, inchiostro pasa a #ece7dc (crema) = invisible sobre blanco; texto inglés stone-400 tenía contraste 2.9:1 (< WCAG AA)
+- Escaneo del mismo patrón en toda la app: encontrados 4 componentes más con tarjetas blancas fijas y textos adaptativos (VowelLab, IntonationStudio, QuizSection, StepSolutions); cils/importer ya tenían overrides dark: correctos
+- Fix implementado: nueva utility .force-light en globals.css (re-declara las 20 vars de la paleta italiana a valores claros; gana por herencia sobre html.dark). Aplicada a la raíz de los 4 labs y a cada burbuja del hero (NO al caption del hero, que vive sobre fondo oscuro y debe seguir adaptativo)
+- Extra: stone-400 → stone-500 + font-semibold en palabras inglesas de las burbujas (contraste 4.7:1)
+- SW bump im-v9-11-0 → im-v9-11-1
+- Verificación local (next start + agent-browser dark mode): hero, vocales, entonación, quiz — todo legible; light mode sin regresiones
+- Verificación producción: deploy dpl_GxNi2Nd1SoJ READY, sw im-v9-11-1 servido, force-light presente en chunk CSS 2rdu7o3gpgsqy, screenshot dark confirma las 6 burbujas legibles
+
+Stage Summary:
+- Commit 914bd99 "fix v9.11.1: texto invisible sobre fondos blancos en modo oscuro" (7 archivos, +38/-7) → push → deploy READY → verificado en prod
+- Patrón de bug documentado: superficies blancas fijas + colores adaptativos requieren .force-light o overrides dark:
+- Nota: StepSolutions no está importado por ninguna vista (código huérfano, fix preventivo aplicado igualmente)
