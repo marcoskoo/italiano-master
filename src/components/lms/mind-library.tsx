@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, CheckCircle2, Ear, HelpCircle, ListOrdered, Search, Sparkles, Target } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, Ear, HelpCircle, ListOrdered, Search, Sparkles, Target, X } from "lucide-react";
 import type { CefrLevel } from "@/lib/lms/types";
 import type { MindTheme } from "@/lib/lms/cambridge-mind";
 import { MIND_THEME_LABEL } from "@/lib/lms/cambridge-mind";
@@ -42,21 +42,45 @@ const STRATEGY_ICONS = {
   listen: <Ear className="h-3.5 w-3.5 text-verde" aria-hidden="true" />,
 };
 
+/* ── v9.15 · Buscador por palabras clave ────────────────────────────
+   Normaliza acentos (perche → perché) y busca en título IT/ES, tema,
+   unidad de origen y texto completo (IT + ES). Varias palabras = TODAS
+   deben estar presentes (búsqueda AND).                              */
+const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const SEARCH_TEXT: Record<string, string> = Object.fromEntries(
+  MIND_LIBRARY.map((e) => {
+    const u = CB_UNIT_BY_ID[e.unitId];
+    return [e.reading.id, norm([
+      e.reading.title,
+      e.reading.titleEs,
+      MIND_THEME_LABEL[e.reading.theme],
+      u ? `${u.title} ${u.titleIt}` : "",
+      e.reading.paragraphs.map((p) => `${p.it} ${p.es}`).join(" "),
+    ].join(" "))];
+  })
+);
+
 export function MindCollection({ initialId, onBack }: { initialId?: string | null; onBack: () => void }) {
   const [theme, setTheme] = useState<MindTheme | "tutti">("tutti");
   const [level, setLevel] = useState<CefrLevel | "tutti">("tutti");
+  const [query, setQuery] = useState("");
   const [openId, setOpenId] = useState<string | null>(initialId ?? null);
 
   const readingsRead = useLms((s) => s.readingsRead);
   const addXp = useLms((s) => s.addXp);
   const markReadingDone = useLms((s) => s.markReadingDone);
 
+  const qTokens = useMemo(
+    () => norm(query.trim()).split(/\s+/).filter(Boolean),
+    [query]
+  );
   const entries = useMemo(
     () => MIND_LIBRARY.filter((e) =>
       (theme === "tutti" || e.reading.theme === theme) &&
-      (level === "tutti" || mindLevel(e.reading.id) === level)
+      (level === "tutti" || mindLevel(e.reading.id) === level) &&
+      (qTokens.length === 0 || qTokens.every((t) => SEARCH_TEXT[e.reading.id]?.includes(t)))
     ),
-    [theme, level]
+    [theme, level, qTokens]
   );
 
   /* ── lector de una lectura ── */
@@ -153,6 +177,28 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
         </div>
       </div>
 
+      {/* v9.15 · buscador por palabras clave */}
+      <div className="mt-5 flex items-center gap-2 rounded-2xl border-2 border-soft bg-surface px-4 py-1.5 transition-colors focus-within:border-verde/60">
+        <Search className="h-4 w-4 shrink-0 text-muted-it" aria-hidden="true" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Cerca per parole chiave: respiro, silenzio, gratitudine…"
+          aria-label="Cerca letture della collezione per parole chiave"
+          className="min-h-11 w-full bg-transparent text-sm outline-none placeholder:text-muted-it/60"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            aria-label="Cancella la ricerca"
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-it transition-colors hover:bg-crema-scura hover:text-inchiostro dark:hover:bg-inchiostro/10 dark:hover:text-surface"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+
       {/* filtros por tema */}
       <div className="mt-5 flex flex-wrap gap-2">
         {THEMES.map((t) => (
@@ -192,7 +238,22 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
 
       <p className="mt-4 text-sm text-muted-it">
         {entries.length} letture · comprensione di lettura e d'ascolto · traducción al pasar el cursor
+        {qTokens.length > 0 && <> · ricerca: <strong className="text-inchiostro dark:text-surface">{query.trim()}</strong></>}
       </p>
+
+      {qTokens.length > 0 && entries.length === 0 && (
+        <div className="mt-3 rounded-2xl border-2 border-dashed border-soft bg-surface p-6 text-center">
+          <p className="font-semibold">Nessun risultato per «{query.trim()}»</p>
+          <p className="mt-1 text-sm text-muted-it">Prueba con otra palabra (puedes escribir sin acentos: «perche» encuentra «perché») o quita los filtros activos.</p>
+          <button
+            type="button"
+            onClick={() => { setQuery(""); setTheme("tutti"); setLevel("tutti"); }}
+            className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-verde/40 bg-verde-tenue px-4 py-2.5 text-xs font-bold transition-all hover:border-verde"
+          >
+            <X className="h-4 w-4" aria-hidden="true" /> Azzera filtri e ricerca
+          </button>
+        </div>
+      )}
 
       {/* tarjetas */}
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

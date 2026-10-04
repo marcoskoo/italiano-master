@@ -7,13 +7,16 @@ import type { CbClozeText } from "@/lib/lms/cambridge";
 import { CB_CLOZE } from "@/lib/lms/extra/readings-cloze";
 import { useLms } from "@/lib/lms/store";
 import { AudioButton } from "./audio-button";
+import { HoverWords } from "./hover-words";
 import { cn } from "@/lib/utils";
 
 /* ═══ v9.12 · Lettura con comprensión cloze (inferencia léxica) ═════
    El texto italiano lleva marcadores {n} que se renderizan como huecos.
    El estudiante toca un hueco y elige entre 3 opciones plausibles:
    solo una encaja en el contexto. La traducción ES está oculta por
-   defecto (se activa con toggle) para forzar la lectura en italiano.  */
+   defecto (se activa con toggle) para forzar la lectura en italiano.
+   v9.15 · todo el texto (y las palabras resueltas) llevan hover de
+   traducción palabra a palabra.                                 */
 
 const GAP_RE = /\{(\d+)\}/g;
 
@@ -137,7 +140,10 @@ function ClozeReadingCard({
         </button>
       </div>
 
-      {/* texto con huecos */}
+      {/* texto con huecos · v9.15 hover de traducción en los segmentos */}
+      <p className="rounded-xl bg-crema-scura px-3.5 py-2 text-xs font-semibold text-muted-it dark:bg-inchiostro/10">
+        Pasa el cursor (o toca) cualquier palabra subrayada para ver su traducción y escucharla.
+      </p>
       <div className="mt-4 space-y-5">
         {text.paragraphs.map((p, i) => {
           const parts = p.it.split(GAP_RE);
@@ -147,7 +153,7 @@ function ClozeReadingCard({
                 <p className="flex-1 text-base leading-[2]">
                   {parts.map((seg, k) =>
                     k % 2 === 0 ? (
-                      <span key={k}>{seg}</span>
+                      <HoverWords key={k} text={seg} />
                     ) : (
                       (() => {
                         const n = parseInt(seg, 10);
@@ -159,7 +165,7 @@ function ClozeReadingCard({
                             key={k}
                             className="mx-1 inline-flex items-center gap-1 rounded-lg bg-verde px-2 py-0.5 font-semibold text-white"
                           >
-                            {gap.correctWord}
+                            <HoverWords text={gap.correctWord} />
                           </span>
                         ) : (
                           <Gap

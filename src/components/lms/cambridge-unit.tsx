@@ -14,9 +14,11 @@ import { GRAMMAR_IMG } from "@/lib/lms/grammar";
 import { useLms } from "@/lib/lms/store";
 import { buildCast, speak, stopSpeaking, speakDialogue, type SpeakerVoice } from "@/lib/lms/tts";
 import { AudioButton } from "./audio-button";
+import { HoverWords } from "./hover-words";
 import { ClozeReadings } from "./cloze-readings";
 import { MindReadings } from "./mind-readings";
 import { GRAMMAR_DRILLS } from "@/lib/lms/extra/grammar-drills";
+import { GRAMMAR_DEEP } from "@/lib/lms/extra/grammar-deep";
 import { ThemeImg } from "./theme-img";
 import { cn } from "@/lib/utils";
 
@@ -158,6 +160,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
 
   const reading = unit.reading.sourceId ? READINGS.find((r) => r.id === unit.reading.sourceId) : undefined;
   const lettura = unit.reading.letturaId ? LETTURE_BY_ID[unit.reading.letturaId] : undefined;
+  const deep = GRAMMAR_DEEP[unitId];
 
   return (
     <div>
@@ -249,13 +252,17 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   {showTr ? "Nascondi lo spagnolo" : "Mostra lo spagnolo"}
                 </button>
               </div>
+              {/* v9.15 · hover de traducción en cada battuta del dialogo */}
+              <p className="rounded-xl bg-crema-scura px-3.5 py-2 text-xs font-semibold text-muted-it dark:bg-inchiostro/10">
+                Pasa el cursor (o toca) cualquier palabra subrayada del diálogo para ver su traducción y escucharla.
+              </p>
               <div className="space-y-3">
                 {unit.dialogue.map((l, i) => (
                   <div key={i} className={cn("flex gap-3 rounded-2xl border border-soft p-4", l.speaker === "Tu" ? "bg-verde-tenue/30" : "bg-crema dark:bg-inchiostro/5")}>
                     <span className="shrink-0 rounded-full bg-verde px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-white">{l.speaker}</span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start gap-2">
-                        <p className="flex-1 leading-relaxed">{l.it}</p>
+                        <p className="flex-1 leading-relaxed"><HoverWords text={l.it} /></p>
                         <AudioButton text={l.it} size="sm" />
                       </div>
                       {showTr && <p className="mt-1.5 text-sm italic text-muted-it">{l.es}</p>}
@@ -309,7 +316,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   <div key={i} className="flex items-center gap-3 rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
                     <AudioButton text={ex.it} size="md" />
                     <div>
-                      <p className="font-semibold leading-snug">{ex.it}</p>
+                      <p className="font-semibold leading-snug"><HoverWords text={ex.it} /></p>
                       <p className="text-sm italic text-muted-it">{ex.es}</p>
                     </div>
                   </div>
@@ -319,7 +326,38 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                 <h4 className="font-display font-semibold">La regola</h4>
                 {unit.grammar.rule.map((r, i) => <p key={i} className="leading-relaxed">{r}</p>)}
               </div>
+              {/* v9.15 · spiegazione completa: formación, uso, trampas del español */}
+              {deep && (
+                <div className="space-y-3">
+                  <h4 className="font-display text-lg font-semibold">📖 Spiegazione completa</h4>
+                  {deep.sezioni.map((s, i) => (
+                    <div key={i} className="rounded-2xl border border-soft bg-crema p-5 dark:bg-inchiostro/5">
+                      <h5 className="font-mono text-[11px] font-bold uppercase tracking-wider text-verde-scuro dark:text-verde">{s.t}</h5>
+                      <p className="mt-2 leading-relaxed">{s.body}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* v9.15 · altri esempi con audio y hover de traducción */}
+              {deep && deep.esempi.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-display text-lg font-semibold">💡 Altri esempi</h4>
+                  {deep.esempi.map((ex, i) => (
+                    <div key={i} className="flex items-center gap-3 rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
+                      <AudioButton text={ex.it} size="md" />
+                      <div className="min-w-0">
+                        <p className="font-semibold leading-snug"><HoverWords text={ex.it} /></p>
+                        <p className="text-sm italic text-muted-it">{ex.es}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               <CbQuiz items={unit.grammar.gaps} title="Metti alla prova" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+              {/* v9.15 · esercizio di uso: qué forma encaja en este contexto */}
+              {deep && deep.usi.length > 0 && (
+                <CbQuiz items={deep.usi} title="Scegli l'uso · ¿cuál encaja y por qué?" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+              )}
               {/* v9.13 · allenamiento extra: trasformazioni + correzione errori */}
               {GRAMMAR_DRILLS[unit.id] && (
                 <>

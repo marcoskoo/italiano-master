@@ -723,3 +723,23 @@ Stage Summary:
 - v9.14 LIVE en italiano-master.vercel.app: la sección Letture & Storia estrena la colección navegable "Meditazione e consapevolezza" con las 198 lecturas temáticas (filtros tema+nivel, progreso persistente, navegación entre lecturas) y TODAS las lecturas de la app (temáticas, escucha y biblioteca clásica) muestran la traducción al pasar el cursor sobre cualquier palabra, con IPA, categoría, nivel, nota contrastiva, ejemplo y audio.
 - Infraestructura reutilizable: dict/lookup.ts (lematizador didáctico con suplemento, ~91% cobertura en lecturas) y HoverWords (tooltip portal táctil+teclado) aplicables a cualquier texto de la app.
 - Cierre de sesión anterior completado: la petición original de la conversación (gramática+lecturas temáticas+7 estrategias) estaba ya desplegada en v9.13; esta v9.14 añade las dos mejoras solicitadas en el último mensaje.
+
+---
+Task ID: 1 (v9.15)
+Agent: main (Super Z)
+Task: Hover de traducción en diálogos y cloze + buscador por palabras clave en la colección + gramática amplia con ejemplos y ejercicios en cada lección
+
+Work Log:
+- A · Hover extendido: cambridge-unit.tsx paso 2 (Ascolto) envuelve cada battuta del diálogo con HoverWords + pista de uso visible; paso 5 (Grammatica) envuelve los ejemplos inductivos. cloze-readings.tsx: los segmentos de texto entre marcadores {n} y las palabras RESUELTAS (chip verde) llevan HoverWords + pista. 46 palabras glosadas en el diálogo A1-U1, 57 en el cloze, 42 en gramática.
+- C · Gramática amplia: nuevo módulo src/lib/lms/extra/grammar-deep.ts (tipo CbGrammarDeep: sezioni/esempi/usi) + 6 archivos de datos por nivel (grammar-deep-{a1..c2}.ts) = 66/66 unidades cubiertas con 3-4 sezioni (Come si forma / Quando si usa / Attenzione trampas para hispanohablantes / Nel parlato o equivalentes C1-C2), 5 esempi bilingües con audio+hover, 2 ejercicios "Scegli l'uso" con explain. Totales: 264 sezioni, 330 esempi, 132 usi.
+- C · UI paso 5: tras "La regola" se renderiza "📖 Spiegazione completa" (tarjetas por sección), "💡 Altri esempi" (audio + hover) y el nuevo quiz "Scegli l'uso · ¿cuál encaja y por qué?" ANTES de los drills v9.13 → cada lección queda con explicación amplia + 3 inductivos + 5 ejemplos + 4 bloques de ejercicios (gaps + usi + trasformazioni + correzione).
+- B · Buscador en la colección: mind-library.tsx con input de palabras clave (normalización NFD de acentos: «perche» encuentra «perché»), búsqueda AND multi-palabra en título IT/ES + tema + unidad de origen + texto completo (IT+ES), contador con indicador «ricerca:», estado vacío con «Nessun risultato» + botón «Azzera filtri e ricerca», botón X para limpiar. La navegación Precedente/Successiva respeta la búsqueda activa.
+- Validador scripts/validate-grammar-deep.ts: 66/66 unidades, ≥3 sezioni/≥5 esempi/≥2 usi, quizzes válidos (answers en rango, opciones únicas, explain presente), textos IT sin ñ/¿/¡ ni cirílicos → TODO OK.
+- Correcciones de contenido durante la revisión: frase inglesa y typo "di sul" en A1, "early Renaissance" y puntuación en B1, ES destrozado en ejemplo B2 + "historically" + "right?" y "misa" en C2, 'а' cirílica en "piazzа" (detectada con escaneo Unicode).
+- Build OK (tsc limpio en archivos nuevos; errores preexistentes de plugins2/3/cils/skills intactos y no bloqueantes). sw bump im-v9-14-0 → im-v9-15-0.
+- E2E local (agent-browser, puerto 3456): diálogo con 46 hover words + tooltip «essere [ˈɛssere] ser/estar · VERBO · A1» verificado con mouse real; paso 5 con Spiegazione completa (4 h5: Come si forma/Quando si usa/Attenzione/Nel parlato), Altri esempi y Scegli l'uso respondido (Superato, shuffle activo: correcta en 2ª posición); cloze con 57 hover words en segmentos + palabra resuelta «di» con hover («di: de»); buscador: «respiro»→38, «perche»→18 (sin acentos), «respiro silenzio»→10 (AND), «zxq…»→Nessun risultato+reset, «gratitudine»→2; reset→198; lector abierto desde búsqueda (85 hover words); dark mode con tooltip legible (bg rgb(33,29,24)); 0 errores de consola.
+- QA visual (z-ai vision): gramática limpia y legible (banner PWA preexistente nota aparte), tooltip completo (palabra+IPA+traducción+badges), buscador con campo «gratitudine», 2 tarjetas y «ricerca: gratitudine» visibles.
+
+Stage Summary:
+- v9.15: hover de traducción ahora en TODA la superficie de estudio (diálogos, cloze con palabras resueltas, ejemplos de gramática + las lecturas ya cubiertas v9.14); colección con buscador por palabras clave insensible a acentos; cada una de las 66 unidades con explicación gramatical amplia (formación/uso/trampas del español), 8 ejemplos con audio y 4 bloques de ejercicios.
+- Pendiente: commit + push → deploy Vercel → verificación producción (SW im-v9-15-0, E2E smoke).
