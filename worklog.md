@@ -767,4 +767,28 @@ Work Log:
 Stage Summary:
 - v9.16 COMPLETA Y VERIFICADA LOCALMENTE, PENDIENTE SOLO DE PUSH/DEPLOY por token de GitHub expirado.
 - La plataforma ahora declara y demuestra su cumplimiento del estándar internacional: objetivos can-do QCER por unidad (persistentes), griglia oficial de autoevaluación con nivel sugerido, escala global oficial, cobertura calculada por nivel, certificaciones CILS/CELI/PLIDA mapeadas y correspondencia CEFR↔ACTFL↔ILR con el caveat de rigor.
-- Para desplegar: (1) el usuario pega un PAT fresco → `git remote set-url --push origin https://x-access-token:<TOKEN>@github.com/marcoskoo/italiano-master.git && git push origin main` → auto-deploy Vercel; o (2) el usuario hace push desde una máquina autenticada. Tras deploy: verificar SW im-v9-16-0 en producción + nav Quadro MCER.
+
+---
+Task ID: 1 (v9.16-push)
+Agent: main (Super Z)
+Task: Push v9.16 a GitHub con PAT fresco (entregado por el usuario en el chat) + verificación completa en producción
+
+Work Log:
+- Usuario entregó PAT nuevo (ghp_…34Xa6C); validado contra api.github.com → login marcoskoo, 23 repos, destino: marcoskoo/italiano-master (push previo 2026-10-04).
+- Pushurl del remote actualizado siguiendo el procedimiento documentado en la entrada v9.16: `git remote set-url --push origin https://x-access-token:<PAT>@github.com/marcoskoo/italiano-master.git`.
+- Push exitoso: 3fb6a90..89a84c2 main→main (2 commits: 29883fc "v9.16: Quadro MCER" + 89a84c2 "worklog v9.16"). HEAD remoto confirmado vía API = 89a84c2.
+- Auto-deploy Vercel vía integración GitHub: sondeo cada 45s → SW im-v9-16-0 servido en origen y CDN en <1 min (antes im-v9-15-0).
+- E2E producción (agent-browser, sesión limpia, italiano-master.vercel.app):
+  - Nav "Quadro MCER" presente; vista renderizada con las 8 secciones: hero Quadro Comune Europeo di Riferimento, Il tuo livello, Griglia di autovalutazione, Scala globale ufficiale, Copertura della piattaforma per livello (cifras reales: 66 unidades, 782 lemmi A1, etc.), Certificazioni dell'italiano (CILS/CELI/PLIDA con varianti cittadinanza), Confronto internazionale (ACTFL/ILR con caveat), Come la piattaforma applica lo standard.
+  - Griglia interactiva: 5/5 destrezas (A2/B1/A2/A2/B1) → "Livello suggerito: A2 — La vita quotidiana" (mediana conservadora correcta) + CTA presente.
+  - Persistencia: RELOAD → filas intactas A2/B1/A2/A2/B1, `state.cefrSelf` exacto en localStorage `italiano-master-v1` (store Zustand {state,version}).
+  - Unidad A1-U1 (Ciao! Mi presento) paso 1: chip "QCER · Obiettivi can-do" + enlace "Confronta con la scala globale →" presentes.
+  - 0 errores de consola y de página en toda la sesión.
+  - Banner PWA "Installa" (preexistente, documentado en v9.15) descartado durante el flujo; nota: la app no sigue prefers-color-scheme, el dark se activa con el toggle 🌙 "Cambiar a modo oscuro" → html.dark=true.
+  - Capturas: upload/prod-v916-quadro.png (claro) y upload/prod-v916-quadro-dark.png (oscuro real vía toggle), ambas full-page ~1 MB.
+- Notas operativas: el patrón de fallo del embedded-PAT se resolvió en <1 min de build; el token del chat debe ROTARSE por el usuario al terminar (recomendación entregada). El PAT queda embebido en .git/config (pushurl) como en el patrón anterior hasta su expiración.
+
+Stage Summary:
+- v9.16 LIVE en italiano-master.vercel.app: la alineación MCER/QCER completa (Quadro, griglia, can-do por unidad, cobertura, certificaciones, ACTFL/ILR) desplegada y verificada E2E en producción.
+- Bloqueo de push resuelto: PAT fresco del usuario → push 3fb6a90..89a84c2 → auto-deploy → SW im-v9-16-0 verificado.
+- Pendiente para el usuario: rotar el PAT ghp_…34Xa6C (viajó por chat) y, si quiere, limpiarlo del pushurl con `git remote set-url --push origin https://github.com/marcoskoo/italiano-master.git`.
