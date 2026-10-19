@@ -2,24 +2,27 @@ import {
   BookOpen, BookMarked, Brain, Calculator, CalendarDays, Clapperboard, Compass, Crown, Ear, FileInput,
   Gamepad2, Gift, GraduationCap, Hash, Home, Keyboard, Languages, Library, LineChart, MapPin, Medal, Mic,
   Microscope, PenLine, Printer, Quote, RefreshCcw, ScrollText, Settings, Shield, Sparkles, Target, Timer,
-  Trophy, Volume2, AlertTriangle, BarChart3, Dices, FileSpreadsheet, HelpCircle, Landmark, Puzzle, Scale, Wand2,
+  Trophy, Volume2, AlertTriangle, BarChart3, Dices, FileSpreadsheet, HelpCircle, Landmark, Puzzle, Scale, Wand2, Globe,
 } from "lucide-react";
-import type { ViewId } from "./types";
+import type { ViewId, LangCode } from "./types";
 
 /* ── Navegación de la app (v8.0: extraída a módulo compartido) ──────
    La usan el shell (sidebar/bottom bar) y la ricerca globale Ctrl+K.  */
 
-export const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; icon: typeof Home }[] }[] = [
+const IT_ONLY: LangCode[] = ["it"];
+
+export interface NavItem { id: ViewId; label: string; icon: typeof Home; langs?: LangCode[]; }
+export const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
   {
     group: "Tu ruta",
     items: [
       { id: "inicio", label: "Inicio", icon: Home },
-      { id: "pianosettimanale", label: "Piano settimanale", icon: CalendarDays },
+      { id: "pianosettimanale", label: "Piano settimanale", icon: CalendarDays, langs: IT_ONLY },
       { id: "progreso", label: "Mi progreso", icon: LineChart },
       { id: "statistiche", label: "Statistiche", icon: BarChart3 },
       { id: "classifica", label: "Classifica", icon: Medal },
       { id: "premi", label: "Premi & Sfide", icon: Gift },
-      { id: "test", label: "Test de nivel", icon: Compass },
+      { id: "test", label: "Test de nivel", icon: Compass, langs: IT_ONLY },
       { id: "piani", label: "Piani PRO", icon: Crown },
     ],
   },
@@ -30,63 +33,64 @@ export const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; ic
   {
     group: "Práctica por destreza",
     items: [
-      { id: "grammatica", label: "Gramática", icon: Brain },
-      { id: "vocabolario", label: "Vocabulario", icon: Library },
-      { id: "ascolto", label: "Escucha", icon: Ear },
-      { id: "lettura", label: "Lectura", icon: BookOpen },
+      { id: "grammatica", label: "Gramática", icon: Brain, langs: IT_ONLY },
+      { id: "vocabolario", label: "Vocabulario", icon: Library, langs: IT_ONLY },
+      { id: "ascolto", label: "Escucha", icon: Ear, langs: IT_ONLY },
+      { id: "lettura", label: "Lectura", icon: BookOpen, langs: IT_ONLY },
       { id: "letture", label: "Letture & Storia", icon: BookMarked },
-      { id: "scrittura", label: "Escritura", icon: PenLine },
-      { id: "conversazione", label: "Conversación", icon: Languages },
-      { id: "pronuncia", label: "Pronunciación", icon: Volume2 },
-      { id: "shadowing", label: "Shadowing", icon: Mic },
+      { id: "scrittura", label: "Escritura", icon: PenLine, langs: IT_ONLY },
+      { id: "conversazione", label: "Conversación", icon: Languages, langs: IT_ONLY },
+      { id: "pronuncia", label: "Pronunciación", icon: Volume2, langs: IT_ONLY },
+      { id: "shadowing", label: "Shadowing", icon: Mic, langs: IT_ONLY },
     ],
   },
   {
     group: "Herramientas",
     items: [
       { id: "dizionario", label: "Diccionario", icon: BookMarked },
-      { id: "coniugatore", label: "Conjugador", icon: Calculator },
-      { id: "verbidrill", label: "Allenamento verbi", icon: Timer },
-      { id: "numerilab", label: "Numeri lab", icon: Hash },
-      { id: "analizzatore", label: "Analizador de frases", icon: Microscope },
+      { id: "coniugatore", label: "Conjugador", icon: Calculator, langs: IT_ONLY },
+      { id: "verbidrill", label: "Allenamento verbi", icon: Timer, langs: IT_ONLY },
+      { id: "numerilab", label: "Numeri lab", icon: Hash, langs: IT_ONLY },
+      { id: "analizzatore", label: "Analizador de frases", icon: Microscope, langs: IT_ONLY },
       { id: "importatore", label: "Importador de textos", icon: FileInput },
-      { id: "schede", label: "Schede di studio", icon: Printer },
-      { id: "situazioni", label: "Situaciones reales", icon: MapPin },
-      { id: "cultura", label: "Cultura italiana", icon: Clapperboard },
-      { id: "tutor", label: "Tutor IA", icon: Sparkles },
-      { id: "giochi", label: "Juegos", icon: Gamepad2 },
+      { id: "schede", label: "Schede di studio", icon: Printer, langs: IT_ONLY },
+      { id: "situazioni", label: "Situaciones reales", icon: MapPin, langs: IT_ONLY },
+      { id: "cultura", label: "Cultura italiana", icon: Clapperboard, langs: IT_ONLY },
+      { id: "tutor", label: "Tutor IA", icon: Sparkles, langs: IT_ONLY },
+      { id: "giochi", label: "Juegos", icon: Gamepad2, langs: IT_ONLY },
     ],
   },
   {
     group: "Estensioni · Plugin",
     items: [
-      { id: "proverbi", label: "Proverbi e modi di dire", icon: Quote },
-      { id: "falsiamici", label: "Falsi amici", icon: AlertTriangle },
-      { id: "dettato", label: "Dettato (dictado)", icon: Keyboard },
-      { id: "ankiexport", label: "Export Anki/CSV", icon: FileSpreadsheet },
-      { id: "parolanascosta", label: "Parola nascosta", icon: Dices },
-      { id: "preposizioni", label: "Preposizioni lab", icon: Target },
+      { id: "proverbi", label: "Proverbi e modi di dire", icon: Quote, langs: IT_ONLY },
+      { id: "falsiamici", label: "Falsi amici", icon: AlertTriangle, langs: IT_ONLY },
+      { id: "dettato", label: "Dettato (dictado)", icon: Keyboard, langs: IT_ONLY },
+      { id: "ankiexport", label: "Export Anki/CSV", icon: FileSpreadsheet, langs: IT_ONLY },
+      { id: "parolanascosta", label: "Parola nascosta", icon: Dices, langs: IT_ONLY },
+      { id: "preposizioni", label: "Preposizioni lab", icon: Target, langs: IT_ONLY },
       { id: "pomodoro", label: "Pomodoro studio", icon: Timer },
-      { id: "muse", label: "Muse · generador", icon: Wand2 },
-      { id: "indovinelli", label: "Indovinelli", icon: HelpCircle },
-      { id: "verofalso", label: "Vero o Falso", icon: Scale },
-      { id: "proverbio", label: "Completa il proverbio", icon: Puzzle },
+      { id: "muse", label: "Muse · generador", icon: Wand2, langs: IT_ONLY },
+      { id: "indovinelli", label: "Indovinelli", icon: HelpCircle, langs: IT_ONLY },
+      { id: "verofalso", label: "Vero o Falso", icon: Scale, langs: IT_ONLY },
+      { id: "proverbio", label: "Completa il proverbio", icon: Puzzle, langs: IT_ONLY },
     ],
   },
   {
     group: "Evaluación",
     items: [
-      { id: "repaso", label: "Repaso inteligente", icon: RefreshCcw },
-      { id: "esami", label: "Exámenes", icon: ScrollText },
+      { id: "repaso", label: "Repaso inteligente", icon: RefreshCcw, langs: IT_ONLY },
+      { id: "esami", label: "Exámenes", icon: ScrollText, langs: IT_ONLY },
       { id: "quadro", label: "Quadro MCER", icon: Landmark },
-      { id: "cils", label: "Preparazione CILS", icon: GraduationCap },
-      { id: "certificati", label: "Certificados", icon: Trophy },
+      { id: "cils", label: "Preparazione CILS", icon: GraduationCap, langs: IT_ONLY },
+      { id: "certificati", label: "Certificados", icon: Trophy, langs: IT_ONLY },
     ],
   },
   {
     group: "Sistema",
     items: [
       { id: "impostazioni", label: "Configuración", icon: Settings },
+      { id: "legal", label: "Privacidad y legal", icon: Globe },
       { id: "admin", label: "Panel Admin", icon: Shield },
     ],
   },
@@ -140,6 +144,21 @@ export const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   letture: { title: "Letture & Storia", sub: "Dialoghi, testi informativi e storia (Italia + mondo): audio sincronizado, comprensión y debate" },
   premi: { title: "Premi & Sfide", sub: "Monete, ruota della fortuna, negozio, boost XP e sfida del mese" },
   quadro: { title: "Quadro MCER", sub: "El estándar internacional del Consiglio d'Europa: escala global, autovalutazione, certificaciones y ACTFL/ILR" },
+  legal: { title: "Privacidad y legal", sub: "GDPR · CCPA · LGPD: tus datos, tus derechos, cookies y seguridad de la cuenta" },
 };
 
 export const NAV_FLAT = NAV_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, group: g.group })));
+
+/* v9.17 · filtrado de navegación por lengua de estudio */
+export function navGroupsFor(lang: LangCode) {
+  return NAV_GROUPS
+    .map((g) => ({ ...g, items: g.items.filter((i) => !i.langs || i.langs.includes(lang)) }))
+    .filter((g) => g.items.length > 0);
+}
+export function navFlatFor(lang: LangCode) {
+  return NAV_FLAT.filter((i) => !i.langs || i.langs.includes(lang));
+}
+export function viewSupportsLang(view: ViewId, lang: LangCode): boolean {
+  if (view === "cursos" || view === "legal" || view === "inicio") return true;
+  return NAV_FLAT.some((i) => i.id === view && (!i.langs || i.langs.includes(lang)));
+}

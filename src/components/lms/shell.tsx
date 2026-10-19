@@ -2,13 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Brain, FlaskConical, Gamepad2, GraduationCap, Home, Menu, RefreshCcw, Search, Shield, Sparkles,
+  Brain, BookOpen, FlaskConical, Gamepad2, GraduationCap, Home, Menu, RefreshCcw, Search, Shield, Sparkles,
   X, Zap, Flame, Medal, LogIn, LogOut,
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { dueCards } from "@/lib/lms/srs";
-import { NAV_GROUPS, VIEW_TITLES } from "@/lib/lms/nav";
+import { NAV_GROUPS, VIEW_TITLES, navGroupsFor } from "@/lib/lms/nav";
+import { LANG_LIST, SHIPPED_LEVELS, LANGS } from "@/lib/lms/languages";
+import { viewSupportsLang } from "@/lib/lms/nav";
 import { PlanChip, UpgradeCta } from "./plan-badge";
 import { loginRequest, setAdminToken, setSessionToken, logoutRequest, getAdminToken, getSessionToken } from "@/lib/lms/remote";
 import { SearchPalette } from "./search-palette";
@@ -59,6 +61,9 @@ function BottomNavItem({ label, icon: Icon, active, onClick, badge }: { label: s
 export function AppShell({ children }: { children: React.ReactNode }) {
   const view = useLms((s) => s.view);
   const navigate = useLms((s) => s.navigate);
+  /* v9.17 · lengua de estudio activa: filtra la navegación */
+  const activeLang = useLms((s) => s.activeLang) ?? "it";
+  const setActiveLang = useLms((s) => s.setActiveLang);
   const xp = useLms((s) => s.xp);
   const streak = useLms((s) => s.streakCount);
   const level = useLms((s) => s.level);
@@ -91,11 +96,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const features = remoteConfig?.features ?? { plans: true, tutor: true, games: true, certificates: true, weeklyPlan: true };
 
   // pestaña contextual de la barra inferior: tutor → juegos → gramática
-  const extraTab = features.tutor
-    ? { id: "tutor" as ViewId, label: "Tutor IA", icon: Sparkles }
-    : features.games
-      ? { id: "giochi" as ViewId, label: "Juegos", icon: Gamepad2 }
-      : { id: "grammatica" as ViewId, label: "Gramática", icon: Brain };
+  // v9.17: respeta la lengua activa (esas vistas son solo-italiano)
+  const itOnly = (id: ViewId) => viewSupportsLang(id, activeLang);
+  const extraTab =
+    features.tutor && itOnly("tutor")
+      ? { id: "tutor" as ViewId, label: "Tutor IA", icon: Sparkles }
+      : features.games && itOnly("giochi")
+        ? { id: "giochi" as ViewId, label: "Juegos", icon: Gamepad2 }
+        : itOnly("grammatica")
+          ? { id: "grammatica" as ViewId, label: "Gramática", icon: Brain }
+          : { id: "legal" as ViewId, label: "Privacidad", icon: Shield };
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -163,7 +173,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const sidebar = useMemo(
     () => (
       <nav aria-label="Secciones del curso" className="flex h-full flex-col gap-5 overflow-y-auto px-3 py-5 scrollbar-thin">
-        {NAV_GROUPS.map((g) => {
+        {/* v9.17 · selector de lengua de estudio */}
+        <div className="mb-1 rounded-2xl border border-soft bg-surface p-3" role="group" aria-label="Lengua de estudio">
+          <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.16em] text-inchiostro/40 dark:text-inchiostro/50">
+            Estudiando · {LANGS[activeLang].variantEs}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {LANG_LIST.filter((L) => (SHIPPED_LEVELS[L.code] ?? []).length > 0).map((L) => (
+              <button
+                key={L.code}
+                type="button"
+                onClick={() => setActiveLang(L.code)}
+                aria-pressed={activeLang === L.code}
+                title={L.variantEs}
+                className={activeLang === L.code
+                  ? "inline-flex min-h-9 items-center gap-1.5 rounded-full bg-verde px-3 text-xs font-bold text-white"
+                  : "inline-flex min-h-9 items-center gap-1.5 rounded-full bg-inchiostro/5 px-3 text-xs font-bold text-muted-it transition-colors hover:bg-verde-tenue hover:text-verde dark:bg-inchiostro/10"}
+              >
+                <span aria-hidden="true">{L.flag}</span> {L.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        {navGroupsFor(activeLang).map((g) => {
           const items = g.items.filter((item) => {
             if (item.id === "piani" && !features.plans) return false;
             if (item.id === "tutor" && !features.tutor) return false;
@@ -200,7 +232,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
     ),
-    [view, navigate, features]
+    [view, navigate, features, activeLang]
   );
 
   return (
@@ -360,7 +392,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mx-auto flex max-w-md items-stretch px-1.5">
             <BottomNavItem label="Inicio" icon={Home} active={view === "inicio"} onClick={() => navigate("inicio")} />
             <BottomNavItem label="Cursos" icon={GraduationCap} active={view === "cursos"} onClick={() => navigate("cursos")} />
-            <BottomNavItem label="Repaso" icon={RefreshCcw} active={view === "repaso"} onClick={() => navigate("repaso")} badge={dueCount} />
+            {itOnly("repaso")
+              ? <BottomNavItem label="Repaso" icon={RefreshCcw} active={view === "repaso"} onClick={() => navigate("repaso")} badge={dueCount} />
+              : <BottomNavItem label="Letture" icon={BookOpen} active={view === "letture"} onClick={() => navigate("letture")} />}
             <BottomNavItem label={extraTab.label} icon={extraTab.icon} active={view === extraTab.id} onClick={() => navigate(extraTab.id)} />
             <BottomNavItem label="Más" icon={Menu} active={menuOpen} onClick={() => setMenuOpen(true)} />
           </div>

@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import { BookOpen, CheckCircle2, Eye, EyeOff, Languages } from "lucide-react";
 import type { CbClozeText } from "@/lib/lms/cambridge";
 import { CB_CLOZE } from "@/lib/lms/extra/readings-cloze";
+import { langContent } from "@/lib/lms/lang";
+import { langOfId } from "@/lib/lms/languages";
+import type { LangCode } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { AudioButton } from "./audio-button";
 import { HoverWords } from "./hover-words";
@@ -85,10 +88,11 @@ function Gap({
 
 /* ── Lectura individual ──────────────────────────────────────────── */
 function ClozeReadingCard({
-  text, onCompleted,
+  text, onCompleted, lang = "it",
 }: {
   text: CbClozeText;
   onCompleted: () => void;
+  lang?: import("@/lib/lms/types").LangCode;
 }) {
   const [picks, setPicks] = useState<Record<number, number>>({});   // hueco → opción elegida (solo aciertos)
   const [wrong, setWrong] = useState<Record<number, number>>({});   // hueco → opción errada (para marcar)
@@ -165,7 +169,7 @@ function ClozeReadingCard({
                             key={k}
                             className="mx-1 inline-flex items-center gap-1 rounded-lg bg-verde px-2 py-0.5 font-semibold text-white"
                           >
-                            <HoverWords text={gap.correctWord} />
+                            <HoverWords text={gap.correctWord} lang={lang} />
                           </span>
                         ) : (
                           <Gap
@@ -179,7 +183,7 @@ function ClozeReadingCard({
                     )
                   )}
                 </p>
-                <AudioButton text={stripMarkers(p.it)} size="sm" />
+                <AudioButton text={stripMarkers(p.it)} size="sm" lang={lang} />
               </div>
               {showEs && (
                 <p className="mt-1.5 text-sm italic leading-relaxed text-muted-it">{p.es}</p>
@@ -253,8 +257,9 @@ function ClozeReadingCard({
 }
 
 /* ── Sección completa: 3 lecturas con pestañas ───────────────────── */
-export function ClozeReadings({ unitId }: { unitId: string }) {
-  const texts = CB_CLOZE[unitId] ?? [];
+export function ClozeReadings({ unitId, lang }: { unitId: string; lang?: LangCode }) {
+  const ulang: LangCode = lang ?? langOfId(unitId);
+  const texts = langContent(ulang)?.cloze[unitId] ?? [];
   const addXp = useLms((s) => s.addXp);
   const markCambridgeSection = useLms((s) => s.markCambridgeSection);
   const progress = useLms((s) => s.cambridgeProgress[unitId]);
@@ -291,7 +296,7 @@ export function ClozeReadings({ unitId }: { unitId: string }) {
       </div>
       <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
         Lee cada texto y completa los huecos <strong>deduciendo la palabra por el contexto</strong>:
-        las tres opciones son posibles en italiano, pero solo una encaja con el sentido.
+        las tres opciones son posibles en {ulang === "en" ? "inglés" : "italiano"}, pero solo una encaja con el sentido.
       </p>
 
       {/* pestañas */}
@@ -317,7 +322,7 @@ export function ClozeReadings({ unitId }: { unitId: string }) {
 
       {/* lectura activa */}
       <div className="mt-5">
-        <ClozeReadingCard key={texts[tab].id} text={texts[tab]} onCompleted={() => handleComplete(tab)} />
+        <ClozeReadingCard key={texts[tab].id} text={texts[tab]} lang={ulang} onCompleted={() => handleComplete(tab)} />
       </div>
 
       {allDone && (

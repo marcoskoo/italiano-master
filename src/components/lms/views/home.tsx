@@ -8,6 +8,9 @@ import { useLms, rankFor } from "@/lib/lms/store";
 import { VOCAB, VOCAB_BY_ID } from "@/lib/lms/vocabulary";
 import { pickDaily, weakTopics, TOPIC_LABELS } from "@/lib/lms/adaptive";
 import { CAMBRIDGE } from "@/lib/lms/cambridge";
+import { langContent } from "@/lib/lms/lang";
+import { LANGS, SHIPPED_LEVELS } from "@/lib/lms/languages";
+import type { LangCode } from "@/lib/lms/types";
 import { dueCards } from "@/lib/lms/srs";
 import { CEFR_LEVELS, LEVEL_LABELS } from "@/lib/lms/types";
 import { PLANS, levelAllowed, requiredPlanForLevel, generateWeeklyPlan, planLimits } from "@/lib/lms/plans";
@@ -52,6 +55,8 @@ export function HomeView() {
   const navigate = useLms((s) => s.navigate);
   const xp = useLms((s) => s.xp);
   const level = useLms((s) => s.level);
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  const CAMB = langContent(activeLang)?.courses ?? CAMBRIDGE;
   const placementDone = useLms((s) => s.placementDone);
   const streak = useLms((s) => s.streakCount);
   const streakFreezes = useLms((s) => s.streakFreezes);
@@ -103,10 +108,10 @@ export function HomeView() {
      curso gramatical clásico. Primera unidad no completada desde el nivel del usuario;
      si el nivel está completo, salta al siguiente. Sin memo: recorrido barato. */
   const nextUnit = (() => {
-    const start = CAMBRIDGE.findIndex((l) => l.level === (level ?? "A1"));
+    const start = CAMB.findIndex((l) => l.level === (level ?? "A1"));
     if (start < 0) return undefined;
-    for (let i = start; i < CAMBRIDGE.length; i++) {
-      const l = CAMBRIDGE[i];
+    for (let i = start; i < CAMB.length; i++) {
+      const l = CAMB[i];
       const u = l.units.find((unit) => !cambridgeProgress[unit.id]?.done);
       if (u) return u;
     }
@@ -503,7 +508,7 @@ export function HomeView() {
                   {locked ? "🔒" : ""} {lv}
                 </p>
                 <p className="mt-1 text-xs text-muted-it">{locked ? `Sblocca con ${required.name}` : LEVEL_LABELS[lv]}</p>
-                {!locked && <p className="mt-2 font-mono text-[10px] text-muted-it">{CAMBRIDGE.find((l) => l.level === lv)?.units.length ?? 0} unità comunicative</p>}
+                {!locked && <p className="mt-2 font-mono text-[10px] text-muted-it">{CAMB.find((l) => l.level === lv)?.units.length ?? 0} unità comunicative</p>}
               </button>
             );
           })}

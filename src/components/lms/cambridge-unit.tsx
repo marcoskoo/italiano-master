@@ -7,7 +7,9 @@ import {
   Languages, Library, Lightbulb, ListChecks, Mic2, PenLine, Sparkles, Target, Trophy,
   Play, Pause, Volume2, Eye, EyeOff, ExternalLink, PartyPopper,
 } from "lucide-react";
-import { CB_UNIT_BY_ID, CB_STEPS, type CbQuizItem, type CbUnit, type CbStepId } from "@/lib/lms/cambridge";
+import { CB_STEPS, type CbQuizItem, type CbUnit, type CbStepId } from "@/lib/lms/cambridge";
+import { unitById, levelOfUnit, langContent } from "@/lib/lms/lang";
+import { langOfId, LANGS } from "@/lib/lms/languages";
 import { READINGS } from "@/lib/lms/reading";
 import { LETTURE_BY_ID } from "@/lib/lms/letture";
 import { GRAMMAR_IMG } from "@/lib/lms/grammar";
@@ -17,8 +19,6 @@ import { AudioButton } from "./audio-button";
 import { HoverWords } from "./hover-words";
 import { ClozeReadings } from "./cloze-readings";
 import { MindReadings } from "./mind-readings";
-import { GRAMMAR_DRILLS } from "@/lib/lms/extra/grammar-drills";
-import { GRAMMAR_DEEP } from "@/lib/lms/extra/grammar-deep";
 import { ThemeImg } from "./theme-img";
 import { cn } from "@/lib/utils";
 
@@ -139,8 +139,12 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
   const [showModel, setShowModel] = useState(false);
   const [reviewPassed, setReviewPassed] = useState(false);
 
-  const unit = CB_UNIT_BY_ID[unitId] as CbUnit | undefined;
-  const cast: Record<string, SpeakerVoice> = useMemo(() => (unit ? buildCast(unit.dialogue.map((d) => d.speaker)) : {}), [unit]);
+  const unit = unitById(unitId) as CbUnit | undefined;
+  /* v9.17 · lengua de esta unidad: decide TTS, hover y contenidos */
+  const ulang = unit ? langOfId(unit.id) : "it";
+  const ulContent = langContent(ulang);
+  const ulangInfo = LANGS[ulang];
+  const cast: Record<string, SpeakerVoice> = useMemo(() => (unit ? buildCast(unit.dialogue.map((d) => d.speaker), ulang) : {}), [unit, ulang]);
   const doneSections = progress?.sections ?? [];
   const unitDone = progress?.done ?? false;
 
@@ -154,7 +158,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
   const playDialogue = () => {
     if (playing) { stopSpeaking(); setPlaying(false); return; }
     setPlaying(true);
-    speakDialogue(unit.dialogue, cast, { rate: 0.92, onDone: () => setPlaying(false) });
+    speakDialogue(unit.dialogue, cast, { rate: 0.92, lang: ulang, onDone: () => setPlaying(false) });
   };
 
   const nextStep = () => { if (step < CB_STEPS.length - 1) setStep(step + 1); };
@@ -162,7 +166,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
 
   const reading = unit.reading.sourceId ? READINGS.find((r) => r.id === unit.reading.sourceId) : undefined;
   const lettura = unit.reading.letturaId ? LETTURE_BY_ID[unit.reading.letturaId] : undefined;
-  const deep = GRAMMAR_DEEP[unitId];
+  const deep = ulContent?.deep[unitId];
 
   return (
     <div>
@@ -275,8 +279,8 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                     <span className="shrink-0 rounded-full bg-verde px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-white">{l.speaker}</span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start gap-2">
-                        <p className="flex-1 leading-relaxed"><HoverWords text={l.it} /></p>
-                        <AudioButton text={l.it} size="sm" />
+                        <p className="flex-1 leading-relaxed"><HoverWords text={l.it} lang={ulang} /></p>
+                        <AudioButton text={l.it} size="sm" lang={ulang} />
                       </div>
                       {showTr && <p className="mt-1.5 text-sm italic text-muted-it">{l.es}</p>}
                     </div>
@@ -307,7 +311,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
               <div className="grid gap-3 sm:grid-cols-2">
                 {unit.chunks.map((c, i) => (
                   <div key={i} className="flex items-center gap-3 rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
-                    <AudioButton text={c.it} size="md" />
+                    <AudioButton text={c.it} size="md" lang={ulang} />
                     <div className="min-w-0">
                       <p className="font-semibold leading-snug">{c.it}</p>
                       <p className="text-sm text-muted-it">{c.es}</p>
@@ -327,9 +331,9 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
               <div className="space-y-3">
                 {unit.grammar.inductive.map((ex, i) => (
                   <div key={i} className="flex items-center gap-3 rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
-                    <AudioButton text={ex.it} size="md" />
+                    <AudioButton text={ex.it} size="md" lang={ulang} />
                     <div>
-                      <p className="font-semibold leading-snug"><HoverWords text={ex.it} /></p>
+                      <p className="font-semibold leading-snug"><HoverWords text={ex.it} lang={ulang} /></p>
                       <p className="text-sm italic text-muted-it">{ex.es}</p>
                     </div>
                   </div>
@@ -357,9 +361,9 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   <h4 className="font-display text-lg font-semibold">💡 Altri esempi</h4>
                   {deep.esempi.map((ex, i) => (
                     <div key={i} className="flex items-center gap-3 rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
-                      <AudioButton text={ex.it} size="md" />
+                      <AudioButton text={ex.it} size="md" lang={ulang} />
                       <div className="min-w-0">
-                        <p className="font-semibold leading-snug"><HoverWords text={ex.it} /></p>
+                        <p className="font-semibold leading-snug"><HoverWords text={ex.it} lang={ulang} /></p>
                         <p className="text-sm italic text-muted-it">{ex.es}</p>
                       </div>
                     </div>
@@ -372,10 +376,10 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                 <CbQuiz items={deep.usi} title="Scegli l'uso · ¿cuál encaja y por qué?" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
               )}
               {/* v9.13 · allenamiento extra: trasformazioni + correzione errori */}
-              {GRAMMAR_DRILLS[unit.id] && (
+              {ulContent?.drills[unit.id] && (
                 <>
-                  <CbQuiz items={GRAMMAR_DRILLS[unit.id].transform} title="Allenamento extra · Trasformazioni" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
-                  <CbQuiz items={GRAMMAR_DRILLS[unit.id].errors} title="Correggi l'errore · detective grammaticale" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+                  <CbQuiz items={ulContent.drills[unit.id].transform} title="Allenamento extra · Trasformazioni" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+                  <CbQuiz items={ulContent.drills[unit.id].errors} title="Correggi l'errore · detective grammaticale" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
                 </>
               )}
               {unit.grammar.topicId && (
@@ -398,12 +402,12 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                 {unit.pronunciation.pairs.map((p, i) => (
                   <div key={i} className="flex flex-wrap items-center gap-3 rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
                     <div className="flex items-center gap-2">
-                      <AudioButton text={p.a} size="sm" />
+                      <AudioButton text={p.a} size="sm" lang={ulang} />
                       <span className="font-semibold">{p.a}</span>
                     </div>
                     <span className="text-muted-it">vs</span>
                     <div className="flex items-center gap-2">
-                      <AudioButton text={p.b} size="sm" />
+                      <AudioButton text={p.b} size="sm" lang={ulang} />
                       <span className="font-semibold">{p.b}</span>
                     </div>
                     {p.note && <span className="text-xs italic text-muted-it">· {p.note}</span>}
@@ -437,9 +441,9 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
             <div className="space-y-5">
               <SectionTitle icon={<BookOpen className="h-5 w-5 text-oro" aria-hidden="true" />} n={8} title="Lettura · Leer en contexto" />
               {/* v9.13 · 3 letture tematiche (meditazione/spiritualità/qui-ora/relax) con 7 strategie */}
-              <MindReadings unitId={unit.id} />
+              <MindReadings unitId={unit.id} lang={ulang} />
               {/* v9.12 · 3 letture cloze (inferenza lessicale contestuale) */}
-              <ClozeReadings unitId={unit.id} />
+              <ClozeReadings unitId={unit.id} lang={ulang} />
               <details className="group rounded-3xl border border-soft bg-surface">
                 <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-5 py-3 text-sm font-bold text-muted-it transition-colors hover:text-verde">
                   <BookOpen className="h-4 w-4 shrink-0 text-oro" aria-hidden="true" />
@@ -460,7 +464,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                       <div key={i}>
                         <div className="flex items-start gap-2">
                           <p className="flex-1 leading-relaxed">{p.it}</p>
-                          <AudioButton text={p.it} size="sm" />
+                          <AudioButton text={p.it} size="sm" lang={ulang} />
                         </div>
                         <p className="mt-1 text-sm italic text-muted-it">{p.es}</p>
                       </div>
@@ -490,7 +494,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                     <div key={i}>
                       <div className="flex items-start gap-2">
                         <p className="flex-1 leading-relaxed">{p.it}</p>
-                        <AudioButton text={p.it} size="sm" />
+                        <AudioButton text={p.it} size="sm" lang={ulang} />
                       </div>
                       <p className="mt-1 text-sm italic text-muted-it">{p.es}</p>
                     </div>

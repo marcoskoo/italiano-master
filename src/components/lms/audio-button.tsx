@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Volume2 } from "lucide-react";
 import { speak } from "@/lib/lms/tts";
 import { useLms } from "@/lib/lms/store";
+import type { LangCode } from "@/lib/lms/types";
 import { cn } from "@/lib/utils";
 
 interface AudioButtonProps {
@@ -13,10 +14,11 @@ interface AudioButtonProps {
   label?: string;
   variant?: "icon" | "full";
   className?: string;
+  lang?: LangCode;          // v9.17 · lengua de estudio (default it)
 }
 
 /** Botón de audio TTS con velocidad de los ajustes y estado visual. */
-export function AudioButton({ text, size = "md", rate, label, variant = "icon", className }: AudioButtonProps) {
+export function AudioButton({ text, size = "md", rate, label, variant = "icon", className, lang = "it" }: AudioButtonProps) {
   const settingsRate = useLms((s) => s.settings.audioRate);
   const [playing, setPlaying] = useState(false);
 
@@ -24,11 +26,11 @@ export function AudioButton({ text, size = "md", rate, label, variant = "icon", 
     // no propagar: los audios viven dentro de tarjetas/tarjetas pulsables
     e.stopPropagation();
     setPlaying(true);
-    const ok = speak(text, { rate: rate ?? settingsRate, onEnd: () => setPlaying(false) });
+    const ok = speak(text, { rate: rate ?? settingsRate, lang, onEnd: () => setPlaying(false) });
     if (!ok) setPlaying(false);
     // misión diaria: cada audio escuchado cuenta (v6.0)
     if (ok) useLms.getState().trackQuest("listen");
-  }, [text, rate, settingsRate]);
+  }, [text, rate, settingsRate, lang]);
 
   const sizes = { sm: "h-8 w-8", md: "h-9 w-9", lg: "h-11 w-11" };
   const icons = { sm: "h-3.5 w-3.5", md: "h-4 w-4", lg: "h-5 w-5" };

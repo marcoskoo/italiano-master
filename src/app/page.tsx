@@ -41,6 +41,8 @@ import { ClassificaView } from "@/components/lms/views/classifica";
 import { LettureView } from "@/components/lms/views/letture";
 import { PremiView } from "@/components/lms/views/premi";
 import { PwaRegister, InstallBanner } from "@/components/lms/pwa";
+import { LegalView } from "@/components/lms/views/legal";
+import { CookieBanner } from "@/components/lms/cookie-banner";
 import { LockScreen } from "@/components/lms/lock-screen";
 
 /* ── Italiano Master · LMS completo de italiano (SPA) ─────────────── */
@@ -300,9 +302,11 @@ export default function Home() {
         {view === "classifica" && <ClassificaView />}
         {view === "letture" && <LettureView />}
         {view === "premi" && <PremiView />}
+        {view === "legal" && <LegalView />}
       </div>
       <PwaRegister />
       <InstallBanner />
+      <CookieBanner />
     </AppShell>
   );
 }

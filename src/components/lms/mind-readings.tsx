@@ -9,6 +9,9 @@ import {
 import type { MindIdeas, MindIntruder, MindQuiz, MindReading, MindSequence, MindVF } from "@/lib/lms/cambridge-mind";
 import { MIND_THEME_LABEL } from "@/lib/lms/cambridge-mind";
 import { MIND_READINGS } from "@/lib/lms/extra/readings-mind";
+import { langContent } from "@/lib/lms/lang";
+import { langOfId } from "@/lib/lms/languages";
+import type { LangCode } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { speak } from "@/lib/lms/tts";
 import { AudioButton } from "./audio-button";
@@ -349,19 +352,20 @@ function SequenceBlock({ sequence, order, checked, onToggleEvent, onCheck, onRes
 }
 
 /* Comprensión de escucha: audio con texto oculto + preguntas */
-function ListenBlock({ audioIt, intro, questions, answers, onPick }: {
+function ListenBlock({ audioIt, intro, questions, answers, onPick, lang = "it" }: {
   audioIt: string;
   intro: string;
   questions: MindQuiz[];
   answers: Record<number, number>;
   onPick: (i: number, oi: number) => void;
+  lang?: import("@/lib/lms/types").LangCode;
 }) {
   const [playing, setPlaying] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const play = () => {
     if (playing) { setPlaying(false); return; }
     setPlaying(true);
-    speak(audioIt, { rate: 0.88, onEnd: () => setPlaying(false) });
+    speak(audioIt, { rate: 0.88, lang, onEnd: () => setPlaying(false) });
   };
   return (
     <div>
@@ -387,7 +391,7 @@ function ListenBlock({ audioIt, intro, questions, answers, onPick }: {
         </div>
         {revealed && (
           <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-xl bg-surface p-4 text-base leading-[1.9]">
-            <HoverWords text={audioIt} />
+            <HoverWords text={audioIt} lang={lang} />
           </motion.p>
         )}
       </div>
@@ -399,7 +403,7 @@ function ListenBlock({ audioIt, intro, questions, answers, onPick }: {
 }
 
 /* ── Lectura individual ──────────────────────────────────────────── */
-export function MindReadingCard({ reading, onCompleted }: { reading: MindReading; onCompleted: () => void }) {
+export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading: MindReading; onCompleted: () => void; lang?: LangCode }) {
   const [phase, setPhase] = useState<"predict" | "read">("predict");
   const [predictPick, setPredictPick] = useState<number | null>(null);
   const [showEs, setShowEs] = useState(false);
@@ -538,8 +542,8 @@ export function MindReadingCard({ reading, onCompleted }: { reading: MindReading
         {reading.paragraphs.map((p, i) => (
           <div key={i}>
             <div className="flex items-start gap-2">
-              <p className="flex-1 text-base leading-[1.95]"><HoverWords text={p.it} /></p>
-              <AudioButton text={p.it} size="sm" />
+              <p className="flex-1 text-base leading-[1.95]"><HoverWords text={p.it} lang={lang} /></p>
+              <AudioButton text={p.it} size="sm" lang={lang} />
             </div>
             {showEs && <p className="mt-1.5 text-sm italic leading-relaxed text-muted-it">{p.es}</p>}
           </div>
@@ -597,7 +601,7 @@ export function MindReadingCard({ reading, onCompleted }: { reading: MindReading
           <section>
             <BlockTitle icon={<Music4 className="h-5 w-5 text-verde" aria-hidden="true" />} label="Ascolto · comprensión de escucha" hint="Escucha el audio sin leerlo (puedes escucharlo dos veces) y responde." />
             <ListenBlock
-              audioIt={reading.listen.audioIt}
+              audioIt={reading.listen.audioIt} lang={lang}
               intro={reading.listen.intro}
               questions={reading.listen.questions}
               answers={listenAnswers}
@@ -625,8 +629,9 @@ export function MindReadingCard({ reading, onCompleted }: { reading: MindReading
 }
 
 /* ── Sección completa: 3 lecturas temáticas con pestañas ─────────── */
-export function MindReadings({ unitId }: { unitId: string }) {
-  const readings = MIND_READINGS[unitId] ?? [];
+export function MindReadings({ unitId, lang }: { unitId: string; lang?: LangCode }) {
+  const ulang: LangCode = lang ?? langOfId(unitId);
+  const readings = langContent(ulang)?.mind[unitId] ?? [];
   const addXp = useLms((s) => s.addXp);
   const markCambridgeSection = useLms((s) => s.markCambridgeSection);
   const progress = useLms((s) => s.cambridgeProgress[unitId]);
@@ -691,7 +696,7 @@ export function MindReadings({ unitId }: { unitId: string }) {
       </div>
 
       <div className="mt-5">
-        <MindReadingCard key={readings[tab].id} reading={readings[tab]} onCompleted={() => handleComplete(tab)} />
+        <MindReadingCard key={readings[tab].id} reading={readings[tab]} lang={ulang} onCompleted={() => handleComplete(tab)} />
       </div>
 
       {allDone && (

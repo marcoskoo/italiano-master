@@ -6,8 +6,10 @@ import { ArrowLeft, BookOpen, CheckCircle2, Ear, HelpCircle, ListOrdered, Search
 import type { CefrLevel } from "@/lib/lms/types";
 import type { MindTheme } from "@/lib/lms/cambridge-mind";
 import { MIND_THEME_LABEL } from "@/lib/lms/cambridge-mind";
-import { MIND_LIBRARY, mindLevel } from "@/lib/lms/extra/readings-mind";
-import { CB_UNIT_BY_ID, CB_LEVEL_OF } from "@/lib/lms/cambridge";
+import { mindLevel } from "@/lib/lms/extra/readings-mind";
+import { unitById, levelOfUnit, langContent } from "@/lib/lms/lang";
+import { langOfId, LANGS } from "@/lib/lms/languages";
+import type { LangCode } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { MindReadingCard } from "./mind-readings";
 import { cn } from "@/lib/utils";
@@ -47,19 +49,6 @@ const STRATEGY_ICONS = {
    unidad de origen y texto completo (IT + ES). Varias palabras = TODAS
    deben estar presentes (búsqueda AND).                              */
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-const SEARCH_TEXT: Record<string, string> = Object.fromEntries(
-  MIND_LIBRARY.map((e) => {
-    const u = CB_UNIT_BY_ID[e.unitId];
-    return [e.reading.id, norm([
-      e.reading.title,
-      e.reading.titleEs,
-      MIND_THEME_LABEL[e.reading.theme],
-      u ? `${u.title} ${u.titleIt}` : "",
-      e.reading.paragraphs.map((p) => `${p.it} ${p.es}`).join(" "),
-    ].join(" "))];
-  })
-);
-
 export function MindCollection({ initialId, onBack }: { initialId?: string | null; onBack: () => void }) {
   const [theme, setTheme] = useState<MindTheme | "tutti">("tutti");
   const [level, setLevel] = useState<CefrLevel | "tutti">("tutti");
@@ -69,27 +58,51 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
   const readingsRead = useLms((s) => s.readingsRead);
   const addXp = useLms((s) => s.addXp);
   const markReadingDone = useLms((s) => s.markReadingDone);
+  /* v9.17 · colección de la lengua activa */
+  const activeLang = useLms((s) => s.activeLang) as LangCode;
+  const LIB = useMemo(
+    () => (langContent(activeLang)?.mind ?? {}),
+    [activeLang]
+  );
+  const LIB_ENTRIES = useMemo(
+    () => Object.entries(LIB).flatMap(([unitId, rs]) => rs.map((reading) => ({ unitId, reading })))
+      .sort((a, b) => a.unitId.localeCompare(b.unitId) || a.reading.id.localeCompare(b.reading.id)),
+    [LIB]
+  );
+  const SEARCH = useMemo(
+    () => Object.fromEntries(LIB_ENTRIES.map((e) => {
+      const u = unitById(e.unitId);
+      return [e.reading.id, norm([
+        e.reading.title, e.reading.titleEs,
+        MIND_THEME_LABEL[e.reading.theme],
+        u ? `${u.title} ${u.titleIt}` : "",
+        e.reading.paragraphs.map((pp) => `${pp.it} ${pp.es}`).join(" "),
+      ].join(" "))];
+    })),
+    [LIB_ENTRIES]
+  );
+  const levelFor = (id: string, unitId: string) => levelOfUnit(unitId) ?? mindLevel(id);
 
   const qTokens = useMemo(
     () => norm(query.trim()).split(/\s+/).filter(Boolean),
     [query]
   );
   const entries = useMemo(
-    () => MIND_LIBRARY.filter((e) =>
+    () => LIB_ENTRIES.filter((e) =>
       (theme === "tutti" || e.reading.theme === theme) &&
-      (level === "tutti" || mindLevel(e.reading.id) === level) &&
-      (qTokens.length === 0 || qTokens.every((t) => SEARCH_TEXT[e.reading.id]?.includes(t)))
+      (level === "tutti" || levelFor(e.reading.id, e.unitId) === level) &&
+      (qTokens.length === 0 || qTokens.every((t) => SEARCH[e.reading.id]?.includes(t)))
     ),
-    [theme, level, qTokens]
+    [LIB_ENTRIES, theme, level, qTokens]
   );
 
   /* ── lector de una lectura ── */
   if (openId) {
-    const entry = MIND_LIBRARY.find((e) => e.reading.id === openId);
+    const entry = LIB_ENTRIES.find((e) => e.reading.id === openId);
     if (entry) {
-      const unit = CB_UNIT_BY_ID[entry.unitId];
-      const lvl = CB_LEVEL_OF[entry.unitId] ?? mindLevel(entry.reading.id);
-      const idxInUnit = MIND_LIBRARY.filter((e) => e.unitId === entry.unitId).findIndex((e) => e.reading.id === openId);
+      const unit = unitById(entry.unitId);
+      const lvl = levelFor(entry.reading.id, entry.unitId);
+      const idxInUnit = LIB_ENTRIES.filter((e) => e.unitId === entry.unitId).findIndex((e) => e.reading.id === openId);
       return (
         <div>
           <button
@@ -118,6 +131,7 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
             <MindReadingCard
               key={entry.reading.id}
               reading={entry.reading}
+              lang={langOfId(entry.unitId)}
               onCompleted={() => {
                 markReadingDone(entry.reading.id);   // +20 monedas la primera vez
                 addXp(5, "lettura");
@@ -136,7 +150,7 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
               dir="prev"
             />
             <p className="text-center text-xs font-semibold text-muted-it">
-              {readingsRead.filter((id) => id.startsWith("md-")).length}/{MIND_LIBRARY.length} letture della collezione completate
+              {readingsRead.filter((id) => id.startsWith("md-")).length}/{LIB_ENTRIES.length} letture della collezione completate
             </p>
             <NavButton
               disabled={entries.findIndex((e) => e.reading.id === openId) === -1 || entries.findIndex((e) => e.reading.id === openId) >= entries.length - 1}
@@ -153,7 +167,7 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
   }
 
   /* ── estantería de la colección ── */
-  const doneCount = MIND_LIBRARY.filter((e) => readingsRead.includes(e.reading.id)).length;
+  const doneCount = LIB_ENTRIES.filter((e) => readingsRead.includes(e.reading.id)).length;
 
   return (
     <div>
@@ -171,7 +185,7 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
             </p>
           </div>
           <div className="flex flex-col items-center rounded-2xl bg-surface/80 px-4 py-2.5 shadow-sm">
-            <span className="font-display text-lg font-bold text-verde-scuro dark:text-verde">{doneCount}/{MIND_LIBRARY.length}</span>
+            <span className="font-display text-lg font-bold text-verde-scuro dark:text-verde">{doneCount}/{LIB_ENTRIES.length}</span>
             <span className="text-[10px] font-bold uppercase tracking-wide text-muted-it">completate</span>
           </div>
         </div>
@@ -259,7 +273,7 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {entries.map((e, i) => {
           const done = readingsRead.includes(e.reading.id);
-          const unit = CB_UNIT_BY_ID[e.unitId];
+          const unit = unitById(e.unitId);
           const lvl = mindLevel(e.reading.id);
           return (
             <motion.button

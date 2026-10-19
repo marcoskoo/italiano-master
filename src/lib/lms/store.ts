@@ -4,12 +4,13 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { CefrLevel, SrsCard, SkillStats, QuizResultEntry, ViewId, NavParams, Topic, WordCategory } from "./types";
+import type { CefrLevel, SrsCard, SkillStats, QuizResultEntry, ViewId, NavParams, Topic, WordCategory, LangCode, LegalConsent } from "./types";
 import type { PlanId } from "./plans";
 import type { AppConfig, AppConfigBundle } from "./appconfig";
 import { applyRemoteBundle } from "./overrides";
 import { telemetry } from "./remote";
 import { CB_LEVEL_OF, CB_UNIT_XP } from "./cambridge";
+import { viewSupportsLang } from "./nav";
 import { generateDailyQuests, QUEST_BONUS_XP, ALL_QUESTS_BONUS_XP, generateMonthlyChallenge, monthKeyFor, monthlyTemplate, MONTHLY_REWARD_COINS, spinWheelPrize, type WheelPrize } from "./quests";
 import type { DailyQuest, TrackType, MonthlyChallenge } from "./quests";
 import { weekKeyFor } from "./leagues";
@@ -148,8 +149,12 @@ export interface LmsState {
   activeTitle: string | null;  // título mostrado en el perfil
 
   /* ── Quadro MCER (v9.16 · estándares internacionales) ── */
-  cefrSelf: Record<string, CefrLevel>; // griglia de autoevaluación QCER (5 destrezas → nivel)
-  candoDone: Record<string, boolean>;  // can-do de cada unidad confirmados ("cu-a1-01:0")
+  cefrSelf: Record<string, CefrLevel>; // griglia de autoevaluación QCER (clave "lang:destreza" → nivel)
+  candoDone: Record<string, boolean>;  // can-do de cada unidad confirmados ("cu-a1-01:0" / "en-cu-a1-01:0")
+
+  /* ── v9.17 · multi-idioma + legal ── */
+  activeLang: LangCode;               // lengua de estudio activa
+  legalConsent: LegalConsent;         // consentimiento GDPR/ePrivacy
 
   /* actions */
   navigate: (view: ViewId, params?: NavParams) => void;
@@ -195,6 +200,9 @@ export interface LmsState {
   setCefrSelf: (key: string, level: CefrLevel | null) => void;
   resetCefrSelf: () => void;
   toggleCando: (key: string) => void;
+  /* v9.17 · multi-idioma + legal */
+  setActiveLang: (lang: LangCode) => void;
+  setLegalConsent: (partial: Partial<LegalConsent>) => void;
   loginAccount: (account: Account, profile?: { displayName?: string; level?: string; plan?: string; xp?: number; streak?: number }) => void;
   adoptServerProgress: (progress: { xp: number; streak: number }) => void;
   logoutAccount: () => void;
@@ -299,6 +307,8 @@ export const useLms = create<LmsState>()(
       /* v9.16 · Quadro MCER */
       cefrSelf: {},
       candoDone: {},
+      activeLang: "it",
+      legalConsent: { bannerSeen: false, analytics: false, ageConfirmed: false, ageAt: null, tosVersion: null, acceptedAt: null },
 
       navigate: (view, params = {}) => set({ view, navParams: params }),
 
@@ -664,6 +674,25 @@ export const useLms = create<LmsState>()(
         set({ candoDone: next });
       },
 
+      /* ── v9.17 · multi-idioma + legal ── */
+      setActiveLang: (lang) => {
+        const s = get();
+        if (lang === s.activeLang) return;
+        const patch: Partial<LmsState> = { activeLang: lang };
+        // si la vista actual no existe en la nueva lengua → volver a Inicio
+        if (s.view !== "inicio" && !viewSupportsLang(s.view, lang)) {
+          patch.view = "inicio";
+          patch.navParams = {};
+        }
+        set(patch);
+        telemetry("lang_switched", { lang }, s.account?.username);
+      },
+
+      setLegalConsent: (partial) => {
+        const s = get();
+        set({ legalConsent: { ...s.legalConsent, ...partial } });
+      },
+
       /* ── Backup e ripristino (v8.0) ──
          Restaura SOLO progreso: nunca cuenta, seguridad, plan ni pagos
          (un archivo manipulado no puede escalar privilegios).          */
@@ -760,6 +789,8 @@ export const useLms = create<LmsState>()(
           monthKey: monthKeyFor(), monthCounters: {}, monthChallengeClaimed: false,
           ownedTitles: [], activeTitle: null,
           cefrSelf: {}, candoDone: {},
+          activeLang: "it",
+          legalConsent: { bannerSeen: false, analytics: false, ageConfirmed: false, ageAt: null, tosVersion: null, acceptedAt: null },
         }),
 
       loginAccount: (account, profile) => {
@@ -816,7 +847,27 @@ export const useLms = create<LmsState>()(
         set(patch);
       },
     }),
-    { name: "italiano-master-v1" }
+    {
+      name: "italiano-master-v1",
+      version: 2,
+      /* v9.17: cefrSelf pasa a claves "lang:destreza" (multi-idioma).
+         Migramos las claves desnudas históricas → "it:…".            */
+      migrate: (persisted, version) => {
+        const state = persisted as Record<string, unknown>;
+        if (version < 2 && state && typeof state === "object") {
+          const old = state.cefrSelf as Record<string, string> | undefined;
+          if (old && typeof old === "object") {
+            const SKILLS = ["ascolto", "scrittura", "lettura", "interazione", "produzione-orale"];
+            const migrated: Record<string, string> = {};
+            for (const [k, v] of Object.entries(old)) {
+              migrated[SKILLS.includes(k) ? `it:${k}` : k] = v;
+            }
+            state.cefrSelf = migrated;
+          }
+        }
+        return state as unknown as LmsState;
+      },
+    }
   )
 );
 

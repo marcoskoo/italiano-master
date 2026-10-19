@@ -8,6 +8,8 @@ import {
   REGISTER_LABELS, cefrCoverage, searchDictionary,
 } from "@/lib/lms/dict/dictionary";
 import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
+import { EN_DICT } from "@/lib/lms/dict/lang-en";
+import type { LangCode } from "@/lib/lms/types";
 import { CATEGORY_META, CATEGORY_IMG, CEFR_LEVELS, type VocabWord } from "@/lib/lms/types";
 import { ThemeImg } from "../theme-img";
 import { useLms } from "@/lib/lms/store";
@@ -34,6 +36,10 @@ const TYPE_LABELS: Record<string, string> = {
 const ALL_TYPES = Object.keys(TYPE_LABELS);
 const PAGE = 60;
 
+/* v9.17 · diccionario por lengua: it → VOCAB (curso temático);
+   en → EN_DICT (inglés americano A1-A2 + lematizador en el hover). */
+const EN_BY_ID: Record<string, import("@/lib/lms/types").VocabWord> = Object.fromEntries(EN_DICT.map((w) => [w.id, w]));
+
 export function DictionaryView() {
   const [query, setQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
@@ -46,6 +52,9 @@ export function DictionaryView() {
   const [statsOpen, setStatsOpen] = useState(true);
   const [favReview, setFavReview] = useState(false);
 
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  const WORD_INDEX = activeLang === "it" ? VOCAB_BY_ID : activeLang === "en" ? EN_BY_ID : {};
+  const BASE_LIST = activeLang === "it" ? DICTIONARY : activeLang === "en" ? EN_DICT : [];
   const srs = useLms((s) => s.srs);
   const upsertSrs = useLms((s) => s.upsertSrs);
   const addXp = useLms((s) => s.addXp);
@@ -74,20 +83,27 @@ export function DictionaryView() {
   const [appliedWordId, setAppliedWordId] = useState<string | null>(null);
   if (navParams.wordId && navParams.wordId !== appliedWordId) {
     setAppliedWordId(navParams.wordId);
-    if (VOCAB_BY_ID[navParams.wordId]) setSelected(navParams.wordId);
+    if (WORD_INDEX[navParams.wordId]) setSelected(navParams.wordId);
   }
 
   const favoriteWords = useMemo(
-    () => dictFavorites.map((id) => VOCAB_BY_ID[id]).filter(Boolean) as VocabWord[],
+    () => dictFavorites.map((id) => WORD_INDEX[id]).filter(Boolean) as VocabWord[],
     [dictFavorites]
   );
   const historyWords = useMemo(
-    () => dictHistory.map((id) => VOCAB_BY_ID[id]).filter(Boolean) as VocabWord[],
+    () => dictHistory.map((id) => WORD_INDEX[id]).filter(Boolean) as VocabWord[],
     [dictHistory]
   );
 
   const results = useMemo(() => {
-    let list = query.trim() ? searchDictionary(query) : DICTIONARY;
+    let list: VocabWord[] = query.trim()
+      ? activeLang === "it"
+        ? searchDictionary(query)
+        : BASE_LIST.filter((w) => {
+            const q = query.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return `${w.it} ${w.es} ${(w.example?.it ?? "")} ${(w.example?.es ?? "")}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(q);
+          })
+      : BASE_LIST;
     if (levelFilter !== "all") list = list.filter((w) => w.level === levelFilter);
     if (catFilter !== "all") list = list.filter((w) => w.cat === catFilter);
     if (typeFilter !== "all") list = list.filter((w) => w.type === typeFilter);
@@ -99,7 +115,7 @@ export function DictionaryView() {
   }, [query, levelFilter, catFilter, typeFilter, ffOnly, hfOnly]);
 
   const visible = results.slice(0, limit);
-  const word = selected ? VOCAB_BY_ID[selected] : undefined;
+  const word = selected ? WORD_INDEX[selected] : undefined;
 
   /* ── ripasso dei preferiti (v8.0) ── */
   if (favReview && favoriteWords.length >= 2) {
@@ -116,7 +132,7 @@ export function DictionaryView() {
   /* ── entrada completa ── */
   if (word) {
     const related = (word.related ?? [])
-      .map((r) => DICTIONARY.find((v) => v.it === r))
+      .map((r) => BASE_LIST.find((v) => v.it === r))
       .filter(Boolean) as VocabWord[];
     return (
       <div>

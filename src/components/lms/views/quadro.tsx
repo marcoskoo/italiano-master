@@ -10,6 +10,10 @@ import {
   ACTFL_MAP, CEFR_COMPLIANCE, CEFR_GLOBAL_SCALE, CEFR_GRID, CEFR_LEVELS, ITALIAN_CERTS,
 } from "@/lib/lms/cefr";
 import { CAMBRIDGE, CB_LEVEL_OF } from "@/lib/lms/cambridge";
+import { langContent, levelOfUnit } from "@/lib/lms/lang";
+import { CERTS_BY_LANG, LANGS, SHIPPED_LEVELS, langOfId } from "@/lib/lms/languages";
+import { EN_DICT_COUNT } from "@/lib/lms/dict/lang-en";
+import type { LangCode } from "@/lib/lms/types";
 import { GRAMMAR } from "@/lib/lms/grammar";
 import { VOCAB } from "@/lib/lms/vocabulary";
 import { LETTURE } from "@/lib/lms/letture";
@@ -45,7 +49,15 @@ function LevelChip({ level, className }: { level: CefrLevel; className?: string 
 
 export function QuadroView() {
   const userLevel = useLms((s) => s.level);
+  /* v9.17 · lengua activa: cobertura, certificaciones y griglia propias */
+  const activeLang = useLms((s) => s.activeLang) as LangCode;
+  const langInfo = LANGS[activeLang];
+  const CERTS = CERTS_BY_LANG[activeLang];
   const cefrSelf = useLms((s) => s.cefrSelf);
+  const langSelf = useMemo(
+    () => Object.fromEntries(Object.entries(cefrSelf).filter(([k]) => k.startsWith(`${activeLang}:`)).map(([k, v]) => [k.slice(3), v])) as Record<string, CefrLevel>,
+    [cefrSelf, activeLang]
+  );
   const setCefrSelf = useLms((s) => s.setCefrSelf);
   const resetCefrSelf = useLms((s) => s.resetCefrSelf);
   const cambridgeProgress = useLms((s) => s.cambridgeProgress);
@@ -55,37 +67,44 @@ export function QuadroView() {
 
   /* ── cobertura real de la app por nivel MCER ── */
   const coverage = useMemo(() => {
+    const content = langContent(activeLang);
+    const clozeAll = content?.cloze ?? {};
     const clozeByLevel: Record<string, number> = {};
-    for (const [unitId, texts] of Object.entries(CB_CLOZE)) {
-      const lv = CB_LEVEL_OF[unitId] ?? "A1";
+    for (const [unitId, texts] of Object.entries(clozeAll)) {
+      const lv = levelOfUnit(unitId) ?? "A1";
       clozeByLevel[lv] = (clozeByLevel[lv] ?? 0) + texts.length;
     }
+    const mindEntries = Object.entries(content?.mind ?? {}).flatMap(([unitId, rs]) => rs.map((r) => ({ unitId, reading: r })));
     return CEFR_LEVELS.map((l) => {
-      const units = CAMBRIDGE.find((c) => c.level === l)?.units ?? [];
+      const units = (content?.courses ?? CAMBRIDGE).find((c) => c.level === l)?.units ?? [];
       const unitsDone = units.filter((u) => cambridgeProgress[u.id]?.done).length;
       return {
         level: l,
         units: units.length,
         unitsDone,
-        grammar: GRAMMAR.filter((g) => g.level === l).length,
-        vocab: VOCAB.filter((w) => w.level === l).length,
-        letture: LETTURE.filter((t) => t.level === l).length,
-        mind: MIND_LIBRARY.filter((e) => mindLevel(e.reading.id) === l).length,
+        grammar: activeLang === "it" ? GRAMMAR.filter((g) => g.level === l).length : Object.values(content?.deep ?? {}).length,
+        vocab: activeLang === "it" ? VOCAB.filter((w) => w.level === l).length : 0,
+        letture: activeLang === "it" ? LETTURE.filter((t) => t.level === l).length : 0,
+        mind: mindEntries.filter((e) => (levelOfUnit(e.unitId) ?? "A1") === l).length,
         cloze: clozeByLevel[l] ?? 0,
         cando: units.reduce((n, u) => n + u.cando.length, 0),
       };
     });
-  }, [cambridgeProgress]);
+  }, [cambridgeProgress, activeLang]);
 
   const totalCandoDone = Object.keys(candoDone).length;
+  /* lemas del diccionario de la lengua activa (hover) */
+  const covVocabCount = activeLang === "it"
+    ? VOCAB.length
+    : (activeLang === "en" ? EN_DICT_COUNT : 0);
 
   /* ── nivel sugerido por la griglia (mediana conservadora) ── */
-  const filled = CEFR_GRID.map((r) => cefrSelf[r.key]).filter(Boolean) as CefrLevel[];
+  const filled = CEFR_GRID.map((r) => langSelf[r.key]).filter(Boolean) as CefrLevel[];
   const suggested = useMemo(() => {
     if (filled.length < 3) return null; // con menos de 3 destrezas no sugerimos
     const idx = filled.map((l) => CEFR_LEVELS.indexOf(l)).sort((a, b) => a - b);
     return CEFR_LEVELS[idx[Math.floor((idx.length - 1) / 2)]];
-  }, [cefrSelf]);
+  }, [langSelf]);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -113,11 +132,11 @@ export function QuadroView() {
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {[
-              "66 unidades comunicativas A1→C2",
-              "8.000+ lemas graduados por nivel",
-              "75 temi di grammatica + spiegazioni approfondite",
-              "256 letture graduate",
-              "Preparazione CILS A2→C2",
+              `${coverage.reduce((n, c) => n + c.units, 0)} unidades comunicativas en ${langInfo.country}`,
+              activeLang === "it" ? "8.000+ lemas graduados por nivel" : `${covVocabCount.toLocaleString("it-IT")} lemas del diccionario ${langInfo.name.toLowerCase()}`,
+              activeLang === "it" ? "75 temi di grammatica + spiegazioni approfondite" : `${Object.keys(langContent(activeLang)?.deep ?? {}).length} unidades con gramática amplia`,
+              `${coverage.reduce((n, c) => n + c.mind + c.cloze + c.letture, 0)} lecturas graduadas`,
+              `${CERTS[0]?.name ?? ""} · certificación oficial de ${langInfo.country}`,
             ].map((t) => (
               <span key={t} className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold">{t}</span>
             ))}
@@ -138,7 +157,7 @@ export function QuadroView() {
             </p>
             <p className="mt-2 text-xs text-muted-it">
               {userLevel
-                ? `${CEFR_GLOBAL_SCALE[userLevel].userLabel} · ${CAMBRIDGE.find((c) => c.level === userLevel)?.hours ?? 0} h de recorrido guiado`
+                ? `${CEFR_GLOBAL_SCALE[userLevel].userLabel} · ${(langContent(activeLang)?.courses ?? CAMBRIDGE).find((c) => c.level === userLevel)?.hours ?? 0} h de recorrido guiado`
                 : "Aún no has hecho el test de nivel"}
             </p>
             <button
@@ -216,7 +235,7 @@ export function QuadroView() {
 
         <div className="mt-5 space-y-4">
           {CEFR_GRID.map((row) => {
-            const chosen = cefrSelf[row.key];
+            const chosen = langSelf[row.key];
             return (
               <div key={row.key} className="rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
                 <p className="font-bold">{gridLang === "es" ? row.skillEs : row.skillIt}</p>
@@ -224,7 +243,7 @@ export function QuadroView() {
                   {CEFR_LEVELS.map((l) => (
                     <button
                       key={l}
-                      onClick={() => setCefrSelf(row.key, chosen === l ? null : l)}
+                      onClick={() => setCefrSelf(`${activeLang}:${row.key}`, chosen === l ? null : l)}
                       aria-pressed={chosen === l}
                       className={cn(
                         "min-h-10 rounded-xl border-2 font-mono text-xs font-bold transition-all",
@@ -320,7 +339,7 @@ export function QuadroView() {
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] font-bold text-muted-it">
                   <span>{cov.units} unità</span>
                   <span>{cov.grammar} grammatica</span>
-                  <span>{cov.vocab.toLocaleString("it-IT")} lemmi</span>
+                  <span>{(activeLang === "it" ? cov.vocab : covVocabCount).toLocaleString("it-IT")} lemmi</span>
                   <span>{cov.letture + cov.mind} letture</span>
                   {mine && <span className="text-verde-scuro dark:text-verde">{cov.unitsDone}/{cov.units} completate</span>}
                 </div>
@@ -393,14 +412,14 @@ export function QuadroView() {
       {/* ═══ 6 · Certificazioni ═══ */}
       <section className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold">
-          <Award className="h-5 w-5 text-rosso" aria-hidden="true" /> Certificazioni dell'italiano
+          <Award className="h-5 w-5 text-rosso" aria-hidden="true" /> Certificazioni · {langInfo.variantEs}
         </h2>
         <p className="mt-1 max-w-3xl text-sm text-muted-it">
-          Las tres certificaciones de italiano como L2 reconocidas por el Estado italiano, todas alineadas al QCER.
-          Desde 2018 (D.L. 113), la ciudadanía italiana exige un nivel <strong>B1</strong> certificado.
+          Certificaciones oficiales de {langInfo.name.toLowerCase()} ({langInfo.country}) reconocidas internacionalmente y
+          alineadas al QCER. Verifica siempre los requisitos vigentes en el sitio oficial: la ley cambia con los años.
         </p>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {ITALIAN_CERTS.map((cert) => (
+          {CERTS.map((cert) => (
             <div key={cert.id} className={cn(
               "flex flex-col rounded-2xl border-2 p-5",
               cert.appPrep ? "border-verde/50 bg-verde-tenue/30" : "border-soft bg-crema dark:bg-inchiostro/5",

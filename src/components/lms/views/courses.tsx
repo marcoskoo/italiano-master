@@ -8,6 +8,9 @@ import {
 } from "lucide-react";
 import { COURSES, findLesson, totalLessons } from "@/lib/lms/courses";
 import { CAMBRIDGE, SKILL_MATRIX } from "@/lib/lms/cambridge";
+import { langContent } from "@/lib/lms/lang";
+import { LANGS, LANG_LIST, SHIPPED_LEVELS } from "@/lib/lms/languages";
+import type { LangCode } from "@/lib/lms/types";
 import { CambridgeUnitView } from "../cambridge-unit";
 import { ThemeImg } from "../theme-img";
 import { getExercises } from "@/lib/lms/exercises";
@@ -27,9 +30,21 @@ const LEVEL_COLORS: Record<string, string> = {
   zero: "terracotta", A1: "verde", A2: "verde-scuro", B1: "oro", B2: "oro-scuro", C1: "rosso", C2: "rosso-scuro",
 };
 
+function langOfIdSafe(id: string): LangCode {
+  if (id.startsWith("en-")) return "en";
+  if (id.startsWith("pt-")) return "pt";
+  if (id.startsWith("fr-")) return "fr";
+  if (id.startsWith("de-")) return "de";
+  return "it";
+}
+
 export function CoursesView() {
   const navParams = useLms((s) => s.navParams);
   const navigate = useLms((s) => s.navigate);
+  /* v9.17 · lengua de estudio activa y su percorso */
+  const activeLang = useLms((s) => s.activeLang) as LangCode;
+  const setActiveLang = useLms((s) => s.setActiveLang);
+  const CAMB = langContent(activeLang)?.courses ?? CAMBRIDGE;
   const completedLessons = useLms((s) => s.completedLessons);
   const cambridgeProgress = useLms((s) => s.cambridgeProgress);
   const skillStats = useLms((s) => s.skillStats);
@@ -41,7 +56,7 @@ export function CoursesView() {
   /* v9.8.1: deep-link desde Inicio ("Continúa: <unidad>") — solo si el plan permite el nivel */
   const [openUnit, setOpenUnit] = useState<string | null>(() => {
     if (!navParams.unitId) return null;
-    const unit = CAMBRIDGE.flatMap((l) => l.units).find((u) => u.id === navParams.unitId);
+    const unit = (langContent(langOfIdSafe(navParams.unitId))?.courses ?? CAMBRIDGE).flatMap((l) => l.units).find((u) => u.id === navParams.unitId);
     return unit && levelAllowed(plan, unit.level) ? unit.id : null;
   });
 
@@ -59,11 +74,11 @@ export function CoursesView() {
   const course = COURSES.find((c) => c.level === openLevel);
 
   /* ═══ PATHWAY COMUNICATIVO (arquitectura Cambridge) ═══ */
-  const levelDone = (lv: string) => CAMBRIDGE.find((l) => l.level === lv)!.units.filter((u) => cambridgeProgress[u.id]?.done).length;
-  const levelSections = (lv: string) => CAMBRIDGE.find((l) => l.level === lv)!.units.reduce((n, u) => n + (cambridgeProgress[u.id]?.sections.length ?? 0), 0);
-  const levelTotalSections = (lv: string) => CAMBRIDGE.find((l) => l.level === lv)!.units.length * 12;
-  const totalCbUnits = CAMBRIDGE.reduce((n, l) => n + l.units.length, 0);
-  const totalCbDone = CAMBRIDGE.reduce((n, l) => n + levelDone(l.level), 0);
+  const levelDone = (lv: string) => CAMB.find((l) => l.level === lv)!.units.filter((u) => cambridgeProgress[u.id]?.done).length;
+  const levelSections = (lv: string) => CAMB.find((l) => l.level === lv)!.units.reduce((n, u) => n + (cambridgeProgress[u.id]?.sections.length ?? 0), 0);
+  const levelTotalSections = (lv: string) => CAMB.find((l) => l.level === lv)!.units.length * 12;
+  const totalCbUnits = CAMB.reduce((n, l) => n + l.units.length, 0);
+  const totalCbDone = CAMB.reduce((n, l) => n + levelDone(l.level), 0);
 
   /* ── lista de niveles ── */
   if (!course) {
@@ -75,13 +90,35 @@ export function CoursesView() {
           animate={{ opacity: 1, y: 0 }}
           className="overflow-hidden rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue via-surface to-oro-tenue/50 p-6 sm:p-8 dark:from-verde-tenue/30"
         >
-          <p className="font-mono text-xs font-bold uppercase tracking-widest text-verde-scuro dark:text-verde">Percorso comunicativo · metodologia Cambridge</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl">Aprende italiano per fare cose in italiano</h1>
+          <p className="font-mono text-xs font-bold uppercase tracking-widest text-verde-scuro dark:text-verde">
+            Percorso comunicativo · metodologia Cambridge · {LANGS[activeLang].variantEs}
+          </p>
+          <h1 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl">
+            {activeLang === "it" ? "Aprende italiano per fare cose in italiano" : `Aprende ${LANGS[activeLang].name.toLowerCase()} para hacer cosas en ${LANGS[activeLang].name.toLowerCase()}`}
+          </h1>
           <p className="mt-3 max-w-3xl leading-relaxed text-muted-it">
-            66 unidades comunicativas de A1 a C2. Cada unidad es una secuencia pedagógica completa de 12 pasos —
+            {totalCbUnits} unidades comunicativas en {LANGS[activeLang].country}. Cada unidad es una secuencia pedagógica completa de 12 pasos —
             de la situación real a la misión final — donde la gramática es herramienta, no destino. La
             <strong> evaluación por competencias</strong> mide qué puedes <em>hacer</em>, no cuánto recuerdas.
           </p>
+          {/* v9.17 · selector de lengua de estudio */}
+          <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Lengua de estudio">
+            {LANG_LIST.filter((L) => (SHIPPED_LEVELS[L.code] ?? []).length > 0).map((L) => (
+              <button
+                key={L.code}
+                type="button"
+                onClick={() => setActiveLang(L.code)}
+                aria-pressed={activeLang === L.code}
+                className={activeLang === L.code
+                  ? "inline-flex min-h-11 items-center gap-2 rounded-full border border-verde bg-verde px-4 py-2 text-sm font-bold text-white shadow-sm transition-transform hover:scale-[1.03]"
+                  : "inline-flex min-h-11 items-center gap-2 rounded-full border border-soft bg-surface px-4 py-2 text-sm font-bold text-muted-it transition-colors hover:border-verde hover:text-verde"}
+              >
+                <span aria-hidden="true" className="text-base">{L.flag}</span>
+                {L.name}
+                <span className="font-mono text-[10px] font-semibold uppercase opacity-70">{L.ttsLocale}</span>
+              </button>
+            ))}
+          </div>
           <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-bold">
             <span className="rounded-full bg-verde px-3 py-1.5 text-white">{totalCbUnits} unità A1–C2</span>
             <span className="rounded-full bg-inchiostro/5 px-3 py-1.5 text-muted-it dark:bg-inchiostro/15">12 passi per unità</span>
@@ -117,7 +154,7 @@ export function CoursesView() {
 
         {/* tarjetas de nivel */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {CAMBRIDGE.map((lv, i) => {
+          {CAMB.map((lv, i) => {
             const doneUnits = levelDone(lv.level);
             const isCurrent = userLevel === lv.level;
             const levelOff = !(remoteConfig?.levels?.[lv.level] ?? true);
@@ -201,7 +238,7 @@ export function CoursesView() {
 
   /* ═══ DETALLE DE NIVEL ═══ */
   if (course.level !== "zero") {
-    const cbLevel = CAMBRIDGE.find((l) => l.level === course.level)!;
+    const cbLevel = CAMB.find((l) => l.level === course.level)!;
     const doneUnits = levelDone(cbLevel.level);
     return (
       <div>

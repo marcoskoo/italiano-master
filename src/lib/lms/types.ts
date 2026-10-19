@@ -319,6 +319,8 @@ export type ViewId =
   | "shadowing" | "importatore"
   /* v8.0 · gratis: analítica y ligas */
   | "statistiche" | "classifica"
+  /* v9.17 · multi-idioma + legal */
+  | "legal"
   /* v9.0 · letture & gamificación */
   | "letture" | "premi"
   /* v9.16 · Quadro MCER (estándares internacionales) */
@@ -345,3 +347,22 @@ export const PRINTABLE_IMG: Record<string, string> = {
   verbi: "/images/strumenti/print-verbi.webp",
   grammatica: "/images/strumenti/print-gram.webp",
 };
+
+/* ── v9.17 · Multi-idioma · código de lengua de estudio ──────────────
+   La interfaz sigue en español; la lengua de ESTUDIO es la que se
+   selecciona (it=italiano, en=inglés americano, pt=portugués de
+   Portugal, fr=francés de Francia, de=alemán de Alemania).
+   En los tipos de datos históricos el campo `.it` = texto en la lengua
+   de estudio y `.es` = español (documentado en cambridge.ts).     */
+export type LangCode = "it" | "en" | "pt" | "fr" | "de";
+export const LANG_CODES: LangCode[] = ["it", "en", "pt", "fr", "de"];
+
+/* v9.17 · Consentimiento legal (GDPR/ePrivacy) y centro de privacidad */
+export interface LegalConsent {
+  bannerSeen: boolean;          // se mostró el banner de cookies
+  analytics: boolean;           // telemetría analítica anónima (opt-in)
+  ageConfirmed: boolean;        // confirmó 13+ (gate de edad)
+  ageAt: string | null;         // fecha ISO de la confirmación
+  tosVersion: string | null;    // versión de ToS aceptada
+  acceptedAt: string | null;    // fecha de aceptación de ToS/privacidad
+}

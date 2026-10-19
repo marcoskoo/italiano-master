@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/admin/store";
 import { isAdminToken } from "@/lib/admin/server";
-import { requireSession } from "@/lib/admin/security";
+import { logEvent } from "@/lib/admin/server";
+import { requireSession, revokeStudentSessions, getClientIp, rateLimit } from "@/lib/admin/security";
 
 export const runtime = "nodejs";
 
@@ -76,6 +77,40 @@ export async function PATCH(req: Request) {
       ok: true,
       user: { id: updated.id, xp: updated.xp, level: updated.level, plan: updated.plan, streak: updated.streak },
     });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Error desconocido";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
+
+/* DELETE /api/auth/profile?userId=… → GDPR Art. 17 / CCPA §1798.105 /
+   LGPD Art. 18-VI: derecho de supresión. Borra la cuenta, revoca TODAS
+   las sesiones y lo registra en auditoría. El admin también puede
+   eliminar (mismo flujo que el Panel Admin). */
+export async function DELETE(req: Request) {
+  try {
+    const ip = getClientIp(req);
+    const rl = rateLimit(`del:${ip}`, { limit: 10, windowMs: 15 * 60_000, blockMs: 15 * 60_000 });
+    if (!rl.ok) return NextResponse.json({ error: "Demasiadas peticiones" }, { status: 429 });
+
+    const userId = new URL(req.url).searchParams.get("userId");
+    if (!userId) return NextResponse.json({ error: "userId requerido" }, { status: 400 });
+
+    const session = await requireSession(req, userId, isAdminToken);
+    if (!session.ok) {
+      await logEvent(ip, null, "account_delete_denied");
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+
+    const revoked = await revokeStudentSessions(userId);
+    await db.user.delete({ where: { id: userId } });
+    await logEvent(ip, user.username.slice(0, 64), "account_deleted");
+
+    return NextResponse.json({ ok: true, revoked });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error desconocido";
     return NextResponse.json({ error: msg }, { status: 500 });

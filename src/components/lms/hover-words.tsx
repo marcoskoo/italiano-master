@@ -3,7 +3,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Volume2 } from "lucide-react";
-import { lookupWord } from "@/lib/lms/dict/lookup";
+import { lookupWordIn } from "@/lib/lms/dict/lookup-multilang";
+import type { LangCode } from "@/lib/lms/types";
 import { speak } from "@/lib/lms/tts";
 import type { VocabWord } from "@/lib/lms/types";
 import { cn } from "@/lib/utils";
@@ -29,7 +30,7 @@ interface TipState {
 const SHOW_DELAY = 70;    // ms antes de mostrar (evita parpadeo al pasar)
 const HIDE_DELAY = 180;   // ms antes de ocultar (permite entrar al tooltip)
 
-export function HoverWords({ text, className }: { text: string; className?: string }) {
+export function HoverWords({ text, className, lang = "it" }: { text: string; className?: string; lang?: LangCode }) {
   const [tip, setTip] = useState<TipState | null>(null);
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -41,8 +42,8 @@ export function HoverWords({ text, className }: { text: string; className?: stri
 
   /* tokenizar preservando los espacios; resolver cada palabra */
   const tokens = useMemo(
-    () => text.split(/(\s+)/).map((t) => (/\S/.test(t) ? { t, e: lookupWord(t) } : { t, e: undefined as VocabWord | undefined })),
-    [text]
+    () => text.split(/(\s+)/).map((t) => (/\S/.test(t) ? { t, e: lookupWordIn(lang, t) } : { t, e: undefined as VocabWord | undefined })),
+    [text, lang]
   );
 
   const clearTimers = () => {
@@ -176,7 +177,7 @@ export function HoverWords({ text, className }: { text: string; className?: stri
               type="button"
               onClick={(ev) => {
                 ev.stopPropagation();
-                speak(tip.entry.it, { rate: 0.85 });
+                speak(tip.entry.it, { rate: 0.85, lang });
               }}
               aria-label={`Ascolta la pronuncia di ${tip.entry.it}`}
               className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-verde/30 bg-verde-tenue text-verde-scuro transition-all hover:scale-110 dark:text-verde"

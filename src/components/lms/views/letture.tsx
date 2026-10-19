@@ -35,8 +35,14 @@ const CAT_STYLES: Record<LetturaCat, string> = {
 export function LettureView() {
   const [cat, setCat] = useState<LetturaCat | "tutte">("tutte");
   const [level, setLevel] = useState<CefrLevel | "tutti">("tutti");
-  /* v9.14: modo biblioteca clásica o colección Meditazione e consapevolezza */
-  const [collection, setCollection] = useState<"libri" | "mente">(() => (useLms.getState().navParams.mindId ? "mente" : "libri"));
+  /* v9.14: modo biblioteca clásica o colección Meditazione e consapevolezza
+     v9.17: en lenguas ≠ it la biblioteca clásica (italiana) se oculta:
+     la colección temática de la lengua activa es la vista por defecto. */
+  const activeLang0 = (useLms.getState().activeLang ?? "it") as import("@/lib/lms/types").LangCode;
+  const [collection, setCollection] = useState<"libri" | "mente">(() =>
+    useLms.getState().navParams.mindId ? "mente" : activeLang0 === "it" ? "libri" : "mente"
+  );
+  const activeLang = useLms((s) => s.activeLang) as import("@/lib/lms/types").LangCode;
   // deep-link inicial (navParams.letturaId): la vista se monta ya en la lettura pedida
   const [openId, setOpenId] = useState<string | null>(() => {
     const p = useLms.getState().navParams.letturaId;
@@ -57,7 +63,7 @@ export function LettureView() {
     return (
       <div className="space-y-6">
         <VoiceHint />
-        <MindCollection initialId={useLms.getState().navParams.mindId} onBack={() => setCollection("libri")} />
+        <MindCollection initialId={useLms.getState().navParams.mindId} onBack={() => setCollection(activeLang === "it" ? "libri" : "mente")} />
       </div>
     );
   }
@@ -75,7 +81,7 @@ export function LettureView() {
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2 font-display text-base font-bold">
             Meditazione e consapevolezza
-            <span className="rounded-full bg-oro px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">198 letture</span>
+            <span className="rounded-full bg-oro px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">colección por lengua</span>
           </span>
           <span className="mt-0.5 block text-sm leading-relaxed text-muted-it">
             Meditación, espiritualidad, aquí y ahora, relajación física y mental · A1–C2 · 7 estrategias de comprensión · traducción al pasar el cursor

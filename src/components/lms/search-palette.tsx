@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BookMarked, Brain, CornerDownLeft, Search } from "lucide-react";
 import { useLms } from "@/lib/lms/store";
-import { NAV_FLAT, VIEW_TITLES } from "@/lib/lms/nav";
+import { NAV_FLAT, VIEW_TITLES, navFlatFor } from "@/lib/lms/nav";
 import { searchDictionary } from "@/lib/lms/dict/dictionary";
 import { GRAMMAR } from "@/lib/lms/grammar";
 import type { ViewId } from "@/lib/lms/types";
@@ -50,6 +50,7 @@ export function SearchPalette() {
    de cero sin necesitar setState dentro de efectos                    */
 function PaletteInner({ onClose }: { onClose: () => void }) {
   const navigate = useLms((s) => s.navigate);
+  const activeLang = useLms((s) => s.activeLang) ?? "it";
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -66,8 +67,8 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
 
     /* 1 · secciones de la app */
     const views = query
-      ? NAV_FLAT.filter((v) => v.label.toLowerCase().includes(query) || VIEW_TITLES[v.id].title.toLowerCase().includes(query))
-      : NAV_FLAT.slice(0, 6);
+      ? navFlatFor(activeLang).filter((v) => v.label.toLowerCase().includes(query) || VIEW_TITLES[v.id].title.toLowerCase().includes(query))
+      : navFlatFor(activeLang).slice(0, 6);
     for (const v of views.slice(0, 6)) {
       out.push({
         id: `v-${v.id}`,

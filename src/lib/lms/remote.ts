@@ -52,6 +52,19 @@ export async function fetchAppConfig(): Promise<AppConfigBundle> {
 export function telemetry(event: string, detail?: unknown, username?: string | null): void {
   if (typeof window === "undefined") return;
   try {
+    /* v9.17 · GDPR/ePrivacy: telemetría analítica OPT-IN. Sin
+       consentimiento (o tras retirarlo) no se envía NADA. Los eventos
+       puramente funcionales del servidor (login, seguridad) se rigen
+       por interés legítimo y se auditan aparte. */
+    const raw = window.localStorage.getItem("italiano-master-v1");
+    if (raw) {
+      try {
+        const st = JSON.parse(raw) as { state?: { legalConsent?: { analytics?: boolean } } };
+        if (st?.state?.legalConsent?.analytics !== true) return;
+      } catch { return; }
+    } else {
+      return;
+    }
     void fetch("/api/telemetry", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
