@@ -320,7 +320,9 @@ export type ViewId =
   /* v8.0 · gratis: analítica y ligas */
   | "statistiche" | "classifica"
   /* v9.0 · letture & gamificación */
-  | "letture" | "premi";
+  | "letture" | "premi"
+  /* v9.16 · Quadro MCER (estándares internacionales) */
+  | "quadro";
 
 export interface NavParams {
   level?: CefrLevel | "zero";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   BookOpen, CheckCircle2, Circle, Ear, Eye, EyeOff, HelpCircle, Lightbulb,
@@ -361,7 +361,7 @@ function ListenBlock({ audioIt, intro, questions, answers, onPick }: {
   const play = () => {
     if (playing) { setPlaying(false); return; }
     setPlaying(true);
-    speak(audioIt, { rate: 0.88, onDone: () => setPlaying(false) });
+    speak(audioIt, { rate: 0.88, onEnd: () => setPlaying(false) });
   };
   return (
     <div>
@@ -418,7 +418,7 @@ export function MindReadingCard({ reading, onCompleted }: { reading: MindReading
   const [seqChecked, setSeqChecked] = useState(false);
   // escucha
   const [listenAnswers, setListenAnswers] = useState<Record<number, number>>({});
-  const [done, setDone] = useState(false);
+  const completedRef = useRef(false);
   const predictShuffled = useMemo(() => {
     const pr = reading.predict;
     const perm = seededPerm(hashStr(pr.q), pr.options.length);
@@ -434,8 +434,11 @@ export function MindReadingCard({ reading, onCompleted }: { reading: MindReading
   const allDone = predictPick !== null && quizDone && vfDone && ideasDone && intruderDone && seqDone && listenDone;
 
   useEffect(() => {
-    if (allDone && !done) { setDone(true); onCompleted(); }
-  }, [allDone, done, onCompleted]);
+    if (allDone && !completedRef.current) {
+      completedRef.current = true;
+      onCompleted();
+    }
+  }, [allDone, onCompleted]);
 
   const toggleSeq = (disp: number) => {
     setSeqOrder((o) => (o.includes(disp) ? o.filter((x) => x !== disp) : [...o, disp]));

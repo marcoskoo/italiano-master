@@ -2,7 +2,7 @@ import {
   BookOpen, BookMarked, Brain, Calculator, CalendarDays, Clapperboard, Compass, Crown, Ear, FileInput,
   Gamepad2, Gift, GraduationCap, Hash, Home, Keyboard, Languages, Library, LineChart, MapPin, Medal, Mic,
   Microscope, PenLine, Printer, Quote, RefreshCcw, ScrollText, Settings, Shield, Sparkles, Target, Timer,
-  Trophy, Volume2, AlertTriangle, BarChart3, Dices, FileSpreadsheet, HelpCircle, Puzzle, Scale, Wand2,
+  Trophy, Volume2, AlertTriangle, BarChart3, Dices, FileSpreadsheet, HelpCircle, Landmark, Puzzle, Scale, Wand2,
 } from "lucide-react";
 import type { ViewId } from "./types";
 
@@ -78,6 +78,7 @@ export const NAV_GROUPS: { group: string; items: { id: ViewId; label: string; ic
     items: [
       { id: "repaso", label: "Repaso inteligente", icon: RefreshCcw },
       { id: "esami", label: "Exámenes", icon: ScrollText },
+      { id: "quadro", label: "Quadro MCER", icon: Landmark },
       { id: "cils", label: "Preparazione CILS", icon: GraduationCap },
       { id: "certificati", label: "Certificados", icon: Trophy },
     ],
@@ -138,6 +139,7 @@ export const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   importatore: { title: "Importatore di testi", sub: "Convierte cualquier texto o página web en una lección interactiva con tu diccionario de 8.000 lemas" },
   letture: { title: "Letture & Storia", sub: "Dialoghi, testi informativi e storia (Italia + mondo): audio sincronizado, comprensión y debate" },
   premi: { title: "Premi & Sfide", sub: "Monete, ruota della fortuna, negozio, boost XP e sfida del mese" },
+  quadro: { title: "Quadro MCER", sub: "El estándar internacional del Consiglio d'Europa: escala global, autovalutazione, certificaciones y ACTFL/ILR" },
 };
 
 export const NAV_FLAT = NAV_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, group: g.group })));

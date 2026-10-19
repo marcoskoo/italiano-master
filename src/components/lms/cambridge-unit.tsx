@@ -129,12 +129,14 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
   const progress = useLms((s) => s.cambridgeProgress[unitId]);
   const markCambridgeSection = useLms((s) => s.markCambridgeSection);
   const completeCambridgeUnit = useLms((s) => s.completeCambridgeUnit);
+  /* v9.16 · can-do persistentes (Quadro MCER) */
+  const candoDone = useLms((s) => s.candoDone);
+  const toggleCando = useLms((s) => s.toggleCando);
   const [step, setStep] = useState(0);
   const [showTr, setShowTr] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [essay, setEssay] = useState("");
   const [showModel, setShowModel] = useState(false);
-  const [cando, setCando] = useState<Record<number, boolean>>({});
   const [reviewPassed, setReviewPassed] = useState(false);
 
   const unit = CB_UNIT_BY_ID[unitId] as CbUnit | undefined;
@@ -221,7 +223,12 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
               <SectionTitle icon={<Lightbulb className="h-5 w-5 text-oro" aria-hidden="true" />} n={1} title="Motivazione · La situación" />
               <p className="rounded-2xl bg-crema-scura p-5 text-lg leading-relaxed dark:bg-inchiostro/10">{unit.scenario}</p>
               <div>
-                <h3 className="font-display text-lg font-semibold">Al final de esta unidad podrás…</h3>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-display text-lg font-semibold">Al final de esta unidad podrás…</h3>
+                  <span className="rounded-full bg-verde-tenue px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-verde-scuro dark:text-verde">
+                    QCER · Obiettivi can-do
+                  </span>
+                </div>
                 <ul className="mt-3 space-y-2.5">
                   {unit.goals.map((g, i) => (
                     <li key={i} className="flex items-start gap-3 rounded-2xl bg-verde-tenue/50 p-4">
@@ -230,6 +237,12 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                     </li>
                   ))}
                 </ul>
+                <p className="mt-3 text-xs text-muted-it">
+                  Objetivos en formato <strong>can-do</strong> del Marco Común Europeo de Referencia (nivel {unit.level}).{" "}
+                  <button onClick={() => navigate("quadro")} className="font-bold text-verde underline underline-offset-2 hover:text-verde-scuro dark:hover:text-verde">
+                    Confronta con la scala globale →
+                  </button>
+                </p>
               </div>
               <StepDone done={done("scenario")} onDone={() => mark("scenario")} label="He leído la situación y los objetivos" />
             </div>
@@ -567,21 +580,56 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           {stepId === "autovalutazione" && (
             <div className="space-y-6">
               <SectionTitle icon={<Target className="h-5 w-5 text-rosso" aria-hidden="true" />} n={12} title="Autovalutazione · ¿Qué puedes hacer ya?" />
+              <p className="rounded-2xl bg-crema-scura p-4 text-sm leading-relaxed dark:bg-inchiostro/10">
+                Marca solo lo que <strong>ya puedes hacer sin ayuda</strong>: son los descriptores can-do de la unidad (QCER {unit.level}).
+                Quedan guardados como evidencia de tu progreso en el{" "}
+                <button onClick={() => navigate("quadro")} className="font-bold text-verde underline underline-offset-2">Quadro MCER</button>.
+              </p>
               <div className="space-y-2.5">
-                {unit.cando.map((c, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCando((cd) => ({ ...cd, [i]: !cd[i] }))}
-                    className={cn(
-                      "flex w-full items-start gap-3 rounded-2xl border-2 p-4 text-left transition-all",
-                      cando[i] ? "border-verde bg-verde-tenue" : "border-soft bg-crema hover:border-verde/40 dark:bg-inchiostro/5",
-                    )}
-                  >
-                    {cando[i] ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-verde" aria-hidden="true" /> : <Circle className="mt-0.5 h-5 w-5 shrink-0 text-inchiostro/25" aria-hidden="true" />}
-                    <span className="leading-relaxed">{c}</span>
-                  </button>
-                ))}
+                {unit.cando.map((c, i) => {
+                  const cKey = `${unitId}:${i}`;
+                  const checked = !!candoDone[cKey];
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => toggleCando(cKey)}
+                      aria-pressed={checked}
+                      className={cn(
+                        "flex w-full items-start gap-3 rounded-2xl border-2 p-4 text-left transition-all",
+                        checked ? "border-verde bg-verde-tenue" : "border-soft bg-crema hover:border-verde/40 dark:bg-inchiostro/5",
+                      )}
+                    >
+                      {checked ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-verde" aria-hidden="true" /> : <Circle className="mt-0.5 h-5 w-5 shrink-0 text-inchiostro/25" aria-hidden="true" />}
+                      <span className="leading-relaxed">{c}</span>
+                    </button>
+                  );
+                })}
               </div>
+              {(() => {
+                const doneCount = unit.cando.filter((_, i) => candoDone[`${unitId}:${i}`]).length;
+                return (
+                  <div className="rounded-2xl border border-soft p-4">
+                    <div className="flex items-center justify-between text-sm font-bold">
+                      <span>Obiettivi can-do confermati</span>
+                      <span className={cn("font-mono", doneCount === unit.cando.length ? "text-verde" : "text-muted-it")}>
+                        {doneCount}/{unit.cando.length}
+                      </span>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-inchiostro/10">
+                      <motion.div
+                        className="h-full rounded-full bg-verde"
+                        initial={false}
+                        animate={{ width: `${(doneCount / unit.cando.length) * 100}%` }}
+                      />
+                    </div>
+                    {doneCount === unit.cando.length && (
+                      <p className="mt-2 text-xs font-bold text-verde-scuro dark:text-verde">
+                        Tutti gli obiettivi dell'unità confermati — evidenza can-do completa ✓
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
               <CbQuiz items={unit.review} title="Quiz de repaso de la unidad" onPass={() => {
                 setReviewPassed(true);
                 if (!done("autovalutazione")) mark("autovalutazione");

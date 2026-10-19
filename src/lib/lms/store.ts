@@ -147,6 +147,10 @@ export interface LmsState {
   ownedTitles: string[];       // títulos de perfil comprados
   activeTitle: string | null;  // título mostrado en el perfil
 
+  /* ── Quadro MCER (v9.16 · estándares internacionales) ── */
+  cefrSelf: Record<string, CefrLevel>; // griglia de autoevaluación QCER (5 destrezas → nivel)
+  candoDone: Record<string, boolean>;  // can-do de cada unidad confirmados ("cu-a1-01:0")
+
   /* actions */
   navigate: (view: ViewId, params?: NavParams) => void;
   setUserName: (name: string) => void;
@@ -187,6 +191,10 @@ export interface LmsState {
   setActiveTitle: (id: string | null) => void;
   restoreBackup: (data: Record<string, unknown>) => void;
   resetAll: () => void;
+  /* v9.16 · Quadro MCER */
+  setCefrSelf: (key: string, level: CefrLevel | null) => void;
+  resetCefrSelf: () => void;
+  toggleCando: (key: string) => void;
   loginAccount: (account: Account, profile?: { displayName?: string; level?: string; plan?: string; xp?: number; streak?: number }) => void;
   adoptServerProgress: (progress: { xp: number; streak: number }) => void;
   logoutAccount: () => void;
@@ -287,6 +295,10 @@ export const useLms = create<LmsState>()(
       monthChallengeClaimed: false,
       ownedTitles: [],
       activeTitle: null,
+
+      /* v9.16 · Quadro MCER */
+      cefrSelf: {},
+      candoDone: {},
 
       navigate: (view, params = {}) => set({ view, navParams: params }),
 
@@ -632,6 +644,26 @@ export const useLms = create<LmsState>()(
 
       setActiveTitle: (id) => set({ activeTitle: id }),
 
+      /* ── Quadro MCER (v9.16) ── */
+      setCefrSelf: (key, level) => {
+        const s = get();
+        const next = { ...s.cefrSelf };
+        if (level) next[key] = level;
+        else delete next[key];
+        set({ cefrSelf: next });
+        telemetry("cefr_self_set", { key, level: level ?? "clear" }, s.account?.username);
+      },
+
+      resetCefrSelf: () => set({ cefrSelf: {} }),
+
+      toggleCando: (key) => {
+        const s = get();
+        const next = { ...s.candoDone };
+        if (next[key]) delete next[key];
+        else next[key] = true;
+        set({ candoDone: next });
+      },
+
       /* ── Backup e ripristino (v8.0) ──
          Restaura SOLO progreso: nunca cuenta, seguridad, plan ni pagos
          (un archivo manipulado no puede escalar privilegios).          */
@@ -677,6 +709,8 @@ export const useLms = create<LmsState>()(
           monthChallengeClaimed: data.monthChallengeClaimed === true,
           ownedTitles: arr<string>(data.ownedTitles),
           activeTitle: str(data.activeTitle, null),
+          cefrSelf: rec(data.cefrSelf) as LmsState["cefrSelf"],
+          candoDone: rec(data.candoDone) as LmsState["candoDone"],
         });
         telemetry("backup_restored", { xp: num(data.xp, 0) }, s.account?.username);
       },
@@ -725,6 +759,7 @@ export const useLms = create<LmsState>()(
           coins: 0, xpBoostUntil: 0, lastWheelDate: null, readingsRead: [],
           monthKey: monthKeyFor(), monthCounters: {}, monthChallengeClaimed: false,
           ownedTitles: [], activeTitle: null,
+          cefrSelf: {}, candoDone: {},
         }),
 
       loginAccount: (account, profile) => {

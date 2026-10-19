@@ -448,12 +448,14 @@ export function SettingsView() {
       studyDays: s.studyDays, dailyXp: s.dailyXp, dailyXpDate: s.dailyXpDate,
       weekXp: s.weekXp, weekKey: s.weekKey, streakFreezes: s.streakFreezes, lastFreezeDate: s.lastFreezeDate,
       completedLessons: s.completedLessons, completedUnits: s.completedUnits,
+      cambridgeProgress: s.cambridgeProgress,
       quizHistory: s.quizHistory, certificates: s.certificates, writingHistory: s.writingHistory,
       srs: s.srs, errorLog: s.errorLog, skillStats: s.skillStats, counters: s.counters,
       importedTexts: s.importedTexts, dictFavorites: s.dictFavorites, dictHistory: s.dictHistory,
       coins: s.coins, xpBoostUntil: s.xpBoostUntil, lastWheelDate: s.lastWheelDate,
       readingsRead: s.readingsRead, monthKey: s.monthKey, monthCounters: s.monthCounters,
       monthChallengeClaimed: s.monthChallengeClaimed, ownedTitles: s.ownedTitles, activeTitle: s.activeTitle,
+      cefrSelf: s.cefrSelf, candoDone: s.candoDone,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const link = document.createElement("a");

@@ -31,11 +31,8 @@ const HIDE_DELAY = 180;   // ms antes de ocultar (permite entrar al tooltip)
 
 export function HoverWords({ text, className }: { text: string; className?: string }) {
   const [tip, setTip] = useState<TipState | null>(null);
-  const [mounted, setMounted] = useState(false);
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => () => {
     if (showTimer.current) clearTimeout(showTimer.current);
@@ -123,7 +120,7 @@ export function HoverWords({ text, className }: { text: string; className?: stri
       ))}
 
       {/* tooltip (portal para no quedar recortado por overflow) */}
-      {mounted && tip && createPortal(
+      {tip && createPortal(
         <span
           data-hw-tip
           role="tooltip"
