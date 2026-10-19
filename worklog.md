@@ -884,3 +884,16 @@ Stage Summary:
 - Funcionales corregidos de paso: el Dizionario en EN ahora calcula sus estadísticas del diccionario activo (antes: cifras italianas); el importador en EN usa el lematizador americano (antes: lookup italiano → texto inglés todo "not in dictionary"); decimales y unidades de precio por convención local (6,39 €/mese vs 6.39 $/mo); Pomodoro anuncia las fases por voz en la lengua activa.
 - Decisiones documentadas: Admin panel y textos legales permanecen en su idioma histórico (herramienta del propietario hispanohablante / decisión legal de v9.17); CTAs hacia vistas IT_ONLY (repaso, vocabolario) se ocultan o redirigen en EN (el empty-state de SRS apunta al importador).
 - Pendiente natural (siguiente pase): paquetes de contenido pt-PT/fr-FR/de-DE (SHIPPED_LEVELS vacío; al aterrizar, completar sus secciones del diccionario ui — el esqueleto ya cae a IT).
+
+---
+Task ID: 1 (v9.19-push)
+Agent: main (Super Z)
+Task: Push v9.19 a GitHub + verificación completa en producción
+
+Work Log:
+- Commit cbd427b (21 archivos, +2261/−589) → push 56a9099..cbd427b sin incidencias (pushurl con PAT vigente).
+- Auto-deploy Vercel vía integración GitHub: sondeo cada 20 s → SW im-v9-19-0 servido en producción en ~80 s (antes im-v9-18-0).
+- E2E producción (sesión limpia, italiano-master.vercel.app): SW im-v9-19-0; switch IT→EN con "STUDYING · AMERICAN ENGLISH" y "true" en el body; Settings EN (To start the journey, ☀️ Light/🌙 Dark, Maximum security, Your data, Reset everything, Accessibility, Full keyboard navigation ×5); Rewards EN (Your coins, Fortune wheel, Jackpot: 60 coins, Monthly challenge, The shop); Statistics EN (7-DAY AVERAGE, last 14 days, Your memory (SRS) → No cards yet…, Activity · 4 weeks); Dictionary EN (640 entries, 4 false friends — estadísticas del diccionario activo); vuelta a IT sin reload → Configuración verbatim (Per iniziare il viaggio, Sicurezza estrema, ☀️ Chiaro, I tuoi dati, Azzera tutto, Accessibilità) — regresión cero; 0 errores de consola y de página. Capturas: upload/prod-v919-en-premi.png, prod-v919-it-premi.png, prod-v919-it-configuracion.png.
+
+Stage Summary:
+- v9.19 LIVE en italiano-master.vercel.app: al cambiar de lengua de estudio, el interior de TODAS las herramientas sigue a la lengua activa (9 vistas + plan-badge + datos de gamificación en EN-US); el italiano permanece verbatim; pt/fr/de heredan el esqueleto hasta que aterrice su contenido.
