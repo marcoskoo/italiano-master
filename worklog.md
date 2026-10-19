@@ -847,3 +847,18 @@ Stage Summary:
 - v9.18: la INTERFAZ COMPLETA sigue a la lengua de estudio. Al cambiar a inglés americano, navegación, fichas (12 pasos), enunciados, botones, feedback, buscador y Quadro se renderizan en inglés de EE. UU.; el italiano queda byte-idéntico a v9.17 (diccionario it.ts verbatim + verificación de regresión E2E).
 - Arquitectura i18n tipada y escalable: añadir pt/fr/de = completar sus secciones del diccionario (esqueleto ya presente) al aterrizar su contenido.
 - Funcionales corregidos de paso: palabra del día usa el diccionario de la lengua activa; búsqueda global usa EN_DICT en EN; VoiceHint comprueba la voz de la lengua activa; vistas solo-italiano (test de nivel, tutor, Da zero, plugins, plan semanal, debilidades) quedan fuera del modo EN en vez de mostrar contenido italiano huérfano.
+
+---
+Task ID: 2 (v9.18-fix)
+Agent: main (Super Z)
+Task: Fix post-deploy — títulos de sección pasos 3-8 y kind labels del parlato quedaron sin localizar (ediciones del primer lote fallido aplicadas parcialmente)
+
+Work Log:
+- Detectado en verificación de producción: con la unidad EN abierta, los TABS de las 12 fichas estaban en inglés pero los TÍTULOS DE SECCIÓN de los pasos 3-8 seguían en italiano ("Comprensione · ¿Qué has entendido?", "Vocabolario · Bloques listos para usar", "Grammatica/Pronuncia/Lettura…", "Parlato · De la precisión a la espontaneidad") + los kind labels del parlato (Controlado/Semicontrolado/…) + 7 cadenas del paso 5 (Consejo/chunks/observa/La regola/Spiegazione/Altri esempi/full topic).
+- Causa: el MultiEdit del primer lote falló a mitad (variable showEs vs showTr real) y las ediciones posteriores del lote no se aplicaron; los follow-ups en python solo cubrieron parte de ellas.
+- Fix: 6 SectionTitle + kind labels + 7 cadenas → todas vía u.unit.*. Escaneo final de text-nodes hardcodeados en cambridge-unit/courses/home: 0 restantes.
+- Rebuild + verificación local (pasos 3-8 EN: "Comprehension · What did you understand?", "Vocabulary · Ready-to-use chunks", "Speaking · From accuracy to spontaneity", "Reading · Read in context" — el focus de gramática/pronunciación es DATO del contenido, en español por diseño) + 0 errores de consola.
+- Commit 48a4f83 + push + deploy (<40 s) + verificación en producción: "8/12 Reading · Read in context" servido, 0 errores de consola. Captura upload/prod-v918-en-reading.png.
+
+Stage Summary:
+- v9.18 COMPLETA en producción: al cambiar de lengua de estudio, TODA la interfaz del flujo de aprendizaje (navegación, home, cursos, las 12 fichas con sus títulos y enunciados, quizzes, lecturas temáticas y cloze, Quadro MCER, buscador global) sigue a la lengua activa; el italiano permanece idéntico a v9.17; pt/fr/de tienen el esqueleto listo para su contenido.
