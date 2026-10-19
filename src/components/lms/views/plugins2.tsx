@@ -11,6 +11,7 @@ import { PREPOSITION_CLOZE, clozeSession } from "@/lib/lms/prepositions";
 import type { CefrLevel } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { speak } from "@/lib/lms/tts";
+import { useUi } from "@/lib/lms/ui";
 import { cn } from "@/lib/utils";
 
 /* ── Plugins v5.0 · Estensioni de Italiano Master ────────────────────
@@ -480,6 +481,8 @@ const POMODORO_MODES = [
 ] as const;
 
 export function PomodoroView() {
+  const u = useUi();
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
   const addXp = useLms((s) => s.addXp);
   const [modeId, setModeId] = useState<(typeof POMODORO_MODES)[number]["id"]>("classic");
   const mode = POMODORO_MODES.find((m) => m.id === modeId) ?? POMODORO_MODES[0];
@@ -508,11 +511,11 @@ export function PomodoroView() {
           setSessions(n);
           window.localStorage.setItem(`im-pomodoro-${todayKey}`, String(n));
           addXp(10);
-          speak("Pausa! Ottimo lavoro.", { rate: 0.9 });
+          speak(u.pomodoro.voiceBreak, { rate: 0.9, lang: activeLang });
           setPhase("pause");
           return mode.pause * 60;
         }
-        speak("Si ricomincia! Testa sui libri.", { rate: 0.9 });
+        speak(u.pomodoro.voiceResume, { rate: 0.9, lang: activeLang });
         setPhase("focus");
         return mode.focus * 60;
       });
@@ -520,7 +523,7 @@ export function PomodoroView() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [running, phase, mode, sessions]);
+  }, [running, phase, mode, sessions, u, activeLang]);
 
   const switchMode = (id: (typeof POMODORO_MODES)[number]["id"]) => {
     setModeId(id);
@@ -543,14 +546,14 @@ export function PomodoroView() {
   return (
     <div className="space-y-5">
       <PluginHeader
-        tag="Focus e disciplina"
-        title="Pomodoro studio"
-        desc="Sesiones de concentración con la técnica Pomodoro: elige tu ritmo, estudia sin interrupciones y gana 10 XP por cada pomodoro completado. El aviso de cambio de fase llega por voz."
-        count={`${sessions} sessioni oggi`}
+        tag={u.pomodoro.tag}
+        title={u.pomodoro.title}
+        desc={u.pomodoro.desc}
+        count={u.pomodoro.count(sessions)}
       />
 
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Modalità pomodoro">
-        {POMODORO_MODES.map((m) => (
+      <div className="flex flex-wrap gap-2" role="group" aria-label={u.pomodoro.modesAria}>
+        {POMODORO_MODES.map((m, i) => (
           <button
             key={m.id}
             onClick={() => switchMode(m.id)}
@@ -560,15 +563,15 @@ export function PomodoroView() {
               modeId === m.id ? "border-verde bg-verde-tenue text-verde-scuro dark:text-verde" : "border-soft hover:border-inchiostro/25",
             )}
           >
-            {m.label}
-            <span className="mt-0.5 block text-[10px] font-medium text-muted-it">{m.desc}</span>
+            {u.pomodoro.modes[i]?.label ?? m.label}
+            <span className="mt-0.5 block text-[10px] font-medium text-muted-it">{u.pomodoro.modes[i]?.desc ?? m.desc}</span>
           </button>
         ))}
       </div>
 
       <div className="flex flex-col items-center rounded-3xl border border-soft bg-surface p-6 sm:p-10">
         {/* círculo */}
-        <div className="relative h-56 w-56 sm:h-64 sm:w-64" role="timer" aria-label={`${mm} minuti e ${ss} secondi`}>
+        <div className="relative h-56 w-56 sm:h-64 sm:w-64" role="timer" aria-label={u.pomodoro.timerAria(mm, ss)}>
           <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90">
             <circle cx="100" cy="100" r="88" fill="none" strokeWidth="10" className="stroke-inchiostro/10" />
             <circle
@@ -581,10 +584,10 @@ export function PomodoroView() {
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <p className={cn("flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest", phase === "focus" ? "text-verde-scuro dark:text-verde" : "text-oro-scuro dark:text-oro")}>
-              {phase === "focus" ? <><Target className="h-3.5 w-3.5" aria-hidden="true" /> Studio</> : <><Coffee className="h-3.5 w-3.5" aria-hidden="true" /> Pausa</>}
+              {phase === "focus" ? <><Target className="h-3.5 w-3.5" aria-hidden="true" /> {u.pomodoro.focus}</> : <><Coffee className="h-3.5 w-3.5" aria-hidden="true" /> {u.pomodoro.pause}</>}
             </p>
             <p className="mt-1 font-display text-5xl font-bold tabular-nums sm:text-6xl">{mm}:{ss}</p>
-            <p className="mt-1 text-[11px] text-muted-it">{mode.label} · {mode.focus}/{mode.pause} min</p>
+            <p className="mt-1 text-[11px] text-muted-it">{u.pomodoro.modeLine(u.pomodoro.modes[POMODORO_MODES.indexOf(mode)]?.label ?? mode.label, mode.focus, mode.pause)}</p>
           </div>
         </div>
 
@@ -596,19 +599,19 @@ export function PomodoroView() {
               running ? "bg-oro shadow-oro/30" : "bg-verde shadow-verde/30 dark:text-inchiostro",
             )}
           >
-            {running ? <><Pause className="h-4 w-4" aria-hidden="true" /> Pausa</> : <><Play className="h-4 w-4" aria-hidden="true" /> Avvia</>}
+            {running ? <><Pause className="h-4 w-4" aria-hidden="true" /> {u.pomodoro.pauseBtn}</> : <><Play className="h-4 w-4" aria-hidden="true" /> {u.pomodoro.start}</>}
           </button>
           <button onClick={reset} className="inline-flex min-h-12 items-center gap-2 rounded-2xl border-2 border-soft px-5 py-3 text-sm font-bold transition-all hover:border-inchiostro/30">
-            <RotateCcw className="h-4 w-4" aria-hidden="true" /> Reset
+            <RotateCcw className="h-4 w-4" aria-hidden="true" /> {u.pomodoro.reset}
           </button>
         </div>
 
         <div className="mt-6 flex items-center gap-4 rounded-2xl bg-crema-scura px-5 py-3 dark:bg-inchiostro/10">
-          <span className="flex items-center gap-2 text-sm font-bold"><TrendingUp className="h-4 w-4 text-verde-scuro dark:text-verde" aria-hidden="true" /> {sessions} pomodoro oggi</span>
-          <span className="text-xs text-muted-it">+{sessions * 10} XP guadagnati</span>
+          <span className="flex items-center gap-2 text-sm font-bold"><TrendingUp className="h-4 w-4 text-verde-scuro dark:text-verde" aria-hidden="true" /> {u.pomodoro.today(sessions)}</span>
+          <span className="text-xs text-muted-it">{u.pomodoro.xpEarned(sessions * 10)}</span>
         </div>
         <p className="mt-3 max-w-sm text-center text-[11px] leading-relaxed text-muted-it">
-          Il timer continua finché la scheda resta aperta. Suggerimento: metti il telefono in modalità aereo e lascia lavorare il pomodoro.
+          {u.pomodoro.tip}
         </p>
       </div>
     </div>

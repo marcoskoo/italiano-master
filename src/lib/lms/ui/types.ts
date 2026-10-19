@@ -206,6 +206,368 @@ export interface UiQuadroStrings {
   backToPath: string;
 }
 
+/* ═══ v9.19 · Lookups de datos compartidos entre vistas ═════════════
+   Los datos de gamificación (logros, ligas, temas…) viven en módulos
+   lib con valores históricos. El render usa u.data.X[key] ?? fallback:
+   it lleva los diccionarios VACÍOS (el fallback ES el histórico, byte
+   idéntico); en añade el mapeo completo. pt/fr/de heredan it.        */
+export interface UiDataStrings {
+  skills: Record<string, string>;                     // ascolto/lettura… (radar, statistiche)
+  topics: Record<string, string>;                     // TOPIC_LABELS (debilidades, statistiche)
+  ranks: Record<string, string>;                      // XP_RANKS por nombre histórico
+  leagues: Record<string, string>;                    // LEAGUES por id
+  plans: Record<string, { tagline: string; badge?: string; features: string[] }>;
+  categories: Record<string, string>;                 // CATEGORY_META por key
+  freq: Record<string, { label: string; desc: string }>;
+  register: Record<string, string>;
+  types: Record<string, string>;                      // TYPE_LABELS (sostantivo…)
+  wheel: Record<string, string>;                      // WHEEL_PRIZES por id
+  shopTitles: Record<string, { name: string; desc: string }>;
+  month: Record<string, (t: number) => string>;       // MONTH_TEMPLATES por type
+  achCats: Record<string, string>;                    // ACHIEVEMENT_CATS por cat
+  achievements: Record<string, { name: string; desc: string }>;
+  badges: Record<string, { name: string; desc: string }>;
+}
+
+/* v9.19 · componentes de plan (plan-badge.tsx) */
+export interface UiPlanStrings {
+  unlockWith: (p: string) => string;
+  availableFrom: (p: string) => string;
+  bannerChip: string;
+  bannerTitleA: string;          // "Sblocca" / "Unlock" (resto es marca)
+  bannerDesc: string;
+  bannerCta: string;
+  bannerFrom: string;
+}
+
+/* v9.19 · Mi progreso (progress.tsx) */
+export interface UiProgressStrings {
+  skills: Record<string, string>;                     // etiquetas del radar (SKILL_LABELS)
+  kpis: { xp: string; streak: string; level: string; accuracy: string };
+  noTest: string; testDone: string; takeTest: string;
+  daysUnit: (n: number) => string;
+  todayOf: (xp: number, goal: number) => string;
+  testsDone: (n: number) => string;
+  missingForNext: (n: number) => string;
+  radarTitle: string; radarDesc: string;
+  radarLocked: { title: string; bullets: string[] };
+  calTitle: string; calDesc: string; calAria: string;
+  legend: { goal: string; partial: string; rest: string };
+  calLocked: { title: string; bullets: string[] };
+  srsTitle: string;
+  srsLabels: { mastered: string; learning: string; due: string };
+  goReview: string;
+  lessonsTitle: string; fromZero: string;
+  lessonsTotal: (done: number, all: number) => string;
+  adaptiveTitle: string; adaptiveDesc: string;
+  noData: string; noWeak: string;
+  adaptiveLocked: { title: string; bullets: string[] };
+  achTitle: (unlocked: number, total: number) => string;
+  achIntro: string;
+  unlockedTag: string;
+  classicBadges: string;
+  historyTitle: string;
+}
+
+/* v9.19 · Statistiche (statistiche.tsx) */
+export interface UiStatsStrings {
+  kpis: { xp: string; week: (n: number) => string; avg: string; goalDay: (n: number) => string; streak: string; freezes: (n: number) => string; noFreeze: string; streakUnit: (n: number) => string; quizAcc: string; plays: (n: number) => string };
+  barsTitle: string; goalHits: (n: number) => string; barsAria: string; today: string;
+  calTitle: string; calAria: string; dow: string[];
+  activeDays: (n: number) => string;
+  recordLine: (xp: number, date: string) => string;
+  srsTitle: string; srsAria: string;
+  srsEmptyA: string; srsEmptyVocab: string; srsEmptyMid: string; srsEmptyDict: string; srsEmptyPost: string;
+  srsLabels: { due: string; fresh: string; learning: string; mastered: string };
+  reviewNow: (n: number) => string;
+  skillsTitle: string;
+  gamesTitle: string; gamesEmpty: string;
+  weakTitle: string; weakEmpty: string; weakErrors: (pct: number) => string;
+  targeted: string;
+  records: { lessons: string; diplomas: string; writings: string; srsWords: string; recordXp: string; activeDays: string };
+  privacyNote: string;
+}
+
+/* v9.19 · Classifica (classifica.tsx) */
+export interface UiClassificaStrings {
+  guestTitle: string;
+  guestA: string; guestStrongA: string; guestB: string; guestStrongB: string; guestC: string;
+  cta: string; hint: string;
+  leagueOf: (i: number, n: number) => string;
+  howTitle: string;
+  howRules: { pre: string; strong?: string; post?: string }[];
+  myLeague: string;
+  leagueLabel: (name: string) => string;
+  studentsIn: (n: number) => string;
+  closing: string;
+  refreshAria: string; refreshTitle: string;
+  positionTitle: string;
+  weekLineA: (xp: number) => string;
+  weekLineB: (streak: number) => string;
+  zeroHint: string;
+  loadError: string; unavailable: string;
+  you: string; promo: string; demo: string; firstAria: string;
+  xpTotal: (xp: number) => string;
+  allLeagues: string;
+  weekRulesTitle: string;
+  weekRules: string[];
+}
+
+/* v9.19 · Premi & Sfide (premi.tsx) */
+export interface UiPremiStrings {
+  balance: string;
+  boost: (m: number, s: number) => string;
+  freezes: (n: number, max: number) => string;
+  bought: (name: string, price: number) => string;
+  buyFail: string;
+  wheelTitle: string; wheelDesc: string;
+  spin: string; spinning: string; tomorrow: string;
+  prize: (emoji: string, label: string) => string;
+  monthTitle: (mk: string) => string;
+  monthDesc: string;
+  progressOf: (cur: string, target: string) => string;
+  daysLeft: (n: number) => string;
+  claim: string; claimed: string;
+  claimMsg: (coins: number, xp: number) => string;
+  notYet: string;
+  completeFor: (coins: number, xp: number) => string;
+  shopTitle: string; shopDesc: string;
+  freezeName: string; freezeDesc: string; freezeFull: string; freezeBuyName: string;
+  boostName: string; boostDesc: string; boostBuyName: string;
+  titleCard: (name: string) => string;
+  titleBuy: (name: string) => string;
+  alreadyYours: string;
+  equip: string; equipped: string;
+  buy: string;
+  need: (n: number) => string;
+  unavailable: string;
+}
+
+/* v9.19 · Piani PRO (pricing.tsx) */
+export interface UiPricingStrings {
+  disabledTitle: string; disabledDesc: string; disabledCta: string;
+  heroChip: string;
+  heroGreet: (name: string) => string;
+  activePlan: (name: string) => string;
+  monthly: string; yearly: string; off: string; billingAria: string;
+  decimalDot: boolean;   // true → 7.99 (EN); false → 7,99 (IT/ES)
+  cardsAria: string;
+  matrixTitle: string; matrixDesc: string; matrixTh: string;
+  matrixRows: string[];
+  /* valores localizables de la matriz (fila corrección IA y demás) */
+  corr2: string; corr5: string; unlimited: string;
+  freeForever: string;
+  perMonth: (price: string, cur: string) => string;
+  perMonthShort: string;
+  perYear: (y: number, cur: string) => string;
+  saveYear: string;
+  orYear: (y: number, cur: string) => string;
+  faqTitle: string;
+  faq: { q: string; a: string }[];
+  faqDemoNote: string;
+  checkoutAria: (name: string) => string;
+  planOf: (name: string) => string;
+  billingLabel: string;
+  billingMonthly: string; billingYearly: string;
+  priceLabel: string;
+  totalYear: string; totalMonth: string;
+  moreFeatures: (n: number) => string;
+  payNote: string; demoNoteShort: string;
+  cancel: string;
+  toPayment: string;
+  activateOf: (name: string) => string;
+  paymentTitle: (name: string) => string;
+  paymentSub: string;
+  payRefLabel: string;
+  copyAria: (l: string) => string;
+  netBase: string;
+  vat: (r: number) => string;
+  totalLabel: string;
+  methodLabel: string;
+  methodBank: string;
+  methodBankIbanHint: string; methodBankSwiftHint: string;
+  methodPaypal: string; methodCard: string;
+  methodCardHint: (provider: string) => string;
+  bankBeneficiary: string; bankName: string; bankAddress: string;
+  bankAccount: (cur: string) => string; bankAccountPlain: string;
+  bankIban: string;
+  bankDataIban: string; bankDataIntl: string;
+  bankAccountNote: (cur: string) => string;
+  paypalSendTo: string;
+  paypalNote: (ref: string) => string;
+  cardDemoNote: string;
+  back: string;
+  paidActivate: (name: string) => string;
+  demoWarning: string;
+  processing: string; processingSub: (name: string) => string;
+  success: (name: string) => string;
+  successSub: (name: string, user: string) => string;
+  start: string;
+  closeAria: string; backAria: string;
+  planActive: string;
+  toFree: string;
+  switchTo: (name: string) => string;
+}
+
+/* v9.19 · Dizionario (dictionary.tsx) */
+export interface UiDizionarioStrings {
+  entries: string;      // "voci" / "entries"
+  back: string;
+  ffTag: string;
+  ffTitle: string;
+  inFav: string; fav: string;
+  addFavAria: string; removeFavAria: string;
+  addToReview: string; inReview: string;
+  catGram: string; catTheme: string;
+  example: string;
+  collocations: string;
+  useNote: string;
+  syn: string; ant: string; related: string;
+  genderM: string; genderF: string;
+  artM: string; artF: string;
+  variants: string;
+  pluralShort: string;
+  panelTitle: string;
+  statsLine: (total: number) => string;
+  hideStats: string; showStats: string;
+  covNote: (cov: number, target: number) => string;
+  ipaChip: (pct: number) => string;
+  freqChip: (n: number) => string;
+  collocChip: (n: number) => string;
+  notesChip: (n: number) => string;
+  ffChip: (n: number) => string;
+  freqDot: string;
+  searchPh: string;
+  searchAria: string;
+  favorites: string;
+  reviewFavs: (n: number) => string;
+  history: string;
+  allLevels: string;
+  highFreq: string;
+  onlyFf: string; onlyHf: string;
+  catAria: string; typeAria: string;
+  allCats: string; allTypes: string;
+  resultsFor: (n: number, q: string) => string;
+  resultsN: (n: number) => string;
+  empty: string;
+  emptyHint: (total: number) => string;
+  openAria: (w: string) => string;
+  loadMore: (n: number, visible: number, total: number) => string;
+  cefrChip: string;
+  inReviewDot: string;
+  registerLabel: string;
+  freqLabel: string;
+}
+
+/* v9.19 · Importatore (importer.tsx) */
+export interface UiImportatoreStrings {
+  demoText: string;
+  noTitle: string; pastedTitle: string;
+  introTitle: string; introDesc: string;
+  known: (known: string, total: string, pct: number) => string;
+  pasteTab: string; urlTab: string;
+  pastePh: string; pasteAria: string;
+  convert: string; tryDemo: string;
+  urlPh: string; urlAria: string;
+  importing: string; importBtn: string;
+  netError: string;
+  tip: string;
+  savedTitle: (n: number, max: number) => string;
+  wordsOf: (n: string) => string;
+  deleteAria: (t: string) => string;
+  stWords: string; stLemmas: string; stDict: string; stReview: string;
+  recTitle: string;
+  addAll: (lv: string) => string;
+  bulkNone: string;
+  bulkDone: (n: number) => string;
+  legendUnmarked: string; legendReview: string; legendMissing: string;
+  closeAria: string; closeCardAria: string;
+  textAria: string;
+  notFoundHint: string;
+  analyzerHint: string;
+  inflected: (w: string, form: string) => string;
+  wcInReview: string;
+  wcAdd: string;
+  importError: string;
+}
+
+/* v9.19 · Pomodoro (plugins2.tsx) */
+export interface UiPomodoroStrings {
+  tag: string; title: string; desc: string;
+  count: (n: number) => string;
+  modes: { label: string; desc: string }[];   // mismo orden que POMODORO_MODES
+  modesAria: string;
+  focus: string; pause: string;
+  start: string; pauseBtn: string; reset: string;
+  timerAria: (mm: string, ss: string) => string;
+  modeLine: (label: string, f: number, p: number) => string;
+  today: (n: number) => string;
+  xpEarned: (n: number) => string;
+  tip: string;
+  voiceBreak: string;
+  voiceResume: string;
+}
+
+/* v9.19 · Impostazioni (SettingsView, exams.tsx) */
+export interface UiImpostazioniStrings {
+  planOf: (name: string) => string;
+  activeSince: (d: string) => string;
+  billingM: string; billingY: string;
+  manage: string; toFree: string;
+  sure: string; yes: string; no: string;
+  supportTitle: string; supportSub: string;
+  secTitle: string;
+  pinOn: string; pinOff: string;
+  secDesc: string;
+  changePin: string; disablePin: string; lockNow: string;
+  curPin: string; newPin: string; repeat: string;
+  savePin: string; verifying: string; deactivate: string;
+  autoLock: string;
+  never: string; min1: string; min5: string; min15: string;
+  lockOnStart: string;
+  activatePin: string; activateBtn: string; activating: string;
+  cancel: string;
+  newPinFull: string; repeatPin: string;
+  curPinConfirm: string;
+  pinMustMatch: string; pinMustMatchNew: string;
+  noPinActive: string; wrongCurrent: string;
+  pinActivated: string; pinUpdated: string; pinRemoved: string;
+  privacyMode: string; privacyModeDesc: string;
+  payTitle: string; payDesc: string;
+  payEmpty: string;
+  payDone: string; payWaiting: string;
+  copyRefAria: string;
+  payMethods: Record<string, string>;
+  profileTitle: string; nameLabel: string; save: string; nameAria: string;
+  lookTitle: string; theme: string; light: string; dark: string;
+  textSize: string;
+  audioTitle: string;
+  rate: string; rateHint: string;
+  goal: string; perDay: string;
+  subtitles: string;
+  notifTitle: string; notifDesc: string;
+  notifOn: string; notifTest: string; notifOff: string;
+  notifDenied: string; notifUnsupported: string; notifChecking: string;
+  notifEnable: string;
+  msgOn: string; msgOff: string;
+  msgTest: (m: string) => string;
+  msgDenied: string; msgUnsupported: string; msgNokey: string; msgFail: string;
+  dataTitle: string; dataDesc: string;
+  backupBtn: string; restoreBtn: string;
+  fileAria: string;
+  platinumPack: (n: number) => string;
+  packLocked: string;
+  resetBtn: string;
+  yesReset: string;
+  backupOk: string;
+  backupRestored: (xp: number, cards: number, streak: number) => string;
+  invalidFile: (msg: string) => string;
+  formatErr: string;
+  dataNote: string;
+  a11yTitle: string;
+  a11y: string[];
+}
+
 export interface UiStrings {
   common: UiCommonStrings;
   nav: UiNavStrings;
@@ -220,6 +582,18 @@ export interface UiStrings {
   cloze: UiClozeStrings;
   mind: UiMindStrings;
   quadro: UiQuadroStrings;
+  /** v9.19 · interiores de las vistas de herramientas */
+  data: UiDataStrings;
+  plan: UiPlanStrings;
+  progress: UiProgressStrings;
+  stats: UiStatsStrings;
+  classifica: UiClassificaStrings;
+  premi: UiPremiStrings;
+  pricing: UiPricingStrings;
+  dizionario: UiDizionarioStrings;
+  importatore: UiImportatoreStrings;
+  pomodoro: UiPomodoroStrings;
+  impostazioni: UiImpostazioniStrings;
   /** etiquetas de misión diaria por tipo (clave = QuestType) */
   questLabels: Record<string, (t: number) => string>;
 }

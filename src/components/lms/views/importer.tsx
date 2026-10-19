@@ -9,18 +9,18 @@ import { useLms } from "@/lib/lms/store";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
 import { newCard } from "@/lib/lms/srs";
-import { CATEGORY_META, CEFR_LEVELS, LEVEL_LABELS, type CefrLevel } from "@/lib/lms/types";
+import { CATEGORY_META, CEFR_LEVELS, type CefrLevel, type LangCode } from "@/lib/lms/types";
 import {
-  analyze, allNewWords, lookupWord, recommendWords, tokenize, TOTAL_LEMMAS, TYPE_LABELS,
+  analyze, allNewWords, hitFor, recommendWords, tokenize, totalLemmasFor,
 } from "@/lib/lms/importer";
 import type { VocabWord } from "@/lib/lms/types";
+import { useUi } from "@/lib/lms/ui";
 
 /* ── Vista: Importatore di testi ──────────────────────────────────── */
 
-const DEMO_TEXT =
-  "Ieri mattina sono andato al mercato con mia nonna. Abbiamo comprato delle pesche dolci, il pane fresco e un po' di formaggio. Il venditore era molto gentile e ci ha regalato due mele rosse. Nel pomeriggio ho studiato l'italiano e poi ho preparato la cena per tutta la famiglia.";
-
 export function ImporterView() {
+  const u = useUi();
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
   const srs = useLms((s) => s.srs);
   const upsertSrs = useLms((s) => s.upsertSrs);
   const trackQuest = useLms((s) => s.trackQuest);
@@ -40,26 +40,27 @@ export function ImporterView() {
   const [justAdded, setJustAdded] = useState<string[]>([]); // ids añadidos en esta sesión
   const [bulkMsg, setBulkMsg] = useState<string | null>(null);
 
-  const stats = useMemo(() => (active ? analyze(active.text, srs) : null), [active, srs]);
+  const stats = useMemo(() => (active ? analyze(active.text, srs, activeLang) : null), [active, srs, activeLang]);
   const tokens = useMemo(() => (active ? tokenize(active.text) : []), [active]);
   const recommendations = useMemo(
-    () => (active ? recommendWords(active.text, srs, userLevel ?? "B1", 9) : []),
-    [active, srs, userLevel]
+    () => (active ? recommendWords(active.text, srs, userLevel ?? "B1", 9, activeLang) : []),
+    [active, srs, userLevel, activeLang]
   );
-  const selectedHit = useMemo(() => (selected ? lookupWord(selected) : null), [selected]);
+  const selectedHit = useMemo(() => (selected ? hitFor(activeLang, selected) : null), [selected, activeLang]);
 
   const knownTotal = Object.keys(srs).length;
+  const lemmasTotal = totalLemmasFor(activeLang);
 
   const loadText = useCallback((title: string, text: string, persist = true) => {
     const clean = text.trim();
     if (clean.length < 10) return;
-    setActive({ title: title.trim() || "Testo senza titolo", text: clean.slice(0, 20_000) });
+    setActive({ title: title.trim() || u.importatore.noTitle, text: clean.slice(0, 20_000) });
     setSelected(null);
     setJustAdded([]);
     setBulkMsg(null);
     setLoadError(null);
-    if (persist) saveImportedText({ title: title.trim() || "Testo senza titolo", text: clean.slice(0, 20_000), words: clean.split(/\s+/).length });
-  }, [saveImportedText]);
+    if (persist) saveImportedText({ title: title.trim() || u.importatore.noTitle, text: clean.slice(0, 20_000), words: clean.split(/\s+/).length });
+  }, [saveImportedText, u]);
 
   const importUrl = useCallback(async () => {
     setLoadError(null);
@@ -73,17 +74,17 @@ export function ImporterView() {
       });
       const data = (await res.json()) as { title?: string; text?: string; error?: string };
       if (!res.ok || !data.text) {
-        setLoadError(data.error ?? "No se pudo importar la página.");
+        setLoadError(data.error ?? u.importatore.importError);
       } else {
         loadText(data.title || url, data.text);
         setUrl("");
       }
     } catch {
-      setLoadError("Error de red al importar. Inténtalo de nuevo.");
+      setLoadError(u.importatore.netError);
     } finally {
       setLoading(false);
     }
-  }, [url, loadText]);
+  }, [url, loadText, u]);
 
   const addWord = useCallback((w: VocabWord) => {
     if (w.id in srs || justAdded.includes(w.id)) return;
@@ -94,18 +95,18 @@ export function ImporterView() {
   }, [srs, upsertSrs, trackQuest, addXp, justAdded]);
 
   const addAllRecommended = useCallback(() => {
-    const pool = allNewWords(active?.text ?? "", srs);
+    const pool = allNewWords(active?.text ?? "", srs, activeLang);
     const cap = CEFR_LEVELS.indexOf(userLevel ?? "B1");
     const eligible = pool.filter((w) => CEFR_LEVELS.indexOf(w.level) <= cap);
-    if (eligible.length === 0) { setBulkMsg("No hay palabras nuevas de tu nivel en este texto: ¡todo dominado!"); return; }
+    if (eligible.length === 0) { setBulkMsg(u.importatore.bulkNone); return; }
     for (const w of eligible.slice(0, 30)) {
       upsertSrs(w.id, newCard(w.id));
     }
     trackQuest("import", eligible.length);
     addXp(Math.min(20, 2 + eligible.length), "vocabolario");
     setJustAdded((prev) => [...prev, ...eligible.map((w) => w.id)]);
-    setBulkMsg(`Añadidas ${Math.min(30, eligible.length)} palabras al repaso inteligente. ¡Ripassale oggi stesso!`);
-  }, [active, srs, userLevel, upsertSrs, trackQuest, addXp]);
+    setBulkMsg(u.importatore.bulkDone(Math.min(30, eligible.length)));
+  }, [active, srs, userLevel, upsertSrs, trackQuest, addXp, activeLang, u]);
 
   const inSrs = (id: string) => id in srs || justAdded.includes(id);
 
@@ -113,22 +114,20 @@ export function ImporterView() {
     <div className="space-y-6">
       {/* intro */}
       <section className="rounded-3xl border border-verde/25 bg-verde-tenue/60 p-6">
-        <h2 className="font-display text-2xl font-semibold">📥 Contenuto infinito</h2>
+        <h2 className="font-display text-2xl font-semibold">{u.importatore.introTitle}</h2>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-it">
-          Pega cualquier texto italiano (noticia, canción, cuento, email) o importa una URL: se convierte en
-          una lección interactiva donde cada palabra es clicable. Las que no conozcas, las añades a tu
-          repaso espaciado con un toque. Como LingQ, pero gratis.
+          {u.importatore.introDesc}
         </p>
         <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-1.5 text-xs font-bold text-verde-scuro dark:bg-black/20 dark:text-verde">
           <Library className="h-3.5 w-3.5" aria-hidden="true" />
-          Palabras conocidas: {knownTotal.toLocaleString("es")} / {TOTAL_LEMMAS.toLocaleString("es")} lemas ({Math.round((knownTotal / TOTAL_LEMMAS) * 100)}%)
+          {u.importatore.known(knownTotal.toLocaleString("es"), lemmasTotal.toLocaleString("es"), Math.round((knownTotal / lemmasTotal) * 100))}
         </p>
       </section>
 
       {/* fuente */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
         <div className="flex gap-2 rounded-2xl bg-crema-scura/60 p-1.5 dark:bg-inchiostro/10">
-          {([["paste", "📝 Pegar texto"], ["url", "🔗 Importar URL"]] as const).map(([id, label]) => (
+          {([["paste", u.importatore.pasteTab], ["url", u.importatore.urlTab]] as const).map(([id, label]) => (
             <button
               key={id}
               onClick={() => setSource(id)}
@@ -147,24 +146,24 @@ export function ImporterView() {
             <textarea
               value={pasted}
               onChange={(e) => setPasted(e.target.value)}
-              placeholder="Pega aquí tu texto en italiano… (canción, artículo, mensaje, lo que quieras)"
+              placeholder={u.importatore.pastePh}
               rows={6}
               className="w-full resize-y rounded-2xl border border-soft bg-crema/60 p-4 font-mono text-sm leading-relaxed outline-none transition-colors focus:border-verde/50 dark:bg-inchiostro/10"
-              aria-label="Texto en italiano para estudiar"
+              aria-label={u.importatore.pasteAria}
             />
             <div className="flex flex-wrap gap-3">
               <button
-                onClick={() => loadText("Testo incollato", pasted)}
+                onClick={() => loadText(u.importatore.pastedTitle, pasted)}
                 disabled={pasted.trim().length < 10}
                 className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-40"
               >
-                <Wand2 className="h-4 w-4" aria-hidden="true" /> Convertir en lección
+                <Wand2 className="h-4 w-4" aria-hidden="true" /> {u.importatore.convert}
               </button>
               <button
-                onClick={() => { setPasted(DEMO_TEXT); }}
+                onClick={() => { setPasted(u.importatore.demoText); }}
                 className="inline-flex min-h-12 items-center gap-2 rounded-2xl border border-soft px-5 py-3 text-sm font-bold text-muted-it transition-all hover:border-verde/40 active:scale-95"
               >
-                <Sparkles className="h-4 w-4" aria-hidden="true" /> Probar con un texto de ejemplo
+                <Sparkles className="h-4 w-4" aria-hidden="true" /> {u.importatore.tryDemo}
               </button>
             </div>
           </div>
@@ -176,9 +175,9 @@ export function ImporterView() {
                 <input
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://www.ilmessaggero.it/…"
+                  placeholder={u.importatore.urlPh}
                   className="w-full rounded-2xl border border-soft bg-crema/60 py-3.5 pl-11 pr-4 text-sm outline-none transition-colors focus:border-verde/50 dark:bg-inchiostro/10"
-                  aria-label="URL de la página a importar"
+                  aria-label={u.importatore.urlAria}
                   onKeyDown={(e) => { if (e.key === "Enter") void importUrl(); }}
                 />
               </div>
@@ -187,11 +186,11 @@ export function ImporterView() {
                 disabled={loading || !url.trim()}
                 className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-40"
               >
-                {loading ? "Importando…" : <><Globe className="h-4 w-4" aria-hidden="true" /> Importar</>}
+                {loading ? u.importatore.importing : <><Globe className="h-4 w-4" aria-hidden="true" /> {u.importatore.importBtn}</>}
               </button>
             </div>
             {loadError && <p className="rounded-xl border border-rosso/30 bg-rosso-tenue px-4 py-2.5 text-sm font-semibold text-rosso">{loadError}</p>}
-            <p className="text-xs text-muted-it">Consejo: artículos de ANSA, Il Messaggero, Corriere o letras de canciones funcionan muy bien.</p>
+            <p className="text-xs text-muted-it">{u.importatore.tip}</p>
           </div>
         )}
       </section>
@@ -199,18 +198,18 @@ export function ImporterView() {
       {/* textos guardados */}
       {importedTexts.length > 0 && (
         <section className="rounded-3xl border border-soft bg-surface p-6">
-          <h3 className="font-display text-lg font-semibold">📚 I tuoi testi ({importedTexts.length}/8)</h3>
+          <h3 className="font-display text-lg font-semibold">{u.importatore.savedTitle(importedTexts.length, 8)}</h3>
           <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
             {importedTexts.map((t) => (
               <div key={t.id} className="group flex items-center gap-3 rounded-2xl border border-soft bg-crema-scura/40 px-4 py-3 dark:bg-inchiostro/10">
                 <BookOpen className="h-4 w-4 shrink-0 text-verde" aria-hidden="true" />
                 <button onClick={() => { setActive({ title: t.title, text: t.text }); setSelected(null); setJustAdded([]); }} className="min-w-0 flex-1 text-left">
                   <p className="truncate text-sm font-bold">{t.title}</p>
-                  <p className="text-[11px] text-muted-it">{t.words.toLocaleString("es")} parole · {new Date(t.date).toLocaleDateString("es")}</p>
+                  <p className="text-[11px] text-muted-it">{u.importatore.wordsOf(t.words.toLocaleString("es"))} · {new Date(t.date).toLocaleDateString("es")}</p>
                 </button>
                 <button
                   onClick={() => deleteImportedText(t.id)}
-                  aria-label={`Eliminar ${t.title}`}
+                  aria-label={u.importatore.deleteAria(t.title)}
                   className="rounded-lg p-2 text-muted-it opacity-0 transition-all hover:bg-rosso-tenue hover:text-rosso group-hover:opacity-100"
                 >
                   <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -227,10 +226,10 @@ export function ImporterView() {
           {/* stats */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              { label: "Parole totali", value: stats.totalWords.toLocaleString("es"), tone: "text-inchiostro dark:text-foreground" },
-              { label: "Lemmi unici", value: stats.uniqueWords.toLocaleString("es"), tone: "text-terracotta" },
-              { label: "Nel dizionario", value: `${stats.coverage}%`, tone: "text-verde-scuro dark:text-verde" },
-              { label: "Già nel ripaso", value: stats.known.toLocaleString("es"), tone: "text-oro-scuro dark:text-oro" },
+              { label: u.importatore.stWords, value: stats.totalWords.toLocaleString("es"), tone: "text-inchiostro dark:text-foreground" },
+              { label: u.importatore.stLemmas, value: stats.uniqueWords.toLocaleString("es"), tone: "text-terracotta" },
+              { label: u.importatore.stDict, value: `${stats.coverage}%`, tone: "text-verde-scuro dark:text-verde" },
+              { label: u.importatore.stReview, value: stats.known.toLocaleString("es"), tone: "text-oro-scuro dark:text-oro" },
             ].map((s) => (
               <div key={s.label} className="rounded-2xl border border-soft bg-surface p-3.5 text-center">
                 <p className={cn("font-display text-2xl font-bold", s.tone)}>{s.value}</p>
@@ -243,10 +242,10 @@ export function ImporterView() {
           {(recommendations.length > 0 || bulkMsg) && (
             <div className="rounded-3xl border border-oro/30 bg-oro-tenue/50 p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="font-display text-lg font-semibold">✨ Parole nuove da imparare</h3>
+                <h3 className="font-display text-lg font-semibold">{u.importatore.recTitle}</h3>
                 {recommendations.length > 0 && (
                   <button onClick={addAllRecommended} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-verde px-4 py-2.5 text-sm font-bold text-white transition-all hover:scale-[1.02] active:scale-95">
-                    <Plus className="h-4 w-4" aria-hidden="true" /> Añadir todas (≤ {userLevel ?? "B1"})
+                    <Plus className="h-4 w-4" aria-hidden="true" /> {u.importatore.addAll(userLevel ?? "B1")}
                   </button>
                 )}
               </div>
@@ -277,21 +276,21 @@ export function ImporterView() {
           <div className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
             <div className="flex items-center justify-between gap-3">
               <h3 className="min-w-0 truncate font-display text-xl font-semibold">{active.title}</h3>
-              <button onClick={() => setActive(null)} aria-label="Cerrar texto" className="rounded-lg p-2 text-muted-it transition-colors hover:bg-rosso-tenue hover:text-rosso">
+              <button onClick={() => setActive(null)} aria-label={u.importatore.closeAria} className="rounded-lg p-2 text-muted-it transition-colors hover:bg-rosso-tenue hover:text-rosso">
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
 
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-semibold text-muted-it">
-              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-verde/25" /> sin marcar</span>
-              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-verde/70" /> en tu repaso</span>
-              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-rosso/40" /> no está en el diccionario</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-verde/25" /> {u.importatore.legendUnmarked}</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-verde/70" /> {u.importatore.legendReview}</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-rosso/40" /> {u.importatore.legendMissing}</span>
             </div>
 
             <p className="mt-5 max-h-[28rem] overflow-y-auto whitespace-pre-line text-lg leading-loose scrollbar-thin">
               {tokens.map((t, i) => {
                 if (!t.isWord) return <span key={i}>{t.raw}</span>;
-                const hit = lookupWord(t.raw);
+                const hit = hitFor(activeLang, t.raw);
                 const known = hit && inSrs(hit.word.id);
                 const missing = !hit;
                 const isSel = selected === t.raw;
@@ -323,11 +322,12 @@ export function ImporterView() {
                   <div>
                     <p className="font-display text-xl font-semibold">«{selected}»</p>
                     <p className="mt-1 text-sm text-muted-it">
-                      No está en el diccionario (puede ser un verbo conjugado, un nombre propio o una forma rara).
-                      Usa el <b>Analizador de frases</b> para analizarla en contexto.
+                      {u.importatore.notFoundHint.split(u.importatore.analyzerHint)[0]}
+                      <b>{u.importatore.analyzerHint}</b>
+                      {u.importatore.notFoundHint.split(u.importatore.analyzerHint)[1] ?? ""}
                     </p>
                   </div>
-                  <button onClick={() => setSelected(null)} aria-label="Cerrar" className="rounded-lg p-2 text-muted-it hover:text-rosso">
+                  <button onClick={() => setSelected(null)} aria-label={u.importatore.closeAria} className="rounded-lg p-2 text-muted-it hover:text-rosso">
                     <X className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
@@ -348,6 +348,7 @@ function WordCard({ hit, inSrs, onAdd, onClose }: {
   onAdd: () => void;
   onClose: () => void;
 }) {
+  const u = useUi();
   const w = hit.word;
   return (
     <div>
@@ -356,22 +357,22 @@ function WordCard({ hit, inSrs, onAdd, onClose }: {
           <AudioButton text={w.it} />
           <p className="font-display text-2xl font-bold">{w.it}</p>
           <span className="rounded-full bg-verde/15 px-2.5 py-0.5 text-[11px] font-bold text-verde-scuro dark:text-verde">{w.level}</span>
-          <span className="rounded-full bg-terracotta/15 px-2.5 py-0.5 text-[11px] font-bold text-terracotta">{TYPE_LABELS[w.type]}</span>
-          {w.gender && <span className="text-sm font-bold text-muted-it">{w.gender === "m" ? "il (m)" : "la (f)"}</span>}
+          <span className="rounded-full bg-terracotta/15 px-2.5 py-0.5 text-[11px] font-bold text-terracotta">{u.data.types[w.type] ?? w.type}</span>
+          {w.gender && <span className="text-sm font-bold text-muted-it">{w.gender === "m" ? u.dizionario.artM : u.dizionario.artF}</span>}
         </div>
-        <button onClick={onClose} aria-label="Cerrar tarjeta" className="rounded-lg p-2 text-muted-it transition-colors hover:text-rosso">
+        <button onClick={onClose} aria-label={u.importatore.closeCardAria} className="rounded-lg p-2 text-muted-it transition-colors hover:text-rosso">
           <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
       {hit.inflected && (
         <p className="mt-2 inline-block rounded-lg bg-oro-tenue px-3 py-1 text-xs font-semibold text-oro-scuro dark:text-oro">
-          «{w.it}» encontrada como forma flexionada ({hit.inflected})
+          {u.importatore.inflected(w.it, hit.inflected)}
         </p>
       )}
 
       <p className="mt-3 text-lg font-semibold text-verde-scuro dark:text-verde">{w.es}</p>
-      <p className="mt-1 text-sm text-muted-it">/{w.pron}/ · {CATEGORY_META[w.cat]?.es ?? w.cat}</p>
+      <p className="mt-1 text-sm text-muted-it">/{w.pron}/ · {u.data.categories[w.cat] ?? CATEGORY_META[w.cat]?.es ?? w.cat}</p>
 
       <div className="mt-3 rounded-2xl bg-white/60 p-4 text-sm dark:bg-black/20">
         <p className="flex items-start gap-2">
@@ -394,7 +395,7 @@ function WordCard({ hit, inSrs, onAdd, onClose }: {
             : "bg-verde text-white shadow-lg shadow-verde/25 hover:scale-[1.02]"
         )}
       >
-        {inSrs ? (<><Check className="h-4 w-4" aria-hidden="true" /> Nel ripaso inteligente</>) : (<><Plus className="h-4 w-4" aria-hidden="true" /> Añadir al repaso (+2 XP)</>)}
+        {inSrs ? (<><Check className="h-4 w-4" aria-hidden="true" /> {u.importatore.wcInReview}</>) : (<><Plus className="h-4 w-4" aria-hidden="true" /> {u.importatore.wcAdd}</>)}
       </button>
     </div>
   );

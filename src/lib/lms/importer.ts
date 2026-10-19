@@ -4,10 +4,27 @@
    diccionario → añadir al repaso SRS. Sin APIs de pago. */
 
 import { VOCAB } from "./vocabulary";
-import type { CefrLevel, VocabWord, WordType } from "./types";
+import type { CefrLevel, LangCode, VocabWord, WordType } from "./types";
 import { CEFR_LEVELS } from "./types";
+import { lookupWordEn } from "./dict/lookup-en";
+import { EN_DICT } from "./dict/lang-en";
 
 export const TOTAL_LEMMAS = VOCAB.length;
+
+/* v9.19 · lemas totales de la lengua activa (importador + HUD de cobertura) */
+export function totalLemmasFor(lang: LangCode): number {
+  return lang === "en" ? EN_DICT.length : TOTAL_LEMMAS;
+}
+
+/* v9.19 · lookup por lengua: en usa el lematizador americano (contracciones,
+   irregulares, -ing/-ed); el resto conserva el histórico italiano. */
+export function hitFor(lang: LangCode, token: string): DictHit | null {
+  if (lang === "en") {
+    const w = lookupWordEn(token);
+    return w ? { word: w } : null;
+  }
+  return lookupWord(token);
+}
 
 export interface DictHit {
   word: VocabWord;
@@ -81,7 +98,7 @@ export interface TextStats {
   coverage: number;        // % de palabras del texto cubiertas por el diccionario
 }
 
-export function analyze(text: string, srs: Record<string, unknown>): TextStats {
+export function analyze(text: string, srs: Record<string, unknown>, lang: LangCode = "it"): TextStats {
   const tokens = tokenize(text).filter((t) => t.isWord);
   const seen = new Set<string>();
   const uniqueIds = new Map<string, string>(); // norm → wordId (si está en dict)
@@ -90,7 +107,7 @@ export function analyze(text: string, srs: Record<string, unknown>): TextStats {
     const n = normLemma(t.raw);
     if (seen.has(n)) continue;
     seen.add(n);
-    const hit = lookupWord(t.raw);
+    const hit = hitFor(lang, t.raw);
     if (hit) {
       found++;
       uniqueIds.set(n, hit.word.id);
@@ -108,7 +125,7 @@ export function analyze(text: string, srs: Record<string, unknown>): TextStats {
 
 /** Palabras nuevas recomendadas: en el texto + en diccionario + no en SRS,
     ordenadas por frecuencia del italiano (banda 1 primero) y nivel. */
-export function recommendWords(text: string, srs: Record<string, unknown>, maxLevel: CefrLevel, limit = 12): VocabWord[] {
+export function recommendWords(text: string, srs: Record<string, unknown>, maxLevel: CefrLevel, limit = 12, lang: LangCode = "it"): VocabWord[] {
   const levelCap = CEFR_LEVELS.indexOf(maxLevel);
   const out: VocabWord[] = [];
   const seen = new Set<string>();
@@ -117,7 +134,7 @@ export function recommendWords(text: string, srs: Record<string, unknown>, maxLe
     const n = normLemma(t.raw);
     if (seen.has(n)) continue;
     seen.add(n);
-    const hit = lookupWord(t.raw);
+    const hit = hitFor(lang, t.raw);
     if (hit && !(hit.word.id in srs) && CEFR_LEVELS.indexOf(hit.word.level) <= levelCap) {
       out.push(hit.word);
       if (out.length >= limit * 3) break; // pool antes de ordenar
@@ -129,7 +146,7 @@ export function recommendWords(text: string, srs: Record<string, unknown>, maxLe
 }
 
 /** Todas las palabras del texto que están en el diccionario y no en el SRS */
-export function allNewWords(text: string, srs: Record<string, unknown>): VocabWord[] {
+export function allNewWords(text: string, srs: Record<string, unknown>, lang: LangCode = "it"): VocabWord[] {
   const out: VocabWord[] = [];
   const seen = new Set<string>();
   for (const t of tokenize(text)) {
@@ -137,7 +154,7 @@ export function allNewWords(text: string, srs: Record<string, unknown>): VocabWo
     const n = normLemma(t.raw);
     if (seen.has(n)) continue;
     seen.add(n);
-    const hit = lookupWord(t.raw);
+    const hit = hitFor(lang, t.raw);
     if (hit && !(hit.word.id in srs)) out.push(hit.word);
   }
   return out;

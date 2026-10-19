@@ -12,6 +12,7 @@ import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
 import { pushSupported, currentSubscription, enablePush, disablePush, sendTestPush } from "@/lib/push/client";
 import { QuizEngine } from "../quiz-engine";
 import { PlanChip } from "../plan-badge";
+import { useUi } from "@/lib/lms/ui";
 import { cn } from "@/lib/utils";
 
 /* Hash del PIN de bloqueo: SHA-256(PIN + salt) vía WebCrypto (nunca el PIN en claro) */
@@ -317,6 +318,7 @@ export function CertificatesView() {
 /* ════════ Vista: Configuración ════════ */
 
 export function SettingsView() {
+  const u = useUi();
   const settings = useLms((s) => s.settings);
   const updateSettings = useLms((s) => s.updateSettings);
   const userName = useLms((s) => s.userName);
@@ -364,13 +366,13 @@ export function SettingsView() {
     const res = await enablePush(account?.username ?? null, userName);
     if (res.ok) {
       setPushStatus("on");
-      setPushMsg("Notifiche attivate ✓ — riceverai un ricordo giornaliero per la racha.");
+      setPushMsg(u.impostazioni.msgOn);
     } else {
       setPushMsg(
-        res.reason === "denied" ? "Permesso negato: attiva le notifiche nelle impostazioni del browser."
-        : res.reason === "unsupported" ? "Il tuo browser non supporta le notifiche push."
-        : res.reason === "nokey" ? "Push non ancora configurato sul server (disponibile in produzione)."
-        : "Non è stato possibile attivare le notifiche. Riprova in produzione (HTTPS)."
+        res.reason === "denied" ? u.impostazioni.msgDenied
+        : res.reason === "unsupported" ? u.impostazioni.msgUnsupported
+        : res.reason === "nokey" ? u.impostazioni.msgNokey
+        : u.impostazioni.msgFail
       );
     }
   };
@@ -378,12 +380,12 @@ export function SettingsView() {
     setPushMsg(null);
     await disablePush();
     setPushStatus("off");
-    setPushMsg("Notifiche disattivate.");
+    setPushMsg(u.impostazioni.msgOff);
   };
   const handleTestPush = async () => {
     setPushMsg(null);
     const res = await sendTestPush(account?.username ?? null);
-    setPushMsg(res.ok ? `Notifica di prova inviata ✓ (${res.message})` : res.message);
+    setPushMsg(res.ok ? u.impostazioni.msgTest(res.message) : res.message);
   };
 
   /* PIN flow (create/change/remove) */
@@ -404,26 +406,26 @@ export function SettingsView() {
     setPinBusy(true);
     try {
       if (pinMode === "create") {
-        if (!pinValid) throw new Error("El PIN debe tener 4-6 dígitos y coincidir en ambos campos.");
+        if (!pinValid) throw new Error(u.impostazioni.pinMustMatch);
         const salt = randomSalt();
         const hash = await hashPin(pinDraft, salt);
         activatePin(hash, salt);
-        setPinMsg("PIN activado: la app se bloqueará con este código.");
+        setPinMsg(u.impostazioni.pinActivated);
       } else if (pinMode === "change") {
-        if (!security.pinHash || !security.pinSalt) throw new Error("No hay PIN activo.");
+        if (!security.pinHash || !security.pinSalt) throw new Error(u.impostazioni.noPinActive);
         const currentHash = await hashPin(pinCurrent, security.pinSalt);
-        if (currentHash !== security.pinHash) throw new Error("El PIN actual no es correcto.");
-        if (!pinValid) throw new Error("El nuevo PIN debe tener 4-6 dígitos y coincidir.");
+        if (currentHash !== security.pinHash) throw new Error(u.impostazioni.wrongCurrent);
+        if (!pinValid) throw new Error(u.impostazioni.pinMustMatchNew);
         const salt = randomSalt();
         const hash = await hashPin(pinDraft, salt);
         activatePin(hash, salt);
-        setPinMsg("PIN actualizado correctamente.");
+        setPinMsg(u.impostazioni.pinUpdated);
       } else if (pinMode === "remove") {
-        if (!security.pinHash || !security.pinSalt) throw new Error("No hay PIN activo.");
+        if (!security.pinHash || !security.pinSalt) throw new Error(u.impostazioni.noPinActive);
         const currentHash = await hashPin(pinCurrent, security.pinSalt);
-        if (currentHash !== security.pinHash) throw new Error("El PIN actual no es correcto.");
+        if (currentHash !== security.pinHash) throw new Error(u.impostazioni.wrongCurrent);
         clearPinStore();
-        setPinMsg("PIN desactivado.");
+        setPinMsg(u.impostazioni.pinRemoved);
       }
       setPinMode("none");
       setPinCurrent("");
@@ -462,7 +464,7 @@ export function SettingsView() {
     link.download = `italiano-master-backup-${new Date().toISOString().slice(0, 10)}.json`;
     link.href = URL.createObjectURL(blob);
     link.click();
-    setBackupMsg("Backup scaricato ✓ — consérvalo en lugar seguro.");
+    setBackupMsg(u.impostazioni.backupOk);
   };
 
   const importBackup = async (file: File) => {
@@ -471,12 +473,12 @@ export function SettingsView() {
       const raw = JSON.parse(await file.text());
       const data = (raw && typeof raw === "object" && raw.state && typeof raw.state === "object") ? raw.state : raw;
       if (typeof data.xp !== "number" || typeof data.srs !== "object" || data.srs === null) {
-        throw new Error("Formato no reconocido");
+        throw new Error(u.impostazioni.formatErr);
       }
       restoreBackup(data);
-      setBackupMsg(`Backup ripristinato ✓ (${data.xp} XP · ${Object.keys(data.srs).length} carte · racha ${data.streakCount ?? 0})`);
+      setBackupMsg(u.impostazioni.backupRestored(data.xp, Object.keys(data.srs).length, data.streakCount ?? 0));
     } catch (err) {
-      setBackupMsg(err instanceof Error ? `File non valido: ${err.message}` : "File non valido");
+      setBackupMsg(err instanceof Error ? u.impostazioni.invalidFile(err.message) : u.impostazioni.invalidFile(""));
     }
   };
 
@@ -510,11 +512,11 @@ export function SettingsView() {
               <span className="text-4xl" aria-hidden="true">{planDef.emoji}</span>
               <div>
                 <p className={cn("font-display text-2xl font-bold leading-tight", plan === "platinum" && "text-inchiostro")}
-                  >Piano {planDef.name}</p>
+                  >{u.impostazioni.planOf(planDef.name)}</p>
                 <p className={cn("text-xs", plan === "platinum" ? "text-inchiostro/70" : "text-muted-it")}>
-                  {planDef.tagline}
-                  {planSince && ` · attivo dal ${new Date(planSince).toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" })}`}
-                  {planBilling && ` · ${planBilling === "monthly" ? "mensile" : "annuale"}`}
+                  {(u.data.plans[plan]?.tagline ?? planDef.tagline)}
+                  {planSince && ` · ${u.impostazioni.activeSince(new Date(planSince).toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" }))}`}
+                  {planBilling && ` · ${planBilling === "monthly" ? u.impostazioni.billingM : u.impostazioni.billingY}`}
                 </p>
               </div>
             </div>
@@ -526,7 +528,7 @@ export function SettingsView() {
             onClick={() => navigate("piani")}
             className="inline-flex min-h-11 items-center gap-2 rounded-xl plan-gold-bg px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-oro/25 transition-all hover:scale-105"
           >
-            <Crown className="h-4 w-4" aria-hidden="true" /> Gestisci i piani
+            <Crown className="h-4 w-4" aria-hidden="true" /> {u.impostazioni.manage}
           </button>
           {plan !== "free" && (
             !confirmDowngrade ? (
@@ -534,13 +536,13 @@ export function SettingsView() {
                 onClick={() => setConfirmDowngrade(true)}
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-soft px-4 py-2.5 text-sm font-bold text-muted-it transition-all hover:border-rosso/40 hover:text-rosso"
               >
-                Torna a FREE
+                {u.impostazioni.toFree}
               </button>
             ) : (
               <span className="inline-flex items-center gap-2 rounded-xl border-2 border-rosso/50 bg-rosso-tenue px-4 py-2 text-xs font-bold text-rosso-scuro dark:text-rosso">
-                Sicuro?
-                <button onClick={() => { setPlan("free", null); setConfirmDowngrade(false); }} className="rounded-lg bg-rosso px-3 py-1.5 text-white">Sì</button>
-                <button onClick={() => setConfirmDowngrade(false)} className="rounded-lg border border-rosso/40 px-3 py-1.5">No</button>
+                {u.impostazioni.sure}
+                <button onClick={() => { setPlan("free", null); setConfirmDowngrade(false); }} className="rounded-lg bg-rosso px-3 py-1.5 text-white">{u.impostazioni.yes}</button>
+                <button onClick={() => setConfirmDowngrade(false)} className="rounded-lg border border-rosso/40 px-3 py-1.5">{u.impostazioni.no}</button>
               </span>
             )
           )}
@@ -549,8 +551,8 @@ export function SettingsView() {
           <div className="flex items-start gap-3 border-t border-soft bg-verde-tenue/50 p-4 dark:bg-verde-tenue/15">
             <Headphones className="mt-0.5 h-5 w-5 shrink-0 text-verde" aria-hidden="true" />
             <div>
-              <p className="text-sm font-bold">Supporto prioritario 24/7 attivo</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-it">Come utente PLATINUM le tue richieste hanno risposta media in meno di 2 ore (demo).</p>
+              <p className="text-sm font-bold">{u.impostazioni.supportTitle}</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-it">{u.impostazioni.supportSub}</p>
             </div>
           </div>
         )}
@@ -559,51 +561,50 @@ export function SettingsView() {
       {/* ── sicurezza estrema (v5.0) ── */}
       <section className="rounded-3xl border-2 border-verde/40 bg-verde-tenue/20 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 font-display text-xl font-semibold"><ShieldCheck className="h-5 w-5 text-verde-scuro dark:text-verde" aria-hidden="true" /> Sicurezza estrema</h2>
+          <h2 className="flex items-center gap-2 font-display text-xl font-semibold"><ShieldCheck className="h-5 w-5 text-verde-scuro dark:text-verde" aria-hidden="true" /> {u.impostazioni.secTitle}</h2>
           {security.pinHash ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-verde px-3 py-1 text-[11px] font-bold text-white">
-              <Lock className="h-3 w-3" aria-hidden="true" /> PIN attivo
+              <Lock className="h-3 w-3" aria-hidden="true" /> {u.impostazioni.pinOn}
             </span>
           ) : (
-            <span className="rounded-full bg-inchiostro/10 px-3 py-1 text-[11px] font-bold text-muted-it">nessun PIN</span>
+            <span className="rounded-full bg-inchiostro/10 px-3 py-1 text-[11px] font-bold text-muted-it">{u.impostazioni.pinOff}</span>
           )}
         </div>
         <p className="mt-2 text-sm leading-relaxed text-muted-it">
-          Bloquea la app con un PIN de 4-6 dígitos: tus datos de progreso quedan protegidos aunque alguien tome tu dispositivo.
-          El PIN se guarda solo como hash SHA-256 con sal — nunca en texto claro — y tras 5 intentos fallidos se activa un bloqueo temporal.
+          {u.impostazioni.secDesc}
         </p>
 
         {security.pinHash ? (
           <div className="mt-4 space-y-3">
             <div className="flex flex-wrap gap-2.5">
               <button onClick={() => { setPinMode("change"); setPinError(null); setPinMsg(null); }} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-verde/40 bg-verde-tenue px-4 py-2.5 text-sm font-bold text-verde-scuro transition-all hover:scale-105 dark:text-verde">
-                <KeyRound className="h-4 w-4" aria-hidden="true" /> Cambia PIN
+                <KeyRound className="h-4 w-4" aria-hidden="true" /> {u.impostazioni.changePin}
               </button>
               <button onClick={() => { setPinMode("remove"); setPinError(null); setPinMsg(null); }} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-rosso/40 bg-rosso-tenue px-4 py-2.5 text-sm font-bold text-rosso-scuro transition-all hover:scale-105 dark:text-rosso">
-                Desactiva PIN
+                {u.impostazioni.disablePin}
               </button>
               <button onClick={lockApp} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-inchiostro px-4 py-2.5 text-sm font-bold text-crema transition-all hover:scale-105">
-                <Lock className="h-4 w-4" aria-hidden="true" /> Bloquea ora
+                <Lock className="h-4 w-4" aria-hidden="true" /> {u.impostazioni.lockNow}
               </button>
             </div>
 
             {pinMode === "change" && (
               <div className="grid gap-3 rounded-2xl border border-soft bg-surface p-4 sm:grid-cols-3">
                 <label className="">
-                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">PIN attuale</span>
-                  <input type="password" inputMode="numeric" value={pinCurrent} onChange={(e) => setPinCurrent(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label="PIN actual" />
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.curPin}</span>
+                  <input type="password" inputMode="numeric" value={pinCurrent} onChange={(e) => setPinCurrent(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label={u.impostazioni.curPin} />
                 </label>
                 <label>
-                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Nuovo PIN</span>
-                  <input type="password" inputMode="numeric" value={pinDraft} onChange={(e) => setPinDraft(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label="Nuevo PIN" />
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.newPin}</span>
+                  <input type="password" inputMode="numeric" value={pinDraft} onChange={(e) => setPinDraft(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label={u.impostazioni.newPin} />
                 </label>
                 <label>
-                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Ripeti</span>
-                  <input type="password" inputMode="numeric" value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label="Repite nuevo PIN" />
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.repeat}</span>
+                  <input type="password" inputMode="numeric" value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label={u.impostazioni.repeat} />
                 </label>
                 <div className="sm:col-span-3 flex justify-end">
                   <button onClick={submitPin} disabled={pinBusy} className="min-h-11 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-105 disabled:opacity-50 dark:text-inchiostro">
-                    {pinBusy ? "Verificando…" : "Guarda nuovo PIN"}
+                    {pinBusy ? u.impostazioni.verifying : u.impostazioni.savePin}
                   </button>
                 </div>
               </div>
@@ -612,23 +613,23 @@ export function SettingsView() {
             {pinMode === "remove" && (
               <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-rosso/30 bg-rosso-tenue/30 p-4">
                 <label className="min-w-40 flex-1">
-                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-rosso-scuro dark:text-rosso">PIN attuale per conferma</span>
-                  <input type="password" inputMode="numeric" value={pinCurrent} onChange={(e) => setPinCurrent(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-rosso/30 bg-surface px-4 font-mono tracking-[0.3em] outline-none focus:border-rosso" aria-label="PIN actual para confirmar" />
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-rosso-scuro dark:text-rosso">{u.impostazioni.curPinConfirm}</span>
+                  <input type="password" inputMode="numeric" value={pinCurrent} onChange={(e) => setPinCurrent(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-rosso/30 bg-surface px-4 font-mono tracking-[0.3em] outline-none focus:border-rosso" aria-label={u.impostazioni.curPinConfirm} />
                 </label>
                 <button onClick={submitPin} disabled={pinBusy} className="min-h-11 rounded-xl bg-rosso px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-105 disabled:opacity-50">
-                  {pinBusy ? "Verificando…" : "Disattiva"}
+                  {pinBusy ? u.impostazioni.verifying : u.impostazioni.deactivate}
                 </button>
               </div>
             )}
 
             <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-it">Blocco automatico dopo inattività</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.autoLock}</p>
               <div className="flex flex-wrap gap-2">
                 {([
-                  { v: 0, l: "Mai" },
-                  { v: 1, l: "1 min" },
-                  { v: 5, l: "5 min" },
-                  { v: 15, l: "15 min" },
+                  { v: 0, l: u.impostazioni.never },
+                  { v: 1, l: u.impostazioni.min1 },
+                  { v: 5, l: u.impostazioni.min5 },
+                  { v: 15, l: u.impostazioni.min15 },
                 ] as const).map((o) => (
                   <button
                     key={o.v}
@@ -643,30 +644,30 @@ export function SettingsView() {
             </div>
 
             <label className="flex items-center justify-between gap-3 rounded-xl bg-crema-scura px-4 py-3.5 dark:bg-inchiostro/10">
-              <span className="text-sm font-semibold">Richiedi il PIN a ogni avvio dell'app</span>
+              <span className="text-sm font-semibold">{u.impostazioni.lockOnStart}</span>
               <input type="checkbox" checked={security.lockOnStart} onChange={(e) => setSecurity({ lockOnStart: e.target.checked })} className="h-5 w-5 accent-[var(--verde)]" />
             </label>
           </div>
         ) : pinMode === "create" ? (
           <div className="mt-4 grid gap-3 rounded-2xl border border-soft bg-surface p-4 sm:grid-cols-2">
             <label>
-              <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Nuovo PIN (4-6 cifre)</span>
+              <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.newPinFull}</span>
               <input type="password" inputMode="numeric" value={pinDraft} onChange={(e) => setPinDraft(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label="Nuevo PIN" />
             </label>
             <label>
-              <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Ripeti PIN</span>
-              <input type="password" inputMode="numeric" value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label="Repite PIN" />
+              <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.repeatPin}</span>
+              <input type="password" inputMode="numeric" value={pinConfirm} onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, "").slice(0, 6))} className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 font-mono tracking-[0.3em] outline-none focus:border-verde" aria-label={u.impostazioni.repeatPin} />
             </label>
             <div className="sm:col-span-2 flex justify-end gap-2">
-              <button onClick={() => setPinMode("none")} className="min-h-11 rounded-xl border-2 border-soft px-4 py-2.5 text-sm font-bold">Annulla</button>
+              <button onClick={() => setPinMode("none")} className="min-h-11 rounded-xl border-2 border-soft px-4 py-2.5 text-sm font-bold">{u.impostazioni.cancel}</button>
               <button onClick={submitPin} disabled={pinBusy} className="min-h-11 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-105 disabled:opacity-50 dark:text-inchiostro">
-                {pinBusy ? "Attivando…" : "Attiva PIN"}
+                {pinBusy ? u.impostazioni.activating : u.impostazioni.activateBtn}
               </button>
             </div>
           </div>
         ) : (
           <button onClick={() => { setPinMode("create"); setPinError(null); setPinMsg(null); }} className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-verde px-5 py-3 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-105 dark:text-inchiostro">
-            <KeyRound className="h-4 w-4" aria-hidden="true" /> Attiva blocco con PIN
+            <KeyRound className="h-4 w-4" aria-hidden="true" /> {u.impostazioni.activatePin}
           </button>
         )}
 
@@ -675,8 +676,8 @@ export function SettingsView() {
 
         <label className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-crema-scura px-4 py-3.5 dark:bg-inchiostro/10">
           <span className="min-w-0">
-            <span className="block text-sm font-semibold">Modalità privacy</span>
-            <span className="block text-[11px] text-muted-it">Nasconde nombre y estadísticas en la interfaz (hombros ajenos, capturas)</span>
+            <span className="block text-sm font-semibold">{u.impostazioni.privacyMode}</span>
+            <span className="block text-[11px] text-muted-it">{u.impostazioni.privacyModeDesc}</span>
           </span>
           <input type="checkbox" checked={security.privacyMode} onChange={(e) => setSecurity({ privacyMode: e.target.checked })} className="h-5 w-5 accent-[var(--verde)]" />
         </label>
@@ -684,14 +685,13 @@ export function SettingsView() {
 
       {/* ── pagamenti (v5.0) ── */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
-        <h2 className="flex items-center gap-2 font-display text-xl font-semibold"><Landmark className="h-5 w-5 text-oro-scuro dark:text-oro" aria-hidden="true" /> Pagamenti e fatturazione</h2>
+        <h2 className="flex items-center gap-2 font-display text-xl font-semibold"><Landmark className="h-5 w-5 text-oro-scuro dark:text-oro" aria-hidden="true" /> {u.impostazioni.payTitle}</h2>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
-          Historial de pagos de tus suscripciones con su referencia única. La configuración de la
-          cuenta bancaria (IBAN, PayPal, tarjeta) la gestiona la administración desde el Panel Admin.
+          {u.impostazioni.payDesc}
         </p>
         {payments.length === 0 ? (
           <p className="mt-4 rounded-2xl border-2 border-dashed border-soft px-4 py-6 text-center text-sm text-muted-it">
-            Nessun pagamento registrato. Attiva un piano da «Piani PRO» per vedere qui le tue ricevute.
+            {u.impostazioni.payEmpty}
           </p>
         ) : (
           <ul className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1 scrollbar-thin">
@@ -706,11 +706,11 @@ export function SettingsView() {
                     <p className="flex flex-wrap items-center gap-2 text-sm font-bold">
                       {PLANS[p.plan].name} · {p.billing === "yearly" ? "Annuale" : "Mensile"}
                       <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", p.status === "completato" ? "bg-verde-tenue text-verde-scuro dark:text-verde" : "bg-oro-tenue text-oro-scuro dark:text-oro")}>
-                        {p.status === "completato" ? "completato" : "in attesa"}
+                        {p.status === "completato" ? u.impostazioni.payDone : u.impostazioni.payWaiting}
                       </span>
                     </p>
                     <p className="truncate text-[11px] text-muted-it">
-                      {new Date(p.date).toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" })} · {PAY_METHOD_LABEL[p.method]} · {p.amount.toFixed(2).replace(".", ",")} {p.currency}
+                      {new Date(p.date).toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" })} · {u.impostazioni.payMethods[p.method] ?? PAY_METHOD_LABEL[p.method]} · {p.amount.toFixed(2).replace(".", ",")} {p.currency}
                     </p>
                   </div>
                   <button
@@ -719,7 +719,7 @@ export function SettingsView() {
                       setCopiedRef(p.id);
                       setTimeout(() => setCopiedRef(null), 1500);
                     }}
-                    title="Copia referencia"
+                    title={u.impostazioni.copyRefAria}
                     className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-soft px-2.5 py-2 font-mono text-[11px] font-bold text-muted-it transition-colors hover:text-verde"
                   >
                     {p.reference}
@@ -734,33 +734,33 @@ export function SettingsView() {
 
       {/* perfil */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
-        <h2 className="font-display text-xl font-semibold">Il tuo profilo</h2>
+        <h2 className="font-display text-xl font-semibold">{u.impostazioni.profileTitle}</h2>
         <div className="mt-4 flex flex-wrap items-end gap-3">
           <label className="min-w-56 flex-1">
-            <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted-it">Nome</span>
+            <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.nameLabel}</span>
             <input
               type="text"
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
               className="min-h-11 w-full rounded-xl border-2 border-soft bg-crema px-4 outline-none transition-colors focus:border-verde"
-              aria-label="Tu nombre"
+              aria-label={u.impostazioni.nameAria}
             />
           </label>
           <button
             onClick={() => { setUserName(nameDraft); addXp(1); }}
             className="min-h-11 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-105 dark:text-inchiostro"
           >
-            Salva
+            {u.impostazioni.save}
           </button>
         </div>
       </section>
 
       {/* apariencia */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
-        <h2 className="font-display text-xl font-semibold">Aspetto</h2>
+        <h2 className="font-display text-xl font-semibold">{u.impostazioni.lookTitle}</h2>
         <div className="mt-4 space-y-5">
           <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-it">Tema</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.theme}</p>
             <div className="flex gap-2">
               {(["light", "dark"] as const).map((t) => (
                 <button
@@ -769,13 +769,13 @@ export function SettingsView() {
                   aria-pressed={settings.theme === t}
                   className={cn("min-h-11 flex-1 rounded-xl border-2 px-4 py-2.5 text-sm font-bold transition-all", settings.theme === t ? "border-verde bg-verde-tenue text-verde-scuro dark:text-verde" : "border-soft")}
                 >
-                  {t === "light" ? "☀️ Chiaro" : "🌙 Scuro"}
+                  {t === "light" ? u.impostazioni.light : u.impostazioni.dark}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-it">Dimensione del testo (accesibilidad)</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.textSize}</p>
             <div className="flex gap-2">
               {(["md", "lg", "xl"] as const).map((t) => (
                 <button
@@ -794,11 +794,11 @@ export function SettingsView() {
 
       {/* audio y estudio */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
-        <h2 className="font-display text-xl font-semibold">Audio e studio</h2>
+        <h2 className="font-display text-xl font-semibold">{u.impostazioni.audioTitle}</h2>
         <div className="mt-4 space-y-5">
           <div>
             <div className="flex items-baseline justify-between">
-              <label htmlFor="rate" className="text-xs font-bold uppercase tracking-wide text-muted-it">Velocità dell'audio</label>
+              <label htmlFor="rate" className="text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.rate}</label>
               <span className="font-mono text-xs font-bold text-verde-scuro dark:text-verde">{settings.audioRate.toFixed(2)}×</span>
             </div>
             <input
@@ -811,10 +811,10 @@ export function SettingsView() {
               onChange={(e) => updateSettings({ audioRate: parseFloat(e.target.value) })}
               className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-inchiostro/10 accent-[var(--verde)] dark:bg-inchiostro/20"
             />
-            <p className="mt-1.5 text-xs text-muted-it">0.6× lento per dettati · 0.9× consigliato · 1.2× veloce</p>
+            <p className="mt-1.5 text-xs text-muted-it">{u.impostazioni.rateHint}</p>
           </div>
           <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-it">Obiettivo giornaliero</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-it">{u.impostazioni.goal}</p>
             <div className="flex flex-wrap gap-2">
               {[60, 120, 200].map((g) => (
                 <button
@@ -823,13 +823,13 @@ export function SettingsView() {
                   aria-pressed={settings.dailyGoalXp === g}
                   className={cn("min-h-11 flex-1 rounded-xl border-2 px-3 py-2.5 text-sm font-bold transition-all", settings.dailyGoalXp === g ? "border-oro bg-oro-tenue text-oro-scuro dark:text-oro" : "border-soft")}
                 >
-                  {g} XP<span className="hidden sm:inline">/giorno</span>
+                  {g} XP<span className="hidden sm:inline">{u.impostazioni.perDay}</span>
                 </button>
               ))}
             </div>
           </div>
           <label className="flex items-center justify-between gap-3 rounded-xl bg-crema-scura px-4 py-3.5 dark:bg-inchiostro/10">
-            <span className="text-sm font-semibold">Sottotitoli (traduzione ES) nei dialoghi</span>
+            <span className="text-sm font-semibold">{u.impostazioni.subtitles}</span>
             <input
               type="checkbox"
               checked={settings.showSubtitles}
@@ -843,38 +843,37 @@ export function SettingsView() {
       {/* notifiche push (v9.0) */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
         <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-          <Bell className="h-5 w-5 text-verde" aria-hidden="true" /> Notifiche
+          <Bell className="h-5 w-5 text-verde" aria-hidden="true" /> {u.impostazioni.notifTitle}
         </h2>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
-          Recordatorio diario gratuito para mantener tu racha: repaso, ruota della fortuna o missiones.
-          Se envían como notificaciones del navegador (PWA instalable), sin apps externas.
+          {u.impostazioni.notifDesc}
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           {pushStatus === "on" ? (
             <>
               <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-verde/50 bg-verde-tenue px-4 py-2.5 text-sm font-bold text-verde-scuro dark:text-verde">
-                <Check className="h-4 w-4" aria-hidden="true" /> Attive su questo dispositivo
+                <Check className="h-4 w-4" aria-hidden="true" /> {u.impostazioni.notifOn}
               </span>
               <button onClick={() => void handleTestPush()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-verde/40 bg-surface px-4 py-2.5 text-sm font-bold text-verde-scuro transition-all hover:scale-105 dark:text-verde">
-                Prova la notifica
+                {u.impostazioni.notifTest}
               </button>
               <button onClick={() => void handleDisablePush()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-rosso/30 px-4 py-2.5 text-sm font-bold text-rosso-scuro transition-all hover:scale-105 dark:text-rosso">
-                Disattiva
+                {u.impostazioni.notifOff}
               </button>
             </>
           ) : pushStatus === "denied" ? (
             <p className="rounded-xl border border-rosso/30 bg-rosso-tenue px-4 py-2.5 text-sm font-semibold text-rosso-scuro dark:text-rosso">
-              Permiso bloqueado por el navegador: habilítalo en el icono 🔒 de la barra de direcciones.
+              {u.impostazioni.notifDenied}
             </p>
           ) : pushStatus === "unsupported" ? (
             <p className="rounded-xl bg-crema-scura px-4 py-2.5 text-sm text-muted-it dark:bg-inchiostro/10">
-              Este navegador no soporta notificaciones push (mejor con Chrome/Edge o la app instalada).
+              {u.impostazioni.notifUnsupported}
             </p>
           ) : pushStatus === "checking" ? (
-            <p className="text-sm text-muted-it">Controllo…</p>
+            <p className="text-sm text-muted-it">{u.impostazioni.notifChecking}</p>
           ) : (
             <button onClick={() => void handleEnablePush()} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-105">
-              <Bell className="h-4 w-4" aria-hidden="true" /> Attiva le notifiche
+              <Bell className="h-4 w-4" aria-hidden="true" /> {u.impostazioni.notifEnable}
             </button>
           )}
         </div>
@@ -883,27 +882,26 @@ export function SettingsView() {
 
       {/* datos */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
-        <h2 className="font-display text-xl font-semibold">I tuoi dati</h2>
+        <h2 className="font-display text-xl font-semibold">{u.impostazioni.dataTitle}</h2>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
-          Todo tu progreso se guarda localmente en tu navegador (localStorage). Sin cuentas, sin nube:
-          tus datos son tuyos.
+          {u.impostazioni.dataDesc}
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <button onClick={exportData} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-verde/40 bg-verde-tenue px-5 py-2.5 text-sm font-bold text-verde-scuro transition-all hover:scale-105 dark:text-verde">
-            <Download className="h-4 w-4" aria-hidden="true" /> Backup completo (JSON)
+            <Download className="h-4 w-4" aria-hidden="true" /> {u.impostazioni.backupBtn}
           </button>
           <button
             onClick={() => backupFileRef.current?.click()}
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-verde/40 bg-surface px-5 py-2.5 text-sm font-bold text-verde-scuro transition-all hover:scale-105 dark:text-verde"
           >
-            <Upload className="h-4 w-4" aria-hidden="true" /> Ripristina backup
+            <Upload className="h-4 w-4" aria-hidden="true" /> {u.impostazioni.restoreBtn}
           </button>
           <input
             ref={backupFileRef}
             type="file"
             accept="application/json,.json"
             className="hidden"
-            aria-label="Seleccionar archivo de backup"
+            aria-label={u.impostazioni.fileAria}
             onChange={(e) => {
               const f = e.target.files?.[0];
               if (f) void importBackup(f);
@@ -912,22 +910,22 @@ export function SettingsView() {
           />
           {planDef.limits.offlinePack ? (
             <button onClick={exportPack} className="inline-flex min-h-11 items-center gap-2 rounded-xl plan-gold-bg px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-oro/25 transition-all hover:scale-105">
-              <Crown className="h-4 w-4" aria-hidden="true" /> Pacchetto offline PLATINUM ({Object.keys(srs).length} parole)
+              <Crown className="h-4 w-4" aria-hidden="true" /> {u.impostazioni.platinumPack(Object.keys(srs).length)}
             </button>
           ) : (
             <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-dashed border-oro/40 px-4 py-2.5 text-xs font-bold text-oro-scuro dark:text-oro">
-              🔒 Pacchetto offline · solo PLATINUM
+              {u.impostazioni.packLocked}
             </span>
           )}
           {!confirmReset ? (
             <button onClick={() => setConfirmReset(true)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-rosso/40 bg-rosso-tenue px-5 py-2.5 text-sm font-bold text-rosso-scuro transition-all hover:scale-105 dark:text-rosso">
-              Azzera tutto
+              {u.impostazioni.resetBtn}
             </button>
           ) : (
             <div className="flex items-center gap-2 rounded-xl border-2 border-rosso bg-rosso-tenue px-4 py-2.5">
-              <span className="text-sm font-bold text-rosso-scuro dark:text-rosso">Sicuro?</span>
-              <button onClick={() => { resetAll(); setConfirmReset(false); }} className="min-h-9 rounded-lg bg-rosso px-3 py-1.5 text-xs font-bold text-white">Sì, azzera</button>
-              <button onClick={() => setConfirmReset(false)} className="min-h-9 rounded-lg border border-rosso/40 px-3 py-1.5 text-xs font-bold text-rosso-scuro dark:text-rosso">No</button>
+              <span className="text-sm font-bold text-rosso-scuro dark:text-rosso">{u.impostazioni.sure}</span>
+              <button onClick={() => { resetAll(); setConfirmReset(false); }} className="min-h-9 rounded-lg bg-rosso px-3 py-1.5 text-xs font-bold text-white">{u.impostazioni.yesReset}</button>
+              <button onClick={() => setConfirmReset(false)} className="min-h-9 rounded-lg border border-rosso/40 px-3 py-1.5 text-xs font-bold text-rosso-scuro dark:text-rosso">{u.impostazioni.no}</button>
             </div>
           )}
         </div>
@@ -937,18 +935,13 @@ export function SettingsView() {
           </p>
         )}
         <p className="mt-4 text-xs leading-relaxed text-muted-it">
-          El backup incluye TODO tu progreso (XP, racha, tarjetas SRS, lecciones, certificados, escritos, textos importados y preferiti)
-          y <strong>nunca</strong> contiene cuenta, PIN, plan ni datos de pago. Restáuralo en cualquier dispositivo desde este botón.
+          {u.impostazioni.dataNote}
         </p>
       </section>
       <section className="rounded-3xl border border-soft bg-surface p-6">
-        <h2 className="font-display text-xl font-semibold">Accessibilità</h2>
+        <h2 className="font-display text-xl font-semibold">{u.impostazioni.a11yTitle}</h2>
         <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-it">
-          <li>⌨️ Navegación completa por teclado: todas las secciones y botones son enfocables.</li>
-          <li>🔊 Audio con control de velocidad (0.6×–1.2×) para dictados y escucha.</li>
-          <li>👁️ Tres tamaños de texto (A / A+ / A++) que escalan toda la interfaz.</li>
-          <li>🌙 Modo oscuro con paleta cálida italiana en ambas variantes.</li>
-          <li>📱 Diseño responsive: móvil, tablet y escritorio.</li>
+          {u.impostazioni.a11y.map((t) => <li key={t}>{t}</li>)}
         </ul>
       </section>
     </div>

@@ -6,6 +6,7 @@ import { ArrowDown, ArrowUp, Crown, Flame, Info, LogIn, RefreshCcw, Trophy, Zap 
 import { useLms } from "@/lib/lms/store";
 import { fetchLeaderboard, type LeaderboardData } from "@/lib/lms/remote";
 import { LEAGUES, formatCountdown, leagueIndex, PROMOTION_SLOTS, DEMOTION_RATIO, MIN_ACTIVE_DEMOTION } from "@/lib/lms/leagues";
+import { useUi } from "@/lib/lms/ui";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Classifica settimanale (v8.0) ───────────────────────────
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
    (solo con 6+ activos) · reinicio automático cada lunes 00:00 UTC.   */
 
 export function ClassificaView() {
+  const u = useUi();
   const account = useLms((s) => s.account);
   const weekXp = useLms((s) => s.weekXp);
   const navigate = useLms((s) => s.navigate);
@@ -22,14 +24,16 @@ export function ClassificaView() {
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
+  const leagueName = (id: string, name: string) => u.data.leagues[id] ?? name;
+
   const load = useCallback(async () => {
     if (!account) return;
     // todos los setState van tras el await: nunca síncronos en el efecto
     const res = await fetchLeaderboard(account.id);
     if (res) setData(res);
-    setError(res ? null : "No se pudo cargar la clasificación. Comprueba tu conexión e inténtalo de nuevo.");
+    setError(res ? null : u.classifica.loadError);
     setLoading(false);
-  }, [account]);
+  }, [account, u]);
 
   useEffect(() => {
     const t = setTimeout(() => void load(), 0);
@@ -59,19 +63,17 @@ export function ClassificaView() {
       <div className="space-y-6">
         <section className="rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue to-surface p-8 text-center dark:from-verde-tenue/25">
           <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-verde text-3xl shadow-lg shadow-verde/25">🏆</span>
-          <h2 className="mt-4 font-display text-3xl font-semibold">Classifica settimanale</h2>
+          <h2 className="mt-4 font-display text-3xl font-semibold">{u.classifica.guestTitle}</h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-it">
-            Compite cada semana con los demás estudiantes de Italiano Master. El XP que ganas en lecciones, juegos,
-            dictados y repasos cuenta para tu liga: cada <strong>lunes</strong> se cierra la semana, los <strong>3 primeros ascienden</strong> de liga
-            y la clasificación vuelve a cero.
+            {u.classifica.guestA}<strong>{u.classifica.guestStrongA}</strong>{u.classifica.guestB}<strong>{u.classifica.guestStrongB}</strong>{u.classifica.guestC}
           </p>
           <button
             onClick={() => window.scrollTo({ top: 0 })}
             className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03] dark:text-inchiostro"
           >
-            <LogIn className="h-4 w-4" aria-hidden="true" /> Accedi per competere
+            <LogIn className="h-4 w-4" aria-hidden="true" /> {u.classifica.cta}
           </button>
-          <p className="mt-2 text-xs text-muted-it">Usa el botón «Accedi» de la barra superior para entrar con tu cuenta.</p>
+          <p className="mt-2 text-xs text-muted-it">{u.classifica.hint}</p>
         </section>
 
         <section className="grid gap-3 sm:grid-cols-5">
@@ -84,20 +86,20 @@ export function ClassificaView() {
               className={cn("rounded-3xl border-2 border-soft p-5 text-center", l.tenue)}
             >
               <p className="text-3xl">{l.emoji}</p>
-              <p className="mt-2 font-display text-lg font-bold" style={{ color: l.color }}>{l.name}</p>
-              <p className="text-[11px] text-muted-it">Lega {i + 1} di {LEAGUES.length}</p>
+              <p className="mt-2 font-display text-lg font-bold" style={{ color: l.color }}>{leagueName(l.id, l.name)}</p>
+              <p className="text-[11px] text-muted-it">{u.classifica.leagueOf(i + 1, LEAGUES.length)}</p>
             </motion.div>
           ))}
         </section>
 
         <section className="rounded-3xl border border-soft bg-surface p-6">
-          <h3 className="flex items-center gap-2 font-display text-lg font-semibold"><Info className="h-4 w-4 text-verde" aria-hidden="true" /> Come funziona</h3>
+          <h3 className="flex items-center gap-2 font-display text-lg font-semibold"><Info className="h-4 w-4 text-verde" aria-hidden="true" /> {u.classifica.howTitle}</h3>
           <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-it">
-            <li>· La semana va del <strong>lunes al domingo</strong> (medianoche UTC).</li>
-            <li>· Cuenta TODO el XP: lecciones, juegos, dictados, shadowing, repasos, misiones…</li>
-            <li>· Al cierre: <strong>top-{PROMOTION_SLOTS} asciende</strong> de liga {LEAGUES.map((l) => l.emoji).join(" → ")}.</li>
-            <li>· Con {MIN_ACTIVE_DEMOTION}+ jugadores activos, el último {Math.round(DEMOTION_RATIO * 100)}% desciende.</li>
-            <li>· Solo se muestra tu <strong>nombre público</strong> y tu nivel: nunca tu usuario ni datos personales.</li>
+            {u.classifica.howRules.map((r, i) => (
+              <li key={i}>
+                {r.pre}{r.strong ? <strong>{r.strong}</strong> : null}{r.post ?? ""}
+              </li>
+            ))}
           </ul>
         </section>
       </div>
@@ -114,10 +116,10 @@ export function ClassificaView() {
             <>
               <span className={cn("flex h-16 w-16 items-center justify-center rounded-3xl text-3xl", league.tenue)}>{league.emoji}</span>
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-it">La tua lega</p>
-                <h2 className="font-display text-2xl font-bold" style={{ color: league.color }}>Lega {league.name}</h2>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-it">{u.classifica.myLeague}</p>
+                <h2 className="font-display text-2xl font-bold" style={{ color: league.color }}>{u.classifica.leagueLabel(leagueName(league.id, league.name))}</h2>
                 <p className="text-xs text-muted-it">
-                  {data?.totals?.[league.id] ?? 1} student{(data?.totals?.[league.id] ?? 1) === 1 ? "e" : "i"} in questa lega
+                  {u.classifica.studentsIn(data?.totals?.[league.id] ?? 1)}
                 </p>
               </div>
             </>
@@ -125,7 +127,7 @@ export function ClassificaView() {
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-it">Chiusura</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-it">{u.classifica.closing}</p>
             <p className="font-mono text-lg font-bold text-verde-scuro tabular-nums dark:text-verde">
               {data?.resetAt ? formatCountdown(Math.max(0, data.resetAt - now)) : "—"}
             </p>
@@ -134,8 +136,8 @@ export function ClassificaView() {
             onClick={() => void load()}
             disabled={loading}
             className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-soft transition-colors hover:bg-verde-tenue disabled:opacity-50"
-            aria-label="Actualizar clasificación"
-            title="Aggiorna"
+            aria-label={u.classifica.refreshAria}
+            title={u.classifica.refreshTitle}
           >
             <RefreshCcw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden="true" />
           </button>
@@ -151,14 +153,14 @@ export function ClassificaView() {
                 {data?.rows.findIndex((r) => r.isMe) !== -1 ? (data!.rows.findIndex((r) => r.isMe) + 1) : "—"}
               </span>
               <div>
-                <p className="font-bold">La tua posizione</p>
+                <p className="font-bold">{u.classifica.positionTitle}</p>
                 <p className="text-xs text-muted-it">
-                  {myRow.weekXp} XP esta semana · {myRow.streak} <Flame className="inline h-3 w-3 text-rosso" aria-hidden="true" /> de racha
+                  {u.classifica.weekLineA(myRow.weekXp)}{myRow.streak}<Flame className="inline h-3 w-3 text-rosso" aria-hidden="true" />{u.classifica.weekLineB(myRow.streak)}
                 </p>
               </div>
             </div>
             {myRow.weekXp === 0 && (
-              <p className="text-xs font-semibold text-oro-scuro dark:text-oro">✨ Gana XP esta semana para subir en la tabla</p>
+              <p className="text-xs font-semibold text-oro-scuro dark:text-oro">{u.classifica.zeroHint}</p>
             )}
           </div>
         </section>
@@ -175,7 +177,7 @@ export function ClassificaView() {
             {[0, 1, 2, 3, 4].map((i) => <div key={i} className="h-12 animate-pulse rounded-xl bg-inchiostro/5" />)}
           </div>
         ) : !data ? (
-          <p className="p-6 text-sm text-muted-it">{error ?? "Clasificación no disponible."}</p>
+          <p className="p-6 text-sm text-muted-it">{error ?? u.classifica.unavailable}</p>
         ) : (
           <ol className="divide-y divide-soft">
             {data.rows.map((row, i) => {
@@ -193,28 +195,28 @@ export function ClassificaView() {
                 >
                   {/* posición */}
                   <span className={cn("w-8 shrink-0 text-center font-display text-lg font-bold", i === 0 ? "text-oro" : i === 1 ? "text-muted-it" : i === 2 ? "text-amber-700 dark:text-amber-500" : "text-inchiostro/50")}>
-                    {i === 0 ? <Crown className="mx-auto h-5 w-5" aria-label="Primo posto" /> : i + 1}
+                    {i === 0 ? <Crown className="mx-auto h-5 w-5" aria-label={u.classifica.firstAria} /> : i + 1}
                   </span>
                   {/* nombre + nivel */}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold">
-                      {row.displayName} {row.isMe && <span className="ml-1 rounded-full bg-verde px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white dark:text-inchiostro">tu</span>}
+                      {row.displayName} {row.isMe && <span className="ml-1 rounded-full bg-verde px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white dark:text-inchiostro">{u.classifica.you}</span>}
                     </p>
                     <p className="text-[11px] text-muted-it">
                       {row.level}
                       {row.plan !== "free" ? ` · ${row.plan === "platinum" ? "💎" : row.plan === "premium" ? "⭐" : "🦁"} ${row.plan}` : ""}
-                      {" · "}{row.xp} XP totali
+                      {" · "}{u.classifica.xpTotal(row.xp)}
                     </p>
                   </div>
                   {/* zonas */}
                   {promotion && (
                     <span className="hidden items-center gap-1 rounded-full bg-verde-tenue px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-verde-scuro dark:text-verde sm:inline-flex">
-                      <ArrowUp className="h-3 w-3" aria-hidden="true" /> promosso
+                      <ArrowUp className="h-3 w-3" aria-hidden="true" /> {u.classifica.promo}
                     </span>
                   )}
                   {demotion && (
                     <span className="hidden items-center gap-1 rounded-full bg-rosso-tenue px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-rosso-scuro dark:text-rosso sm:inline-flex">
-                      <ArrowDown className="h-3 w-3" aria-hidden="true" /> retrocesso
+                      <ArrowDown className="h-3 w-3" aria-hidden="true" /> {u.classifica.demo}
                     </span>
                   )}
                   {/* XP semanal */}
@@ -231,21 +233,19 @@ export function ClassificaView() {
       {/* otras ligas + reglas */}
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-3xl border border-soft bg-surface p-5">
-          <h3 className="flex items-center gap-2 font-display text-base font-semibold"><Trophy className="h-4 w-4 text-oro-scuro dark:text-oro" aria-hidden="true" /> Tutte le leghe</h3>
+          <h3 className="flex items-center gap-2 font-display text-base font-semibold"><Trophy className="h-4 w-4 text-oro-scuro dark:text-oro" aria-hidden="true" /> {u.classifica.allLeagues}</h3>
           <div className="mt-3 flex flex-wrap gap-2">
             {LEAGUES.map((l) => (
               <span key={l.id} className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold", data?.league === l.id ? "border-verde/50 bg-verde-tenue text-verde-scuro dark:text-verde" : "border-soft text-muted-it")}>
-                {l.emoji} {l.name} · {data?.totals?.[l.id] ?? 0}
+                {l.emoji} {leagueName(l.id, l.name)} · {data?.totals?.[l.id] ?? 0}
               </span>
             ))}
           </div>
         </div>
         <div className="rounded-3xl border border-soft bg-surface p-5">
-          <h3 className="font-display text-base font-semibold">Regole della settimana</h3>
+          <h3 className="font-display text-base font-semibold">{u.classifica.weekRulesTitle}</h3>
           <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-it">
-            <li>· Top-{PROMOTION_SLOTS} asciende · con {MIN_ACTIVE_DEMOTION}+ activos, el último {Math.round(DEMOTION_RATIO * 100)}% desciende.</li>
-            <li>· El XP de la semana se sincroniza automáticamente con tu cuenta.</li>
-            <li>· ¿Sin sesión? Tu XP local se sube al iniciar sesión: nada se pierde.</li>
+            {u.classifica.weekRules.map((r, i) => <li key={i}>{r}</li>)}
           </ul>
         </div>
       </section>

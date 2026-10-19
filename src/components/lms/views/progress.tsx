@@ -8,20 +8,17 @@ import { useLms, BADGES, rankFor, nextRank } from "@/lib/lms/store";
 import { masteredCount, learningCount, dueCards } from "@/lib/lms/srs";
 import { ACHIEVEMENTS, ACHIEVEMENT_CATS, achievementState } from "@/lib/lms/quests";
 import type { AchievementCat } from "@/lib/lms/quests";
-import { weakTopics, topicStats, TOPIC_LABELS } from "@/lib/lms/adaptive";
+import { weakTopics, topicStats } from "@/lib/lms/adaptive";
 import { COURSES, totalLessons } from "@/lib/lms/courses";
 import { PLANS, planLimits } from "@/lib/lms/plans";
+import { useUi } from "@/lib/lms/ui";
 import { LockedFeatureCard } from "../plan-badge";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Mi progreso ───────────────────────────────────────────── */
 
-const SKILL_LABELS: Record<string, string> = {
-  ascolto: "Escucha", lettura: "Lectura", scrittura: "Escritura", parlato: "Conversación",
-  pronuncia: "Pronunciación", grammatica: "Gramática", vocabolario: "Vocabulario",
-};
-
 export function ProgressView() {
+  const u = useUi();
   const xp = useLms((s) => s.xp);
   const level = useLms((s) => s.level);
   const streak = useLms((s) => s.streakCount);
@@ -36,6 +33,7 @@ export function ProgressView() {
   const dailyXp = useLms((s) => s.dailyXp);
   const goal = useLms((s) => s.settings.dailyGoalXp);
   const plan = useLms((s) => s.plan);
+  const activeLang = useLms((s) => s.activeLang);
   const advanced = planLimits(plan).advancedAnalytics;
 
   const rank = rankFor(xp);
@@ -51,7 +49,8 @@ export function ProgressView() {
   const ach = useMemo(() => achievementState(snapshot, allLessons), [snapshot, allLessons]);
   const achUnlocked = useMemo(() => ACHIEVEMENTS.filter((a) => a.value(ach) >= a.target).length, [ach]);
 
-  const radarData = Object.entries(skillStats).map(([k, v]) => ({ skill: SKILL_LABELS[k] ?? k, value: Math.max(4, v) }));
+  const rankName = u.data.ranks[rank.name] ?? rank.name;
+  const radarData = Object.entries(skillStats).map(([k, v]) => ({ skill: u.progress.skills[k] ?? k, value: Math.max(4, v) }));
 
   // últimos 14 días
   const days14 = useMemo(() => {
@@ -79,10 +78,10 @@ export function ProgressView() {
       {/* resumen */}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "XP total", value: xp.toLocaleString(), sub: `${rank.emoji} ${rank.name}${next ? ` · faltan ${next.min - xp}` : ""}`, icon: Zap, tone: "oro" },
-          { label: "Racha", value: `${streak} días`, sub: `Hoy: ${dailyXp}/${goal} XP`, icon: Flame, tone: "rosso" },
-          { label: "Nivel MCER", value: level ?? "Sin test", sub: level ? "Test realizado ✓" : "Haz el test de nivel", icon: Trophy, tone: "verde" },
-          { label: "Precisión", value: `${avgAccuracy}%`, sub: `${quizHistory.length} pruebas realizadas`, icon: TrendingUp, tone: "terracotta" },
+          { label: u.progress.kpis.xp, value: xp.toLocaleString(), sub: `${rank.emoji} ${rankName}${next ? ` · ${u.progress.missingForNext(next.min - xp)}` : ""}`, icon: Zap, tone: "oro" },
+          { label: u.progress.kpis.streak, value: u.progress.daysUnit(streak), sub: u.progress.todayOf(dailyXp, goal), icon: Flame, tone: "rosso" },
+          { label: u.progress.kpis.level, value: level ?? u.progress.noTest, sub: level ? u.progress.testDone : u.progress.takeTest, icon: Trophy, tone: "verde" },
+          { label: u.progress.kpis.accuracy, value: `${avgAccuracy}%`, sub: u.progress.testsDone(quizHistory.length), icon: TrendingUp, tone: "terracotta" },
         ].map((card, i) => (
           <motion.div
             key={card.label}
@@ -105,8 +104,8 @@ export function ProgressView() {
         {/* radar de destrezas */}
         {advanced ? (
         <section className="rounded-3xl border border-soft bg-surface p-6">
-          <h2 className="font-display text-xl font-semibold">Las 4 destrezas + habilidades</h2>
-          <p className="mt-1 text-sm text-muted-it">Cada actividad suma a su destreza: escucha, lectura, escritura, conversación, pronunciación, gramática y vocabulario.</p>
+          <h2 className="font-display text-xl font-semibold">{u.progress.radarTitle}</h2>
+          <p className="mt-1 text-sm text-muted-it">{u.progress.radarDesc}</p>
           <div className="mt-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData} outerRadius="72%">
@@ -119,15 +118,15 @@ export function ProgressView() {
           <div className="mt-2 grid grid-cols-2 gap-1.5 text-xs text-muted-it sm:grid-cols-4">
             {Object.entries(skillStats).map(([k, v]) => (
               <span key={k} className="rounded-lg bg-crema-scura px-2 py-1.5 text-center dark:bg-inchiostro/10">
-                {SKILL_LABELS[k]}: <strong className="text-inchiostro">{v}</strong>
+                {u.progress.skills[k] ?? k}: <strong className="text-inchiostro">{v}</strong>
               </span>
             ))}
           </div>
         </section>
         ) : (
           <LockedFeatureCard
-            title="Radar delle destrezze"
-            bullets={["7 dimensiones: escucha, lectura, escritura, conversación…", "Progreso por habilidad en tiempo real", "Disponible dal piano PRO"]}
+            title={u.progress.radarLocked.title}
+            bullets={u.progress.radarLocked.bullets}
             required="pro"
           />
         )}
@@ -136,10 +135,10 @@ export function ProgressView() {
         {advanced ? (
         <section className="rounded-3xl border border-soft bg-surface p-6">
           <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-            <Calendar className="h-5 w-5 text-rosso" aria-hidden="true" /> Últimos 14 giorni
+            <Calendar className="h-5 w-5 text-rosso" aria-hidden="true" /> {u.progress.calTitle}
           </h2>
-          <p className="mt-1 text-sm text-muted-it">Constancia diaria: cada barra es el XP ganado ese día.</p>
-          <div className="mt-5 flex h-36 items-end gap-1.5" role="img" aria-label="Gráfico de XP diario de los últimos 14 días">
+          <p className="mt-1 text-sm text-muted-it">{u.progress.calDesc}</p>
+          <div className="mt-5 flex h-36 items-end gap-1.5" role="img" aria-label={u.progress.calAria}>
             {days14.map((d) => (
               <div key={d.date} className="group flex flex-1 flex-col items-center gap-1.5">
                 <motion.div
@@ -154,15 +153,15 @@ export function ProgressView() {
             ))}
           </div>
           <div className="mt-4 flex items-center gap-4 text-[11px] text-muted-it">
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-verde" /> meta alcanzada</span>
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-oro/80" /> estudio parcial</span>
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-inchiostro/20" /> descanso</span>
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-verde" /> {u.progress.legend.goal}</span>
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-oro/80" /> {u.progress.legend.partial}</span>
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-inchiostro/20" /> {u.progress.legend.rest}</span>
           </div>
         </section>
         ) : (
           <LockedFeatureCard
-            title="Calendario di studio (14 giorni)"
-            bullets={["Constancia diaria con barras de XP", "Comparación con tu meta diaria", "Disponible dal piano PRO"]}
+            title={u.progress.calLocked.title}
+            bullets={u.progress.calLocked.bullets}
             required="pro"
           />
         )}
@@ -172,40 +171,43 @@ export function ProgressView() {
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-3xl border border-soft bg-surface p-6">
           <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-            <Library className="h-5 w-5 text-verde" aria-hidden="true" /> Repaso inteligente
+            <Library className="h-5 w-5 text-verde" aria-hidden="true" /> {u.progress.srsTitle}
           </h2>
           <div className="mt-4 grid grid-cols-3 gap-2.5 text-center">
             <div className="rounded-2xl bg-verde-tenue p-3.5">
               <p className="font-display text-2xl font-bold text-verde-scuro dark:text-verde">{mastered}</p>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-it">Dominadas</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-it">{u.progress.srsLabels.mastered}</p>
             </div>
             <div className="rounded-2xl bg-oro-tenue p-3.5">
               <p className="font-display text-2xl font-bold text-oro-scuro dark:text-oro">{learning}</p>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-it">En aprendizaje</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-it">{u.progress.srsLabels.learning}</p>
             </div>
             <div className="rounded-2xl bg-rosso-tenue p-3.5">
               <p className="font-display text-2xl font-bold text-rosso-scuro dark:text-rosso">{due}</p>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-it">Vencidas hoy</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-it">{u.progress.srsLabels.due}</p>
             </div>
           </div>
-          <button onClick={() => navigate("repaso")} className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-[1.01]">
-            Ir al repaso inteligente →
-          </button>
+          {/* v9.19: el repaso inteligente es una vista solo-italiana; en EN se omite el CTA */}
+          {activeLang === "it" && (
+            <button onClick={() => navigate("repaso")} className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-[1.01]">
+              {u.progress.goReview}
+            </button>
+          )}
         </div>
 
         <div className="rounded-3xl border border-soft bg-surface p-6">
           <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-            <BookOpen className="h-5 w-5 text-oro" aria-hidden="true" /> Lecciones completadas
+            <BookOpen className="h-5 w-5 text-oro" aria-hidden="true" /> {u.progress.lessonsTitle}
           </h2>
           <div className="mt-4 space-y-2.5">
             {COURSES.map((c) => {
-              const total = c.units.reduce((n, u) => n + u.lessons.length, 0);
-              const done = c.units.reduce((n, u) => n + u.lessons.filter((l) => completedLessons.includes(l.id)).length, 0);
+              const total = c.units.reduce((n, cu) => n + cu.lessons.length, 0);
+              const done = c.units.reduce((n, cu) => n + cu.lessons.filter((l) => completedLessons.includes(l.id)).length, 0);
               const pct = total ? Math.round((done / total) * 100) : 0;
               return (
                 <div key={c.level}>
                   <div className="flex items-center justify-between text-xs font-semibold">
-                    <span>{c.level === "zero" ? "Desde cero" : c.level} <span className="font-normal text-muted-it">· {c.label.split("·")[1] ?? ""}</span></span>
+                    <span>{c.level === "zero" ? u.progress.fromZero : c.level} <span className="font-normal text-muted-it">· {c.label.split("·")[1] ?? ""}</span></span>
                     <span className="text-muted-it">{done}/{total}</span>
                   </div>
                   <div className="mt-1 h-2 overflow-hidden rounded-full bg-crema-scura dark:bg-inchiostro/15">
@@ -215,7 +217,7 @@ export function ProgressView() {
               );
             })}
           </div>
-          <p className="mt-3 text-xs text-muted-it">Total: {completedLessons.length} de {allLessons} lecciones</p>
+          <p className="mt-3 text-xs text-muted-it">{u.progress.lessonsTotal(completedLessons.length, allLessons)}</p>
         </div>
       </section>
 
@@ -223,18 +225,18 @@ export function ProgressView() {
       {advanced ? (
       <section className="rounded-3xl border border-soft bg-surface p-6">
         <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-          <Sparkles className="h-5 w-5 text-oro" aria-hidden="true" /> Motor adaptativo
+          <Sparkles className="h-5 w-5 text-oro" aria-hidden="true" /> {u.progress.adaptiveTitle}
         </h2>
-        <p className="mt-1 text-sm text-muted-it">Cada error alimenta las recomendaciones. Temas con precisión menor al 70%:</p>
+        <p className="mt-1 text-sm text-muted-it">{u.progress.adaptiveDesc}</p>
         {weaknesses.length === 0 ? (
           <p className={cn("mt-4 rounded-2xl px-4 py-3 text-sm font-semibold", allStats.length === 0 ? "bg-crema-scura text-muted-it dark:bg-inchiostro/10" : "bg-verde-tenue text-verde-scuro dark:text-verde")}>
-            {allStats.length === 0 ? "Aún no hay datos: haz una prueba para activar el motor adaptativo." : "Nessuna debolezza: stai andando alla grande! 🎉"}
+            {allStats.length === 0 ? u.progress.noData : u.progress.noWeak}
           </p>
         ) : (
           <div className="mt-4 space-y-2.5">
             {weaknesses.map((w) => (
               <div key={w.topic} className="flex items-center gap-3 rounded-2xl bg-rosso-tenue/60 px-4 py-3">
-                <span className="flex-1 text-sm font-semibold">{TOPIC_LABELS[w.topic] ?? w.topic}</span>
+                <span className="flex-1 text-sm font-semibold">{u.data.topics[w.topic] ?? w.topic}</span>
                 <div className="h-2 w-24 overflow-hidden rounded-full bg-inchiostro/10 dark:bg-inchiostro/20">
                   <div className="h-full rounded-full bg-rosso" style={{ width: `${Math.round(w.accuracy * 100)}%` }} />
                 </div>
@@ -246,8 +248,8 @@ export function ProgressView() {
       </section>
       ) : (
         <LockedFeatureCard
-          title="Motor adaptativo · analisi avanzate"
-          bullets={["Tus temas débiles detectados automáticamente", "Recomendaciones de práctica dirigida", "Disponible dal piano PRO"]}
+          title={u.progress.adaptiveLocked.title}
+          bullets={u.progress.adaptiveLocked.bullets}
           required="pro"
         />
       )}
@@ -255,9 +257,9 @@ export function ProgressView() {
       {/* logros (v6.0 · con progreso por categoría) */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
         <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-          <Award className="h-5 w-5 text-terracotta" aria-hidden="true" /> Logros · {achUnlocked}/{ACHIEVEMENTS.length}
+          <Award className="h-5 w-5 text-terracotta" aria-hidden="true" /> {u.progress.achTitle(achUnlocked, ACHIEVEMENTS.length)}
         </h2>
-        <p className="mt-1 text-sm text-muted-it">Insignias permanentes que crecen contigo: cada barra muestra cuánto te falta para el siguiente nivel.</p>
+        <p className="mt-1 text-sm text-muted-it">{u.progress.achIntro}</p>
         <div className="mt-5 space-y-6">
           {(Object.keys(ACHIEVEMENT_CATS) as AchievementCat[]).map((cat) => {
             const list = ACHIEVEMENTS.filter((a) => a.cat === cat);
@@ -266,7 +268,7 @@ export function ProgressView() {
               <div key={cat}>
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-muted-it">
-                    {ACHIEVEMENT_CATS[cat].emoji} {ACHIEVEMENT_CATS[cat].label}
+                    {ACHIEVEMENT_CATS[cat].emoji} {u.data.achCats[cat] ?? ACHIEVEMENT_CATS[cat].label}
                   </h3>
                   <span className="rounded-full bg-inchiostro/5 px-2 py-0.5 text-[10px] font-bold text-muted-it dark:bg-inchiostro/15">{unlocked}/{list.length}</span>
                 </div>
@@ -275,6 +277,7 @@ export function ProgressView() {
                     const cur = a.value(ach);
                     const done = cur >= a.target;
                     const pct = Math.min(100, Math.round((cur / a.target) * 100));
+                    const tr = u.data.achievements[a.id];
                     return (
                       <div
                         key={a.id}
@@ -286,15 +289,15 @@ export function ProgressView() {
                         <div className="flex items-start justify-between gap-2">
                           <p className={cn("text-2xl", !done && "opacity-40 grayscale")} aria-hidden="true">{a.emoji}</p>
                           {done ? (
-                            <span className="rounded-full bg-oro/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-oro-scuro dark:text-oro">sbloccato</span>
+                            <span className="rounded-full bg-oro/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-oro-scuro dark:text-oro">{u.progress.unlockedTag}</span>
                           ) : (
                             <span className="rounded-full bg-inchiostro/5 px-2 py-0.5 font-mono text-[9px] font-bold text-muted-it dark:bg-inchiostro/15">
                               {Math.min(cur, a.target).toLocaleString("es")}/{a.target.toLocaleString("es")}
                             </span>
                           )}
                         </div>
-                        <p className="mt-1.5 text-xs font-bold leading-tight">{a.name}</p>
-                        <p className="mt-0.5 text-[10px] leading-tight text-muted-it">{a.desc}</p>
+                        <p className="mt-1.5 text-xs font-bold leading-tight">{tr?.name ?? a.name}</p>
+                        <p className="mt-0.5 text-[10px] leading-tight text-muted-it">{tr?.desc ?? a.desc}</p>
                         {!done && (
                           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-inchiostro/10 dark:bg-inchiostro/20">
                             <div className="h-full rounded-full bg-gradient-to-r from-oro to-terracotta" style={{ width: `${pct}%` }} />
@@ -310,10 +313,11 @@ export function ProgressView() {
         </div>
         {/* insignias clásicas de certificados */}
         <div className="mt-6 border-t border-soft pt-5">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-it">🏆 Insignias clásicas</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-it">{u.progress.classicBadges}</h3>
           <div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:grid-cols-5">
             {BADGES.map((b) => {
               const earned = b.test(snapshot, 0);
+              const tr = u.data.badges[b.id];
               return (
                 <div
                   key={b.id}
@@ -323,8 +327,8 @@ export function ProgressView() {
                   )}
                 >
                   <p className="text-2xl" aria-hidden="true">{b.emoji}</p>
-                  <p className="mt-1.5 text-xs font-bold leading-tight">{b.name}</p>
-                  <p className="mt-0.5 text-[10px] leading-tight text-muted-it">{b.desc}</p>
+                  <p className="mt-1.5 text-xs font-bold leading-tight">{tr?.name ?? b.name}</p>
+                  <p className="mt-0.5 text-[10px] leading-tight text-muted-it">{tr?.desc ?? b.desc}</p>
                 </div>
               );
             })}
@@ -335,7 +339,7 @@ export function ProgressView() {
       {/* historial */}
       {quizHistory.length > 0 && (
         <section className="rounded-3xl border border-soft bg-surface p-6">
-          <h2 className="font-display text-xl font-semibold">Historial de pruebas</h2>
+          <h2 className="font-display text-xl font-semibold">{u.progress.historyTitle}</h2>
           <div className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1 scrollbar-thin">
             {quizHistory.slice(0, 15).map((q) => {
               const pct = Math.round((q.score / Math.max(1, q.total)) * 100);

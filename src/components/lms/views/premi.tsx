@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useLms } from "@/lib/lms/store";
 import { WHEEL_PRIZES, generateMonthlyChallenge, monthKeyFor, monthlyTemplate, MONTHLY_REWARD_COINS } from "@/lib/lms/quests";
 import { FortuneWheel, SEG } from "@/components/lms/fortune-wheel";
+import { useUi } from "@/lib/lms/ui";
 
 export const SHOP_TITLES: { id: "titolo-storico" | "titolo-cicerone" | "titolo-poeta" | "titolo-navigatore"; emoji: string; name: string; desc: string; price: number }[] = [
   { id: "titolo-storico", emoji: "🏛️", name: "Storico", desc: "Per chi ha letto la storia d'Italia e del mondo", price: 150 },
@@ -23,6 +24,7 @@ export const SHOP_TITLES: { id: "titolo-storico" | "titolo-cicerone" | "titolo-p
 ];
 
 export function PremiView() {
+  const u = useUi();
   const coins = useLms((s) => s.coins);
   const xpBoostUntil = useLms((s) => s.xpBoostUntil);
   const lastWheelDate = useLms((s) => s.lastWheelDate);
@@ -39,6 +41,10 @@ export function PremiView() {
 
   const today = new Date().toISOString().slice(0, 10);
   const spunToday = lastWheelDate === today;
+
+  const titleTr = (id: string) => u.data.shopTitles[id];
+  const activeTitleDef = SHOP_TITLES.find((t) => t.id === activeTitle);
+  const wheelLabel = (p: { id: string; label: string }) => u.data.wheel[p.id] ?? p.label;
 
   /* ruota */
   const [rotation, setRotation] = useState(0);
@@ -58,7 +64,7 @@ export function PremiView() {
     setRotation((r) => r + target);
     setTimeout(() => {
       setSpinning(false);
-      setPrizeMsg(`${res.prize.emoji} ${res.prize.label}!`);
+      setPrizeMsg(u.premi.prize(res.prize.emoji, wheelLabel(res.prize)));
       setWonKey((k) => k + 1);
     }, 4100);
   };
@@ -74,10 +80,11 @@ export function PremiView() {
   const boostMins = Math.floor(boostLeft / 60000);
   const boostSecs = Math.floor((boostLeft % 60000) / 1000);
 
-  /* sfida del mese */
+  /* sfida del mes */
   const mk = monthKeyFor();
   const challenge = useMemo(() => generateMonthlyChallenge(mk), [mk]);
   const tpl = monthlyTemplate(challenge.type);
+  const monthLabel = u.data.month[challenge.type] ?? tpl.label;
   const progress = monthKey === mk ? (monthCounters[challenge.type] ?? 0) : 0;
   const done = progress >= challenge.target;
   const daysLeft = useMemo(() => {
@@ -88,13 +95,13 @@ export function PremiView() {
 
   const buy = (id: Parameters<typeof buyShopItem>[0], name: string, price: number) => {
     const res = buyShopItem(id);
-    setMsg(res.ok ? { ok: true, text: `${name} acquistato! −${price} 🪙` } : { ok: false, text: res.reason ?? "Acquisto non riuscito" });
+    setMsg(res.ok ? { ok: true, text: u.premi.bought(name, price) } : { ok: false, text: res.reason ?? u.premi.buyFail });
     setTimeout(() => setMsg(null), 3200);
   };
 
   const claim = () => {
     const res = claimMonthlyChallenge();
-    setClaimMsg(res.ok ? `Premio riscattato: +${res.coins} 🪙 e +${res.xp} XP!` : "Non ancora completata");
+    setClaimMsg(res.ok ? u.premi.claimMsg(res.coins, res.xp) : u.premi.notYet);
   };
 
   return (
@@ -104,21 +111,21 @@ export function PremiView() {
         <div className="flex items-center gap-3">
           <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-oro-tenue text-3xl shadow-inner">🪙</span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-it">Le tue monete</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-it">{u.premi.balance}</p>
             <p className="font-display text-3xl font-bold text-oro-scuro dark:text-oro">{coins.toLocaleString()}</p>
           </div>
         </div>
         {boostActive && (
           <span className="inline-flex items-center gap-2 rounded-full border-2 border-verde/50 bg-verde-tenue px-4 py-2 text-sm font-bold text-verde-scuro dark:text-verde">
-            <Rocket className="h-4 w-4" aria-hidden="true" /> Boost 2× · {boostMins}:{String(boostSecs).padStart(2, "0")}
+            <Rocket className="h-4 w-4" aria-hidden="true" /> {u.premi.boost(boostMins, boostSecs)}
           </span>
         )}
         <span className="inline-flex items-center gap-2 rounded-full border-2 border-azzurro/40 bg-azzurro/10 px-4 py-2 text-sm font-bold text-azzurro-scuro dark:text-azzurro">
-          <Snowflake className="h-4 w-4" aria-hidden="true" /> {streakFreezes}/2 congelamenti
+          <Snowflake className="h-4 w-4" aria-hidden="true" /> {u.premi.freezes(streakFreezes, 2)}
         </span>
-        {activeTitle && (
+        {activeTitle && activeTitleDef && (
           <span className="inline-flex items-center gap-2 rounded-full border-2 border-terracotta/40 bg-terracotta/10 px-4 py-2 text-sm font-bold text-terracotta-scuro dark:text-terracotta">
-            <Crown className="h-4 w-4" aria-hidden="true" /> {SHOP_TITLES.find((t) => t.id === activeTitle)?.emoji} {SHOP_TITLES.find((t) => t.id === activeTitle)?.name}
+            <Crown className="h-4 w-4" aria-hidden="true" /> {activeTitleDef.emoji} {titleTr(activeTitleDef.id)?.name ?? activeTitleDef.name}
           </span>
         )}
       </section>
@@ -133,10 +140,10 @@ export function PremiView() {
         {/* ── ruota ── */}
         <section className="rounded-3xl border border-soft bg-surface p-6">
           <h2 className="flex items-center gap-2 font-display text-2xl font-semibold">
-            <Sparkles className="h-5 w-5 text-oro" aria-hidden="true" /> Ruota della fortuna
+            <Sparkles className="h-5 w-5 text-oro" aria-hidden="true" /> {u.premi.wheelTitle}
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
-            Un giro al giorno: monete, XP, congelamenti ❄️ y boost 2×. Vuelve mañana para girar otra vez.
+            {u.premi.wheelDesc}
           </p>
 
           <div className="mt-6 flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:justify-center">
@@ -159,7 +166,7 @@ export function PremiView() {
                 )}
               >
                 <Gift className="h-4 w-4" aria-hidden="true" />
-                {spunToday ? "Torna domani" : spinning ? "Gira..." : "Gira la ruota!"}
+                {spunToday ? u.premi.tomorrow : spinning ? u.premi.spinning : u.premi.spin}
               </button>
               {prizeMsg && <motion.p initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="font-display text-lg font-bold text-oro-scuro dark:text-oro">{prizeMsg}</motion.p>}
               <div className="flex max-w-[15rem] flex-wrap justify-center gap-1.5">
@@ -168,7 +175,7 @@ export function PremiView() {
                     key={p.id}
                     className="inline-flex items-center gap-1 rounded-full border border-soft bg-crema-scura/70 px-2.5 py-1 text-[11px] font-semibold text-muted-it dark:bg-inchiostro/10"
                   >
-                    <span aria-hidden="true">{p.emoji}</span> {p.label}
+                    <span aria-hidden="true">{p.emoji}</span> {wheelLabel(p)}
                   </span>
                 ))}
               </div>
@@ -176,18 +183,18 @@ export function PremiView() {
           </div>
         </section>
 
-        {/* ── sfida del mese ── */}
+        {/* ── sfida del mes ── */}
         <section className="rounded-3xl border border-soft bg-surface p-6">
           <h2 className="flex items-center gap-2 font-display text-2xl font-semibold">
-            <Trophy className="h-5 w-5 text-oro" aria-hidden="true" /> Sfida del mese · {mk}
+            <Trophy className="h-5 w-5 text-oro" aria-hidden="true" /> {u.premi.monthTitle(mk)}
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
-            La misma sfida para todos, generada por el mes. Complétala antes de que acabe para reclamar el premio.
+            {u.premi.monthDesc}
           </p>
 
           <div className="mt-5 rounded-2xl bg-crema-scura p-5 dark:bg-inchiostro/10">
             <p className="font-display text-lg font-semibold">
-              {tpl.emoji} {tpl.label(challenge.target)}
+              {tpl.emoji} {monthLabel(challenge.target)}
             </p>
             <div className="mt-3 h-3.5 overflow-hidden rounded-full bg-inchiostro/10 dark:bg-inchiostro/25">
               <div
@@ -196,7 +203,7 @@ export function PremiView() {
               />
             </div>
             <p className="mt-2 text-sm font-semibold text-muted-it">
-              {Math.min(progress, challenge.target).toLocaleString()} / {challenge.target.toLocaleString()} · quedan {daysLeft} giorni
+              {u.premi.progressOf(Math.min(progress, challenge.target).toLocaleString(), challenge.target.toLocaleString())} · {u.premi.daysLeft(daysLeft)}
             </p>
             <button
               onClick={claim}
@@ -206,7 +213,7 @@ export function PremiView() {
                 monthClaimed ? "cursor-default bg-inchiostro/15 text-muted-it" : done ? "bg-oro text-white shadow-oro/25 hover:scale-[1.02]" : "cursor-not-allowed bg-inchiostro/10 text-muted-it"
               )}
             >
-              {monthClaimed ? <><Check className="h-4 w-4" aria-hidden="true" /> Premio riscattato</> : done ? "Riscatta il premio!" : `Completa la sfida · +${MONTHLY_REWARD_COINS} 🪙 +${tpl.xpReward} XP`}
+              {monthClaimed ? <><Check className="h-4 w-4" aria-hidden="true" /> {u.premi.claimed}</> : done ? u.premi.claim : u.premi.completeFor(MONTHLY_REWARD_COINS, tpl.xpReward)}
             </button>
             {claimMsg && <p className="mt-2 text-center text-sm font-semibold text-oro-scuro dark:text-oro">{claimMsg}</p>}
           </div>
@@ -216,48 +223,51 @@ export function PremiView() {
       {/* ── negozio ── */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
         <h2 className="flex items-center gap-2 font-display text-2xl font-semibold">
-          <Coins className="h-5 w-5 text-oro" aria-hidden="true" /> Il negozio
+          <Coins className="h-5 w-5 text-oro" aria-hidden="true" /> {u.premi.shopTitle}
         </h2>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
-          ¿Cómo ganar monete? Completa misiones diarias (+10 cada una, +25 las 3), termina letture con quiz (+20), gira la ruota y completa la sfida del mese (+300).
+          {u.premi.shopDesc}
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <ShopCard
             emoji="❄️"
-            name="Congelamento racha"
-            desc="Protege tu racha cuando falte un día. Máx. 2 en reserva."
+            name={u.premi.freezeName}
+            desc={u.premi.freezeDesc}
             price={80}
             coins={coins}
             disabled={streakFreezes >= 2}
-            disabledText="Riserva piena (2/2)"
-            onBuy={() => buy("freeze", "Congelamento", 80)}
+            disabledText={u.premi.freezeFull}
+            onBuy={() => buy("freeze", u.premi.freezeBuyName, 80)}
           />
           <ShopCard
             emoji="🚀"
-            name="Boost XP 2× (15 min)"
-            desc="Toda la XP que ganes en 15 minutos cuenta doble."
+            name={u.premi.boostName}
+            desc={u.premi.boostDesc}
             price={60}
             coins={coins}
             disabled={false}
-            onBuy={() => buy("boost", "Boost XP", 60)}
+            onBuy={() => buy("boost", u.premi.boostBuyName, 60)}
           />
-          {SHOP_TITLES.map((t) => (
-            <ShopCard
-              key={t.id}
-              emoji={t.emoji}
-              name={`Titolo: ${t.name}`}
-              desc={t.desc}
-              price={t.price}
-              coins={coins}
-              disabled={ownedTitles.includes(t.id)}
-              disabledText="Già tuo — equipalo"
-              onBuy={() => buy(t.id, `Titolo ${t.name}`, t.price)}
-              owned={ownedTitles.includes(t.id)}
-              equipped={activeTitle === t.id}
-              onEquip={() => setActiveTitle(activeTitle === t.id ? null : t.id)}
-            />
-          ))}
+          {SHOP_TITLES.map((t) => {
+            const tr = titleTr(t.id);
+            return (
+              <ShopCard
+                key={t.id}
+                emoji={t.emoji}
+                name={u.premi.titleCard(tr?.name ?? t.name)}
+                desc={tr?.desc ?? t.desc}
+                price={t.price}
+                coins={coins}
+                disabled={ownedTitles.includes(t.id)}
+                disabledText={u.premi.alreadyYours}
+                onBuy={() => buy(t.id, u.premi.titleBuy(tr?.name ?? t.name), t.price)}
+                owned={ownedTitles.includes(t.id)}
+                equipped={activeTitle === t.id}
+                onEquip={() => setActiveTitle(activeTitle === t.id ? null : t.id)}
+              />
+            );
+          })}
         </div>
       </section>
     </div>
@@ -269,6 +279,7 @@ function ShopCard({ emoji, name, desc, price, coins, disabled, disabledText, onB
   disabled: boolean; disabledText?: string; onBuy: () => void;
   owned?: boolean; equipped?: boolean; onEquip?: () => void;
 }) {
+  const u = useUi();
   const cannotAfford = coins < price;
   return (
     <div className={cn("rounded-3xl border-2 p-5 transition-all", equipped ? "border-verde/60 bg-verde-tenue" : "border-soft bg-surface")}>
@@ -285,7 +296,7 @@ function ShopCard({ emoji, name, desc, price, coins, disabled, disabledText, onB
           onClick={onEquip}
           className={cn("mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition-all", equipped ? "bg-verde text-white" : "border-2 border-verde/40 bg-verde-tenue text-verde-scuro hover:scale-105 dark:text-verde")}
         >
-          {equipped ? <><Check className="h-4 w-4" aria-hidden="true" /> Equipato</> : "Equipa il titolo"}
+          {equipped ? <><Check className="h-4 w-4" aria-hidden="true" /> {u.premi.equipped}</> : u.premi.equip}
         </button>
       ) : (
         <button
@@ -296,7 +307,7 @@ function ShopCard({ emoji, name, desc, price, coins, disabled, disabledText, onB
             disabled ? "cursor-not-allowed bg-inchiostro/10 text-muted-it" : cannotAfford ? "cursor-not-allowed bg-inchiostro/10 text-muted-it" : "bg-verde text-white shadow-md shadow-verde/25 hover:scale-105"
           )}
         >
-          {disabled ? disabledText ?? "Non disponibile" : cannotAfford ? `Ti servono ${price - coins} 🪙` : "Compra"}
+          {disabled ? disabledText ?? u.premi.unavailable : cannotAfford ? u.premi.need(price - coins) : u.premi.buy}
         </button>
       )}
     </div>

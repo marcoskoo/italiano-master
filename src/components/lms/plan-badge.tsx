@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Crown, Gem, Lock, Sparkles, Sprout, Zap } from "lucide-react";
 import { PLANS, plansDisabled, type PlanId } from "@/lib/lms/plans";
 import { useLms } from "@/lib/lms/store";
+import { useUi } from "@/lib/lms/ui";
 import { cn } from "@/lib/utils";
 
 /* ── Componentes de plan: chip, overlays de bloqueo, banner ───────── */
@@ -73,6 +74,7 @@ export function LockedOverlay({
   desc?: string;
   className?: string;
 }) {
+  const u = useUi();
   const navigate = useLms((s) => s.navigate);
   if (plansDisabled()) return null;
   return (
@@ -95,7 +97,7 @@ export function LockedOverlay({
         className="mt-1 inline-flex min-h-10 items-center gap-1.5 rounded-xl plan-gold-bg px-4 py-2 text-xs font-bold text-white shadow-md shadow-oro/30 transition-all hover:scale-105"
       >
         <Crown className="h-3.5 w-3.5" aria-hidden="true" />
-        Sblocca con {PLANS[required].name}
+        {u.plan.unlockWith(PLANS[required].name)}
       </button>
     </div>
   );
@@ -111,6 +113,7 @@ export function LockedFeatureCard({
   bullets: string[];
   required?: PlanId;
 }) {
+  const u = useUi();
   const navigate = useLms((s) => s.navigate);
   if (plansDisabled()) return null;
   return (
@@ -130,7 +133,7 @@ export function LockedFeatureCard({
         className="mt-2.5 inline-flex min-h-11 items-center gap-1.5 rounded-xl plan-gold-bg px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-oro/30 transition-all hover:scale-105"
       >
         <Crown className="h-4 w-4" aria-hidden="true" />
-        Disponibile dal piano {PLANS[required].name}
+        {u.plan.availableFrom(PLANS[required].name)}
       </button>
     </div>
   );
@@ -138,6 +141,7 @@ export function LockedFeatureCard({
 
 /** Banner de upselling para el Home (usuarios FREE). */
 export function PremiumBanner() {
+  const u = useUi();
   const navigate = useLms((s) => s.navigate);
   return (
     <motion.section
@@ -148,23 +152,22 @@ export function PremiumBanner() {
       <span aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 text-[120px] leading-none opacity-15 animate-crown-float">👑</span>
       <div className="relative">
         <p className="inline-flex items-center gap-1.5 rounded-full bg-inchiostro/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-inchiostro/70">
-          <Sparkles className="h-3 w-3" aria-hidden="true" /> Solo per pochi
+          <Sparkles className="h-3 w-3" aria-hidden="true" /> {u.plan.bannerChip}
         </p>
         <h2 className="mt-3 font-display text-2xl font-bold leading-tight text-inchiostro sm:text-3xl">
-          Sblocca <span className="font-extrabold">PRO · PREMIUM · <span className="italic">PLATINUM</span></span>
+          {u.plan.bannerTitleA} <span className="font-extrabold">PRO · PREMIUM · <span className="italic">PLATINUM</span></span>
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-inchiostro/75">
-          Corsi B1–C2, tutor IA illimitato, analisi avanzate, contenuti esclusivi, certificati
-          verificati e piano di studio settimanale. La versione completa di Italiano Master ti aspetta.
+          {u.plan.bannerDesc}
         </p>
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <button
             onClick={() => navigate("piani")}
             className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-inchiostro px-6 py-3 text-sm font-bold text-crema shadow-lg transition-all hover:scale-[1.03]"
           >
-            <Crown className="h-4 w-4 text-oro" aria-hidden="true" /> Scopri i piani
+            <Crown className="h-4 w-4 text-oro" aria-hidden="true" /> {u.plan.bannerCta}
           </button>
-          <span className="text-xs font-semibold text-inchiostro/60">A partire da 7,99 €/mese · disdici quando vuoi</span>
+          <span className="text-xs font-semibold text-inchiostro/60">{u.plan.bannerFrom}</span>
         </div>
       </div>
     </motion.section>
