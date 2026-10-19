@@ -291,7 +291,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   </div>
                 ))}
               </div>
-              <p className="text-xs font-semibold text-muted-it">💡 Consejo: escucha dos veces sin traducción, lee después.</p>
+              <p className="text-xs font-semibold text-muted-it">{u.unit.tipListen}</p>
               <StepDone done={done("ascolto")} onDone={() => mark("ascolto")} label={u.unit.doneAscolto} ui={u} />
             </div>
           )}
@@ -299,7 +299,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           {/* 3 · COMPRENSIONE */}
           {stepId === "comprensione" && (
             <div className="space-y-5">
-              <SectionTitle icon={<ListChecks className="h-5 w-5 text-rosso" aria-hidden="true" />} n={3} title="Comprensione · ¿Qué has entendido?" />
+              <SectionTitle icon={<ListChecks className="h-5 w-5 text-rosso" aria-hidden="true" />} n={3} title={u.unit.tComprensione} />
               <CbQuiz
                 items={unit.comprehension}
                 onPass={() => { if (!done("comprensione")) mark("comprensione"); }}
@@ -310,8 +310,8 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           {/* 4 · VOCABOLARIO (chunks) */}
           {stepId === "vocabolario" && (
             <div className="space-y-5">
-              <SectionTitle icon={<Library className="h-5 w-5 text-verde-scuro" aria-hidden="true" />} n={4} title="Vocabolario · Bloques listos para usar" />
-              <p className="text-sm text-muted-it">No son palabras aisladas: son <strong>chunks</strong> — bloques enteros que salen solos cuando los necesitas. Escúchalos y repítelos en voz alta.</p>
+              <SectionTitle icon={<Library className="h-5 w-5 text-verde-scuro" aria-hidden="true" />} n={4} title={u.unit.tVocabolario} />
+              <p className="text-sm text-muted-it">{u.unit.chunksNoteA}<strong>chunks</strong>{u.unit.chunksNoteB}</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {unit.chunks.map((c, i) => (
                   <div key={i} className="flex items-center gap-3 rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
@@ -330,8 +330,8 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           {/* 5 · GRAMMATICA (inductiva) */}
           {stepId === "grammatica" && (
             <div className="space-y-5">
-              <SectionTitle icon={<BookOpen className="h-5 w-5 text-oro" aria-hidden="true" />} n={5} title={`Grammatica · ${unit.grammar.focus}`} />
-              <p className="text-sm font-semibold text-muted-it">Primero observa los ejemplos. La regla vendrá después — así se aprende de verdad.</p>
+              <SectionTitle icon={<BookOpen className="h-5 w-5 text-oro" aria-hidden="true" />} n={5} title={u.unit.tGrammatica(unit.grammar.focus)} />
+              <p className="text-sm font-semibold text-muted-it">{u.unit.observe}</p>
               <div className="space-y-3">
                 {unit.grammar.inductive.map((ex, i) => (
                   <div key={i} className="flex items-center gap-3 rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
@@ -344,13 +344,13 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                 ))}
               </div>
               <div className="space-y-3 rounded-2xl bg-oro-tenue/40 p-5">
-                <h4 className="font-display font-semibold">La regola</h4>
+                <h4 className="font-display font-semibold">{u.unit.theRule}</h4>
                 {unit.grammar.rule.map((r, i) => <p key={i} className="leading-relaxed">{r}</p>)}
               </div>
               {/* v9.15 · spiegazione completa: formación, uso, trampas del español */}
               {deep && (
                 <div className="space-y-3">
-                  <h4 className="font-display text-lg font-semibold">📖 Spiegazione completa</h4>
+                  <h4 className="font-display text-lg font-semibold">{u.unit.fullExplain}</h4>
                   {deep.sezioni.map((s, i) => (
                     <div key={i} className="rounded-2xl border border-soft bg-crema p-5 dark:bg-inchiostro/5">
                       <h5 className="font-mono text-[11px] font-bold uppercase tracking-wider text-verde-scuro dark:text-verde">{s.t}</h5>
@@ -362,7 +362,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
               {/* v9.15 · altri esempi con audio y hover de traducción */}
               {deep && deep.esempi.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="font-display text-lg font-semibold">💡 Altri esempi</h4>
+                  <h4 className="font-display text-lg font-semibold">{u.unit.moreExamples}</h4>
                   {deep.esempi.map((ex, i) => (
                     <div key={i} className="flex items-center gap-3 rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
                       <AudioButton text={ex.it} size="md" lang={ulang} />
@@ -391,7 +391,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   onClick={() => navigate("grammatica", { grammarId: unit.grammar!.topicId } as never)}
                   className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-verde/40 bg-verde-tenue px-4 py-2.5 text-xs font-bold transition-all hover:border-verde"
                 >
-                  <ExternalLink className="h-4 w-4" aria-hidden="true" /> Estudia el tema completo en Grammatica
+                  <ExternalLink className="h-4 w-4" aria-hidden="true" /> {u.unit.fullTopic}
                 </button>
               )}
             </div>
@@ -400,7 +400,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           {/* 6 · PRONUNCIA */}
           {stepId === "pronuncia" && (
             <div className="space-y-5">
-              <SectionTitle icon={<Volume2 className="h-5 w-5 text-rosso" aria-hidden="true" />} n={6} title={`Pronuncia · ${unit.pronunciation.focus}`} />
+              <SectionTitle icon={<Volume2 className="h-5 w-5 text-rosso" aria-hidden="true" />} n={6} title={u.unit.tPronuncia(unit.pronunciation.focus)} />
               <div className="rounded-2xl bg-crema-scura p-5 leading-relaxed dark:bg-inchiostro/10">{unit.pronunciation.tip}</div>
               <div className="space-y-3">
                 {unit.pronunciation.pairs.map((p, i) => (
@@ -425,12 +425,12 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           {/* 7 · PARLATO */}
           {stepId === "parlato" && (
             <div className="space-y-5">
-              <SectionTitle icon={<Mic2 className="h-5 w-5 text-verde" aria-hidden="true" />} n={7} title="Parlato · De la precisión a la espontaneidad" />
+              <SectionTitle icon={<Mic2 className="h-5 w-5 text-verde" aria-hidden="true" />} n={7} title={u.unit.tParlato} />
               <div className="space-y-3">
                 {unit.speaking.steps.map((s, i) => (
                   <div key={i} className="rounded-2xl border-l-4 border-verde bg-crema p-4 dark:bg-inchiostro/5">
                     <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-verde-scuro dark:text-verde">
-                      {i + 1} · {s.kind === "controllato" ? "Controlado" : s.kind === "semi" ? "Semicontrolado" : s.kind === "comunicativo" ? "Comunicativo" : "Tarea auténtica"}
+                      {i + 1} · {s.kind === "controllato" ? u.unit.kindCtrl : s.kind === "semi" ? u.unit.kindSemi : s.kind === "comunicativo" ? u.unit.kindComm : u.unit.kindAuth}
                     </span>
                     <p className="mt-1 leading-relaxed">{s.task}</p>
                   </div>
@@ -443,7 +443,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           {/* 8 · LETTURA */}
           {stepId === "lettura" && (
             <div className="space-y-5">
-              <SectionTitle icon={<BookOpen className="h-5 w-5 text-oro" aria-hidden="true" />} n={8} title="Lettura · Leer en contexto" />
+              <SectionTitle icon={<BookOpen className="h-5 w-5 text-oro" aria-hidden="true" />} n={8} title={u.unit.tLettura} />
               {/* v9.13 · 3 letture tematiche (meditazione/spiritualità/qui-ora/relax) con 7 strategie */}
               <MindReadings unitId={unit.id} lang={ulang} />
               {/* v9.12 · 3 letture cloze (inferenza lessicale contestuale) */}
