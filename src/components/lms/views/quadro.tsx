@@ -20,6 +20,7 @@ import { LETTURE } from "@/lib/lms/letture";
 import { MIND_LIBRARY, mindLevel } from "@/lib/lms/extra/readings-mind";
 import { CB_CLOZE } from "@/lib/lms/extra/readings-cloze";
 import { useLms } from "@/lib/lms/store";
+import { useUi } from "@/lib/lms/ui";
 import { cn } from "@/lib/utils";
 import type { CefrLevel } from "@/lib/lms/types";
 
@@ -51,6 +52,8 @@ export function QuadroView() {
   const userLevel = useLms((s) => s.level);
   /* v9.17 · lengua activa: cobertura, certificaciones y griglia propias */
   const activeLang = useLms((s) => s.activeLang) as LangCode;
+  /* v9.18 · chrome del Quadro en la lengua de estudio */
+  const u = useUi();
   const langInfo = LANGS[activeLang];
   const CERTS = CERTS_BY_LANG[activeLang];
   const cefrSelf = useLms((s) => s.cefrSelf);
@@ -120,23 +123,20 @@ export function QuadroView() {
               <Landmark className="h-6 w-6" aria-hidden="true" />
             </span>
             <div>
-              <h1 className="font-display text-2xl font-bold sm:text-3xl">Quadro Comune Europeo di Riferimento</h1>
-              <p className="text-sm font-semibold text-white/85">MCER · CEFR — el estándar internacional de las lenguas</p>
+              <h1 className="font-display text-2xl font-bold sm:text-3xl">{u.quadro.heroTitle}</h1>
+              <p className="text-sm font-semibold text-white/85">{u.quadro.heroSub}</p>
             </div>
           </div>
           <p className="mt-4 max-w-3xl leading-relaxed text-white/95">
-            Publicado por el <strong>Consejo de Europa</strong> (2001, actualizado en el <em>Companion Volume 2020</em>), el QCER
-            describe <strong>qué puede hacer una persona con la lengua</strong> en 6 niveles: <strong>A1 · A2 · B1 · B2 · C1 · C2</strong>.
-            Es la referencia de universidades, academias, editoriales y certificaciones en todo el mundo —
-            y es el estándar al que está alineada toda esta plataforma.
+            {u.quadro.heroDesc}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {[
-              `${coverage.reduce((n, c) => n + c.units, 0)} unidades comunicativas en ${langInfo.country}`,
-              activeLang === "it" ? "8.000+ lemas graduados por nivel" : `${covVocabCount.toLocaleString("it-IT")} lemas del diccionario ${langInfo.name.toLowerCase()}`,
-              activeLang === "it" ? "75 temi di grammatica + spiegazioni approfondite" : `${Object.keys(langContent(activeLang)?.deep ?? {}).length} unidades con gramática amplia`,
-              `${coverage.reduce((n, c) => n + c.mind + c.cloze + c.letture, 0)} lecturas graduadas`,
-              `${CERTS[0]?.name ?? ""} · certificación oficial de ${langInfo.country}`,
+              u.quadro.chipUnits(coverage.reduce((n, c) => n + c.units, 0), u.common.country),
+              activeLang === "it" ? u.quadro.chipVocabIt : u.quadro.chipVocab(covVocabCount.toLocaleString("en-US"), u.common.studyLangName),
+              activeLang === "it" ? u.quadro.chipGrammarIt : u.quadro.chipGrammar(Object.keys(langContent(activeLang)?.deep ?? {}).length),
+              u.quadro.chipReadings(coverage.reduce((n, c) => n + c.mind + c.cloze + c.letture, 0)),
+              u.quadro.chipCert(CERTS[0]?.name ?? "", u.common.country),
             ].map((t) => (
               <span key={t} className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold">{t}</span>
             ))}
@@ -147,60 +147,61 @@ export function QuadroView() {
       {/* ═══ 2 · Il tuo livello ═══ */}
       <section className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold">
-          <Target className="h-5 w-5 text-verde" aria-hidden="true" /> Il tuo livello
+          <Target className="h-5 w-5 text-verde" aria-hidden="true" /> {u.quadro.yourLevel}
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <div className="rounded-2xl bg-crema p-4 dark:bg-inchiostro/5">
-            <p className="text-xs font-bold uppercase tracking-wide text-muted-it">Nivel del test de ubicación</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-it">{u.quadro.placementLevel}</p>
             <p className="mt-2 font-display text-3xl font-bold">
               {userLevel ? <LevelChip level={userLevel} className="text-sm" /> : <span className="text-muted-it">—</span>}
             </p>
             <p className="mt-2 text-xs text-muted-it">
               {userLevel
-                ? `${CEFR_GLOBAL_SCALE[userLevel].userLabel} · ${(langContent(activeLang)?.courses ?? CAMBRIDGE).find((c) => c.level === userLevel)?.hours ?? 0} h de recorrido guiado`
-                : "Aún no has hecho el test de nivel"}
+                ? u.quadro.guidedHours(CEFR_GLOBAL_SCALE[userLevel].userLabel, (langContent(activeLang)?.courses ?? CAMBRIDGE).find((c) => c.level === userLevel)?.hours ?? 0)
+                : u.quadro.noTestYet}
             </p>
+            {activeLang === "it" && (
             <button
               onClick={() => navigate("test")}
               className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-verde px-4 py-2 text-xs font-bold text-white transition-all hover:scale-[1.03]"
             >
-              <Compass className="h-3.5 w-3.5" aria-hidden="true" /> {userLevel ? "Repetir el test" : "Hacer el test de nivel"}
+              <Compass className="h-3.5 w-3.5" aria-hidden="true" /> {userLevel ? u.quadro.retakeTest : u.quadro.takeTest}
             </button>
+            )}
           </div>
           <div className="rounded-2xl bg-crema p-4 dark:bg-inchiostro/5">
-            <p className="text-xs font-bold uppercase tracking-wide text-muted-it">Autoevaluación QCER (griglia)</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-it">{u.quadro.selfTitle}</p>
             <p className="mt-2 font-display text-3xl font-bold">
               {suggested ? <LevelChip level={suggested} className="text-sm" /> : <span className="text-muted-it">—</span>}
             </p>
             <p className="mt-2 text-xs text-muted-it">
               {filled.length === 0
-                ? "Marca tu nivel en las 5 destrezas abajo"
-                : `${filled.length}/5 destrezas marcadas${suggested ? "" : " (mínimo 3 para sugerir nivel)"}`}
+                ? u.quadro.markSkills
+                : `${u.quadro.skillsMarked(filled.length)}${suggested ? "" : u.quadro.skillsMin3}`}
             </p>
             <button
               onClick={() => document.getElementById("cefr-griglia")?.scrollIntoView({ behavior: "smooth" })}
               className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-xl border-2 border-verde/40 px-4 py-2 text-xs font-bold text-verde-scuro transition-all hover:bg-verde-tenue dark:text-verde"
             >
-              <ListChecks className="h-3.5 w-3.5" aria-hidden="true" /> Ir a la griglia
+              <ListChecks className="h-3.5 w-3.5" aria-hidden="true" /> {u.quadro.goToGrid}
             </button>
           </div>
           <div className="rounded-2xl bg-crema p-4 dark:bg-inchiostro/5">
-            <p className="text-xs font-bold uppercase tracking-wide text-muted-it">Obiettivi can-do confirmados</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-it">{u.quadro.candoTitle}</p>
             <p className="mt-2 font-display text-3xl font-bold">{totalCandoDone}</p>
             <p className="mt-2 text-xs text-muted-it">
-              Evidencias «io posso…» marcadas al cerrar las unidades — el ciclo can-do del QCER
+              {u.quadro.candoSub}
             </p>
           </div>
         </div>
         {userLevel && suggested && (
           <p className="mt-4 rounded-2xl bg-verde-tenue p-4 text-sm leading-relaxed">
-            <strong>Confronto:</strong> tu test te ubicó en <strong>{userLevel}</strong> y tu autoevaluación sugiere{" "}
-            <strong>{suggested}</strong>.{" "}
+            {u.quadro.compareIntro(userLevel, suggested)}{" "}
             {CEFR_LEVELS.indexOf(suggested) > CEFR_LEVELS.indexOf(userLevel)
-              ? "Si la griglia te sale superior, valida con el test de nivel y las unidades del nivel superior antes de saltar."
+              ? u.quadro.compareUp
               : CEFR_LEVELS.indexOf(suggested) < CEFR_LEVELS.indexOf(userLevel)
-                ? "La autoevaluación suele ser conservadora: usa las unidades del nivel como evidencia real."
-                : "Test y autoevaluación coinciden: diagnóstico sólido."}
+                ? u.quadro.compareDown
+                : u.quadro.compareEqual}
           </p>
         )}
       </section>
@@ -210,11 +211,10 @@ export function QuadroView() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="flex items-center gap-2 font-display text-xl font-bold">
-              <CheckCircle2 className="h-5 w-5 text-verde" aria-hidden="true" /> Griglia di autovalutazione
+              <CheckCircle2 className="h-5 w-5 text-verde" aria-hidden="true" /> {u.quadro.gridTitle}
             </h2>
             <p className="mt-1 max-w-2xl text-sm text-muted-it">
-              La herramienta oficial del <em>Portfolio europeo de lenguas</em>: lee cada descriptor y marca el nivel más alto que
-              puedes hacer <strong>con comodidad real</strong> (no el que aspiras). Se guarda automáticamente.
+              {u.quadro.gridIntro}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -228,7 +228,7 @@ export function QuadroView() {
               onClick={() => resetCefrSelf()}
               className="inline-flex items-center gap-1.5 rounded-xl border-2 border-soft px-3 py-1.5 text-xs font-bold transition-all hover:border-rosso/40 hover:text-rosso"
             >
-              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /> Azzera
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /> {u.quadro.clear}
             </button>
           </div>
         </div>
@@ -267,7 +267,7 @@ export function QuadroView() {
                     </motion.p>
                   ) : (
                     <p className="p-1 text-xs italic text-muted-it">
-                      Marca el nivel que describes con facilidad — aparecerá aquí el descriptor oficial.
+                      {u.quadro.markDescriptor}
                     </p>
                   )}
                 </div>
@@ -283,19 +283,19 @@ export function QuadroView() {
             className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-verde bg-verde-tenue p-5"
           >
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-muted-it">Resultado de la griglia (mediana conservadora)</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-it">{u.quadro.gridResult}</p>
               <p className="mt-1 font-display text-2xl font-bold">
-                Nivel sugerido: <LevelChip level={suggested} className="mx-1 align-middle" /> — {CEFR_GLOBAL_SCALE[suggested].userLabel}
+                {u.quadro.suggested} <LevelChip level={suggested} className="mx-1 align-middle" /> — {CEFR_GLOBAL_SCALE[suggested].userLabel}
               </p>
               <p className="mt-1 text-xs text-muted-it">
-                La autoevaluación es orientativa: confírmala con el test de nivel y con tu progreso real en las unidades.
+                {u.quadro.suggestedNote}
               </p>
             </div>
             <button
               onClick={() => navigate("cursos", { level: suggested })}
               className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-[1.03]"
             >
-              <GraduationCap className="h-4 w-4" aria-hidden="true" /> Continuar en {suggested}
+              <GraduationCap className="h-4 w-4" aria-hidden="true" /> {u.quadro.continueAt(suggested)}
             </button>
           </motion.div>
         )}
@@ -304,10 +304,10 @@ export function QuadroView() {
       {/* ═══ 4 · Scala globale ufficiale ═══ */}
       <section className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold">
-          <Scale className="h-5 w-5 text-oro" aria-hidden="true" /> Scala globale ufficiale
+          <Scale className="h-5 w-5 text-oro" aria-hidden="true" /> {u.quadro.scaleTitle}
         </h2>
         <p className="mt-1 text-sm text-muted-it">
-          Descriptores del Consejo de Europa (versión condensada) con las horas de aprendizaje guiado de referencia internacional.
+          {u.quadro.scaleIntro}
         </p>
         <div className="mt-5 space-y-3">
           {CEFR_LEVELS.map((l) => {
@@ -327,21 +327,21 @@ export function QuadroView() {
                   <p className="font-display font-bold">{e.label}</p>
                   {mine && (
                     <span className="rounded-full bg-verde px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-                      il tuo livello
+                      {u.quadro.yourLevelTag}
                     </span>
                   )}
                   <span className="ml-auto font-mono text-xs font-bold text-muted-it">
-                    ≈ {e.hoursGuided[0]}–{e.hoursGuided[1]} h guidate
+                    {u.quadro.guidedH(e.hoursGuided[0], e.hoursGuided[1])}
                   </span>
                 </div>
                 <p className="mt-2.5 text-sm leading-relaxed">{e.es}</p>
                 <p className="mt-1.5 text-sm italic leading-relaxed text-muted-it">{e.it}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] font-bold text-muted-it">
-                  <span>{cov.units} unità</span>
-                  <span>{cov.grammar} grammatica</span>
-                  <span>{(activeLang === "it" ? cov.vocab : covVocabCount).toLocaleString("it-IT")} lemmi</span>
-                  <span>{cov.letture + cov.mind} letture</span>
-                  {mine && <span className="text-verde-scuro dark:text-verde">{cov.unitsDone}/{cov.units} completate</span>}
+                  <span>{cov.units} {u.quadro.covUnits}</span>
+                  <span>{cov.grammar} {u.quadro.covGrammar}</span>
+                  <span>{(activeLang === "it" ? cov.vocab : covVocabCount).toLocaleString(activeLang === "en" ? "en-US" : "it-IT")} {u.quadro.covEntries}</span>
+                  <span>{cov.letture + cov.mind} {u.quadro.covReadings}</span>
+                  {mine && <span className="text-verde-scuro dark:text-verde">{u.quadro.covDone(cov.unitsDone, cov.units)}</span>}
                 </div>
               </div>
             );
@@ -352,23 +352,23 @@ export function QuadroView() {
       {/* ═══ 5 · Copertura dell'app ═══ */}
       <section className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold">
-          <Library className="h-5 w-5 text-verde-scuro" aria-hidden="true" /> Copertura della piattaforma per livello
+          <Library className="h-5 w-5 text-verde-scuro" aria-hidden="true" /> {u.quadro.covTitle}
         </h2>
         <p className="mt-1 text-sm text-muted-it">
-          Cada material de la app está etiquetado por nivel MCER. Esta es la oferta real, calculada ahora mismo:
+          {u.quadro.covIntro}
         </p>
         <div className="mt-5 overflow-x-auto rounded-2xl border border-soft">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-soft bg-crema text-left font-mono text-xs font-bold uppercase tracking-wide dark:bg-inchiostro/10">
-                <th className="p-3">Livello</th>
-                <th className="p-3">Unità</th>
-                <th className="p-3">Grammatica</th>
-                <th className="p-3">Vocabolario</th>
-                <th className="p-3">Letture classiche</th>
-                <th className="p-3">Letture tematiche</th>
-                <th className="p-3">Cloze</th>
-                <th className="p-3">Can-do</th>
+                <th className="p-3">{u.quadro.th.level}</th>
+                <th className="p-3">{u.quadro.th.units}</th>
+                <th className="p-3">{u.quadro.th.grammar}</th>
+                <th className="p-3">{u.quadro.th.vocab}</th>
+                <th className="p-3">{u.quadro.th.classic}</th>
+                <th className="p-3">{u.quadro.th.themed}</th>
+                <th className="p-3">{u.quadro.th.cloze}</th>
+                <th className="p-3">{u.quadro.th.cando}</th>
               </tr>
             </thead>
             <tbody>
@@ -404,19 +404,17 @@ export function QuadroView() {
           </table>
         </div>
         <p className="mt-3 text-xs text-muted-it">
-          💡 Las letture tematiche (<em>Meditazione e consapevolezza</em>) y el cloze forman parte del paso Lettura de cada unidad;
-          el vocabulario proviene del Dizionario didattico de 8.000+ lemas con nivel MCER asignado.
+          {u.quadro.covNote}
         </p>
       </section>
 
       {/* ═══ 6 · Certificazioni ═══ */}
       <section className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold">
-          <Award className="h-5 w-5 text-rosso" aria-hidden="true" /> Certificazioni · {langInfo.variantEs}
+          <Award className="h-5 w-5 text-rosso" aria-hidden="true" /> {u.quadro.certsTitle(activeLang === "it" ? langInfo.variantEs : langInfo.variant)}
         </h2>
         <p className="mt-1 max-w-3xl text-sm text-muted-it">
-          Certificaciones oficiales de {langInfo.name.toLowerCase()} ({langInfo.country}) reconocidas internacionalmente y
-          alineadas al QCER. Verifica siempre los requisitos vigentes en el sitio oficial: la ley cambia con los años.
+          {u.quadro.certsIntro(u.common.studyLangName, u.common.country)}
         </p>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           {CERTS.map((cert) => (
@@ -428,7 +426,7 @@ export function QuadroView() {
                 <p className="font-display text-xl font-bold">{cert.name}</p>
                 {cert.appPrep && (
                   <span className="rounded-full bg-verde px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-                    prep inclusa
+                    {u.quadro.prepIncluded}
                   </span>
                 )}
               </div>
@@ -463,19 +461,18 @@ export function QuadroView() {
       {/* ═══ 7 · Confronto internazionale CEFR ↔ ACTFL ↔ ILR ═══ */}
       <section className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold">
-          <Compass className="h-5 w-5 text-azzurro-scuro dark:text-azzurro" aria-hidden="true" /> Confronto internazionale
+          <Compass className="h-5 w-5 text-azzurro-scuro dark:text-azzurro" aria-hidden="true" /> {u.quadro.intlTitle}
         </h2>
         <p className="mt-1 max-w-3xl text-sm text-muted-it">
-          El MCER convive con los estándares americanos <strong>ACTFL</strong> (proficiency guidelines) e <strong>ILR</strong>
-          (Interagency Language Roundtable, escala del gobierno de EE. UU.). Correspondencia indicativa:
+          {u.quadro.intlIntro}
         </p>
         <div className="mt-5 overflow-x-auto rounded-2xl border border-soft">
           <table className="w-full min-w-[520px] text-sm">
             <thead>
               <tr className="border-b border-soft bg-crema text-left font-mono text-xs font-bold uppercase tracking-wide dark:bg-inchiostro/10">
-                <th className="p-3">MCER (Europa)</th>
-                <th className="p-3">ACTFL (EE. UU.)</th>
-                <th className="p-3">ILR</th>
+                <th className="p-3">{u.quadro.thCefr}</th>
+                <th className="p-3">{u.quadro.thActfl}</th>
+                <th className="p-3">{u.quadro.thIlr}</th>
               </tr>
             </thead>
             <tbody>
@@ -490,22 +487,21 @@ export function QuadroView() {
           </table>
         </div>
         <p className="mt-3 rounded-xl bg-crema-scura p-3 text-xs leading-relaxed text-muted-it dark:bg-inchiostro/10">
-          ⚠️ Nota de rigor: ACTFL y el Consejo de Europa publicaron un comunicado conjunto declarando que{" "}
-          <strong>no existe una tabla de conversión oficial</strong> entre ambos marcos. Esta tabla es la correspondencia
-          aproximada de uso extendido y se ofrece solo como referencia orientativa.
+          {u.quadro.rigorNoteA}{" "}
+          {u.quadro.rigorNoteB}
         </p>
       </section>
 
       {/* ═══ 8 · Cómo la app aplica el estándar ═══ */}
       <section className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold">
-          <BookOpen className="h-5 w-5 text-verde" aria-hidden="true" /> Come la piattaforma applica lo standard
+          <BookOpen className="h-5 w-5 text-verde" aria-hidden="true" /> {u.quadro.applyTitle}
         </h2>
         <p className="mt-1 max-w-3xl text-sm text-muted-it">
-          Requisitos del QCER traducidos en características concretas de la plataforma:
+          {u.quadro.applyIntro}
         </p>
         <div className="mt-5 space-y-3">
-          {CEFR_COMPLIANCE.map((c, i) => (
+          {(u.quadro.compliance.length > 0 ? u.quadro.compliance : CEFR_COMPLIANCE).map((c, i) => (
             <motion.div
               key={c.point}
               initial={{ opacity: 0, x: -8 }}
@@ -526,7 +522,7 @@ export function QuadroView() {
             onClick={() => navigate("cursos")}
             className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-[1.03]"
           >
-            <GraduationCap className="h-4 w-4" aria-hidden="true" /> Torna al percorso
+            <GraduationCap className="h-4 w-4" aria-hidden="true" /> {u.quadro.backToPath}
           </button>
           <button
             onClick={() => navigate("cils")}

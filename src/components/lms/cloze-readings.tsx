@@ -9,6 +9,7 @@ import { langContent } from "@/lib/lms/lang";
 import { langOfId } from "@/lib/lms/languages";
 import type { LangCode } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
+import { uiFor, useUi } from "@/lib/lms/ui";
 import { AudioButton } from "./audio-button";
 import { HoverWords } from "./hover-words";
 import { cn } from "@/lib/utils";
@@ -63,17 +64,18 @@ function shuffleGaps(text: CbClozeText): ShuffledGap[] {
 
 /* ── Un hueco inline ─────────────────────────────────────────────── */
 function Gap({
-  n, state, onClick,
+  n, state, onClick, gapAria,
 }: {
   n: number;
   state: "empty" | "active" | "wrong";
   onClick: () => void;
+  gapAria: (n: number) => string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={`Hueco ${n}, toca para elegir una palabra`}
+      aria-label={gapAria(n)}
       className={cn(
         "mx-1 inline-flex min-h-[1.7rem] min-w-[4rem] items-center justify-center rounded-lg border-2 px-2 align-baseline transition-all",
         state === "empty" && "border-dashed border-verde/50 bg-verde-tenue/50 font-mono text-xs text-verde-scuro/60 hover:border-verde hover:bg-verde-tenue hover:text-verde-scuro dark:text-verde",
@@ -100,6 +102,8 @@ function ClozeReadingCard({
   const [showEs, setShowEs] = useState(false);
   const [done, setDone] = useState(false);
   const gaps = useMemo(() => shuffleGaps(text), [text]);
+  /* v9.18 · enunciados en la lengua de estudio */
+  const u = uiFor(lang);
 
   const solvedCount = Object.keys(picks).length;
   const total = gaps.length;
@@ -129,7 +133,7 @@ function ClozeReadingCard({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-oro-scuro dark:text-oro">
-            Lettura · {text.minutes} min · comprensione inferenziale
+            {u.cloze.kicker(text.minutes)}
           </p>
           <h4 className="font-display text-xl font-semibold">{text.title}</h4>
           <p className="text-sm italic text-muted-it">{text.titleEs}</p>
@@ -140,13 +144,13 @@ function ClozeReadingCard({
           className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-soft bg-crema px-4 py-2.5 text-xs font-bold transition-all hover:border-verde/40 dark:bg-inchiostro/10"
         >
           {showEs ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-          {showEs ? "Nascondi lo spagnolo" : "Mostra lo spagnolo"}
+          {showEs ? u.common.hideEs : u.common.showEs}
         </button>
       </div>
 
       {/* texto con huecos · v9.15 hover de traducción en los segmentos */}
       <p className="rounded-xl bg-crema-scura px-3.5 py-2 text-xs font-semibold text-muted-it dark:bg-inchiostro/10">
-        Pasa el cursor (o toca) cualquier palabra subrayada para ver su traducción y escucharla.
+        {u.common.hoverHint}
       </p>
       <div className="mt-4 space-y-5">
         {text.paragraphs.map((p, i) => {
@@ -177,6 +181,7 @@ function ClozeReadingCard({
                             n={n}
                             state={isWrong ? "wrong" : active === n ? "active" : "empty"}
                             onClick={() => setActive(n)}
+                            gapAria={u.cloze.gapAria}
                           />
                         );
                       })()
@@ -202,7 +207,7 @@ function ClozeReadingCard({
         >
           <p className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-it">
             <Languages className="h-3.5 w-3.5 text-verde" aria-hidden="true" />
-            Completa il hueco {active} · deduci la palabra por el contexto
+            {u.cloze.completeGap(active)}
           </p>
           <div className="grid gap-2 sm:grid-cols-3">
             {gaps[active - 1].options.map((op, oi) => {
@@ -226,7 +231,7 @@ function ClozeReadingCard({
           </div>
           {wrong[active] !== undefined && (
             <p className="mt-2 text-xs font-semibold text-rosso">
-              No es «{gaps[active - 1].options[wrong[active]]}» — busca la palabra que encaja con el sentido de la frase.
+              {u.cloze.notThat(gaps[active - 1].options[wrong[active]])}
             </p>
           )}
         </motion.div>
@@ -241,15 +246,15 @@ function ClozeReadingCard({
         >
           <p className="font-display text-lg font-bold text-verde-scuro dark:text-verde">
             <CheckCircle2 className="mr-1.5 inline h-5 w-5" aria-hidden="true" />
-            Lettura completata · {total}/{total} huecos
+            {u.cloze.readingDone(total)}
           </p>
           <p className="mt-1 text-xs text-muted-it">
-            Cada palabra deducida del contexto vale más que diez memorizadas. +5 XP
+            {u.cloze.deduceNote}
           </p>
         </motion.div>
       ) : (
         <p className="mt-4 text-center text-xs font-semibold text-muted-it">
-          {solvedCount}/{total} huecos completados — toca un hueco y elige la palabra que encaja
+          {u.cloze.progressHint(solvedCount, total)}
         </p>
       )}
     </div>
@@ -265,6 +270,7 @@ export function ClozeReadings({ unitId, lang }: { unitId: string; lang?: LangCod
   const progress = useLms((s) => s.cambridgeProgress[unitId]);
   const [tab, setTab] = useState(0);
   const [completed, setCompleted] = useState<Record<number, boolean>>({});
+  const u = uiFor(ulang);
 
   const allDone = useMemo(
     () => texts.length > 0 && texts.every((_, i) => completed[i]),
@@ -288,19 +294,18 @@ export function ClozeReadings({ unitId, lang }: { unitId: string; lang?: LangCod
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
           <BookOpen className="h-5 w-5 text-oro" aria-hidden="true" />
-          Tre letture · comprensione del testo
+          {u.cloze.sectionTitle}
         </h3>
         <span className="rounded-full bg-oro-tenue px-3 py-1.5 text-[11px] font-bold text-oro-scuro dark:text-oro">
-          {Object.keys(completed).length}/{texts.length} completate
+          {u.cloze.doneCount(Object.keys(completed).length, texts.length)}
         </span>
       </div>
       <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
-        Lee cada texto y completa los huecos <strong>deduciendo la palabra por el contexto</strong>:
-        las tres opciones son posibles en {ulang === "en" ? "inglés" : "italiano"}, pero solo una encaja con el sentido.
+        {u.cloze.intro}
       </p>
 
       {/* pestañas */}
-      <div className="mt-4 flex gap-1.5" role="tablist" aria-label="Lecturas de la unidad">
+      <div className="mt-4 flex gap-1.5" role="tablist" aria-label={u.cloze.tabsAria}>
         {texts.map((t, i) => (
           <button
             key={t.id}
@@ -315,7 +320,7 @@ export function ClozeReadings({ unitId, lang }: { unitId: string; lang?: LangCod
             )}
           >
             {completed[i] && <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />}
-            Lettura {i + 1}
+            {u.cloze.readingTab(i + 1)}
           </button>
         ))}
       </div>
@@ -331,9 +336,9 @@ export function ClozeReadings({ unitId, lang }: { unitId: string; lang?: LangCod
           animate={{ opacity: 1, y: 0 }}
           className="mt-6 rounded-2xl bg-verde p-4 text-center text-white"
         >
-          <p className="font-display text-lg font-bold">🎉 Tutte e tre le letture completate!</p>
+          <p className="font-display text-lg font-bold">{u.cloze.allDone}</p>
           <p className="mt-1 text-sm opacity-90">
-            Paso 8 · Lettura superado · +15 XP · la sección quedó registrada en tu progreso
+            {u.cloze.allDoneSub}
           </p>
         </motion.div>
       )}

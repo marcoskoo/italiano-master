@@ -13,6 +13,7 @@ import { langContent } from "@/lib/lms/lang";
 import { langOfId } from "@/lib/lms/languages";
 import type { LangCode } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
+import { uiFor } from "@/lib/lms/ui";
 import { speak } from "@/lib/lms/tts";
 import { AudioButton } from "./audio-button";
 import { HoverWords } from "./hover-words";
@@ -44,7 +45,7 @@ function seededPerm(seed: number, len: number): number[] {
   }
   return idx;
 }
-const KIND_LABEL: Record<MindQuiz["kind"], string> = { literal: "Literal", inferencial: "Inferencial", critica: "Crítica" };
+
 const KIND_STYLE: Record<MindQuiz["kind"], string> = {
   literal: "bg-verde-tenue text-verde-scuro dark:text-verde",
   inferencial: "bg-oro-tenue text-oro-scuro dark:text-oro",
@@ -65,7 +66,7 @@ function BlockTitle({ icon, label, hint }: { icon: React.ReactNode; label: strin
 }
 
 /* Cuestionario (literal / inferencial / crítico) — también sirve para la escucha */
-function QuizBlock({ items, answers, onPick }: { items: MindQuiz[]; answers: Record<number, number>; onPick: (i: number, oi: number) => void }) {
+function QuizBlock({ items, answers, onPick, u }: { items: MindQuiz[]; answers: Record<number, number>; onPick: (i: number, oi: number) => void; u: ReturnType<typeof uiFor> }) {
   const shuffled = useMemo(() => items.map((it) => {
     const perm = seededPerm(hashStr(it.q + it.kind), it.options.length);
     return { ...it, options: perm.map((i) => it.options[i]), answer: perm.indexOf(it.answer) };
@@ -75,7 +76,7 @@ function QuizBlock({ items, answers, onPick }: { items: MindQuiz[]; answers: Rec
       {shuffled.map((it, i) => (
         <div key={i} className={cn("rounded-2xl border-2 p-4 transition-colors", answers[i] === undefined ? "border-soft bg-surface" : answers[i] === it.answer ? "border-verde/50 bg-verde-tenue/40" : "border-rosso/40 bg-rosso-tenue/20")}>
           <div className="flex flex-wrap items-center gap-2">
-            <span className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide", KIND_STYLE[it.kind])}>{KIND_LABEL[it.kind]}</span>
+            <span className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide", KIND_STYLE[it.kind])}>{u.mind.kinds[it.kind]}</span>
             <p className="flex-1 font-semibold leading-snug">{it.q}</p>
           </div>
           <div className="mt-3 grid gap-2">
@@ -104,7 +105,7 @@ function QuizBlock({ items, answers, onPick }: { items: MindQuiz[]; answers: Rec
           </div>
           {answers[i] !== undefined && (
             <p className="mt-2 text-xs font-semibold leading-relaxed text-muted-it">
-              {answers[i] === it.answer ? "✔ Esatto! " : "✘ "}{it.why}
+              {answers[i] === it.answer ? u.common.exact + " " : u.common.wrongMark}{it.why}
             </p>
           )}
         </div>
@@ -114,7 +115,7 @@ function QuizBlock({ items, answers, onPick }: { items: MindQuiz[]; answers: Rec
 }
 
 /* Vero/Falso con justificación */
-function VfBlock({ items, answers, onPick }: { items: MindVF[]; answers: Record<number, boolean>; onPick: (i: number, v: boolean) => void }) {
+function VfBlock({ items, answers, onPick, u }: { items: MindVF[]; answers: Record<number, boolean>; onPick: (i: number, v: boolean) => void; u: ReturnType<typeof uiFor> }) {
   return (
     <div className="space-y-3">
       {items.map((it, i) => {
@@ -138,13 +139,13 @@ function VfBlock({ items, answers, onPick }: { items: MindVF[]; answers: Record<
                     picked && v !== it.value && answers[i] !== v && "border-soft bg-crema opacity-50 dark:bg-inchiostro/10",
                   )}
                 >
-                  {v ? "Vero" : "Falso"}
+                  {v ? u.quiz.true : u.quiz.false}
                 </button>
               ))}
             </div>
             {picked && (
               <p className="mt-2 text-xs font-semibold leading-relaxed text-muted-it">
-                {correct ? "✔ Justificación: " : "✘ La respuesta correcta es «" + (it.value ? "Vero" : "Falso") + "». "}{it.why}
+                {correct ? u.mind.justification : u.common.wrongMark + u.mind.correctWas(it.value ? u.quiz.true : u.quiz.false)}{it.why}
               </p>
             )}
           </div>
@@ -155,7 +156,7 @@ function VfBlock({ items, answers, onPick }: { items: MindVF[]; answers: Record<
 }
 
 /* Idea principal + ideas secundarias */
-function IdeasBlock({ ideas, mainPick, onMainPick, picks, onToggle, checked, onCheck }: {
+function IdeasBlock({ ideas, mainPick, onMainPick, picks, onToggle, checked, onCheck, u }: {
   ideas: MindIdeas;
   mainPick: number | null;
   onMainPick: (i: number) => void;
@@ -163,6 +164,7 @@ function IdeasBlock({ ideas, mainPick, onMainPick, picks, onToggle, checked, onC
   onToggle: (i: number) => void;
   checked: boolean;
   onCheck: () => void;
+  u: ReturnType<typeof uiFor>;
 }) {
   const statements = useMemo(() => {
     const all = [...ideas.secondary, ...ideas.distractors];
@@ -234,11 +236,11 @@ function IdeasBlock({ ideas, mainPick, onMainPick, picks, onToggle, checked, onC
             disabled={mainPick === null || picks.length === 0}
             className="mt-3 min-h-11 rounded-2xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all enabled:hover:scale-[1.03] disabled:opacity-40"
           >
-            Controlla le idee
+            {u.mind.checkIdeas}
           </button>
         ) : (
           <p className="mt-3 rounded-xl bg-verde-tenue p-3 text-xs font-semibold leading-relaxed text-verde-scuro dark:text-verde">
-            ✔ Verde = idea secundaria presente en el texto · Tachado en rojo = distractor plausible que el texto no dice.
+            {u.mind.ideasLegend}
           </p>
         )}
       </div>
@@ -247,7 +249,7 @@ function IdeasBlock({ ideas, mainPick, onMainPick, picks, onToggle, checked, onC
 }
 
 /* Búsqueda del intruso */
-function IntruderBlock({ intruder, pick, onPick }: { intruder: MindIntruder; pick: number | null; onPick: (i: number) => void }) {
+function IntruderBlock({ intruder, pick, onPick, u }: { intruder: MindIntruder; pick: number | null; onPick: (i: number) => void; u: ReturnType<typeof uiFor> }) {
   const shuffled = useMemo(() => {
     const perm = seededPerm(hashStr(intruder.instr), intruder.sentences.length);
     return perm.map((orig, disp) => ({ text: intruder.sentences[orig], orig, isAnswer: orig === intruder.intruder }));
@@ -272,13 +274,13 @@ function IntruderBlock({ intruder, pick, onPick }: { intruder: MindIntruder; pic
           >
             <span className="font-mono text-xs opacity-60">{i + 1}</span>
             <span className="leading-snug">{s.text}</span>
-            {reveal && s.isAnswer && <span className="ml-auto shrink-0 text-xs font-bold uppercase">Intruso 👀</span>}
+            {reveal && s.isAnswer && <span className="ml-auto shrink-0 text-xs font-bold uppercase">{u.mind.intruderTag}</span>}
           </button>
         );
       })}
       {pick !== null && (
         <p className={cn("rounded-xl p-3 text-xs font-semibold leading-relaxed", shuffled[pick]?.isAnswer ? "bg-verde-tenue text-verde-scuro dark:text-verde" : "bg-rosso-tenue/40 text-rosso-scuro dark:text-rosso")}>
-          {shuffled[pick]?.isAnswer ? "✔ Bien visto! " : `✘ El intruso era otra frase. `}{intruder.why}
+          {shuffled[pick]?.isAnswer ? u.mind.wellSpotted : u.mind.intruderWrong}{intruder.why}
         </p>
       )}
     </div>
@@ -286,13 +288,14 @@ function IntruderBlock({ intruder, pick, onPick }: { intruder: MindIntruder; pic
 }
 
 /* Reconstrucción de secuencias / orden temporal */
-function SequenceBlock({ sequence, order, checked, onToggleEvent, onCheck, onReset }: {
+function SequenceBlock({ sequence, order, checked, onToggleEvent, onCheck, onReset, u }: {
   sequence: MindSequence;
   order: number[];
   checked: boolean;
   onToggleEvent: (i: number) => void;
   onCheck: () => void;
   onReset: () => void;
+  u: ReturnType<typeof uiFor>;
 }) {
   const shuffled = useMemo(() => {
     const perm = seededPerm(hashStr(sequence.events.join("|")), sequence.events.length);
@@ -332,18 +335,18 @@ function SequenceBlock({ sequence, order, checked, onToggleEvent, onCheck, onRes
             disabled={order.length !== sequence.events.length}
             className="min-h-11 rounded-2xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all enabled:hover:scale-[1.03] disabled:opacity-40"
           >
-            Verifica l'ordine
+            {u.mind.checkOrder}
           </button>
-          <p className="text-xs font-semibold text-muted-it">{order.length}/{sequence.events.length} ordenadas — toca las frases en el orden correcto</p>
+          <p className="text-xs font-semibold text-muted-it">{u.mind.orderCount(order.length, sequence.events.length)}</p>
         </div>
       ) : (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-oro-tenue/50 p-4">
           <p className="text-xs font-semibold leading-relaxed">
-            {shuffled.every((_, i) => shuffled[i].orig === (order.indexOf(i))) ? "✔ Sequenza perfetta! " : "✘ Casi: el orden correcto es el número de cada frase. "}
-            {checked ? "Los números verdes marcan la posición correcta." : ""}
+            {shuffled.every((_, i) => shuffled[i].orig === (order.indexOf(i))) ? u.mind.perfectSeq : u.mind.almostSeq}
+            {checked ? u.mind.greenNumbers : ""}
           </p>
           <button type="button" onClick={onReset} className="min-h-10 rounded-xl border-2 border-soft bg-crema px-4 py-2 text-xs font-bold transition-all hover:border-verde/40 dark:bg-inchiostro/10">
-            Riprova
+            {u.common.retry}
           </button>
         </div>
       )}
@@ -352,13 +355,14 @@ function SequenceBlock({ sequence, order, checked, onToggleEvent, onCheck, onRes
 }
 
 /* Comprensión de escucha: audio con texto oculto + preguntas */
-function ListenBlock({ audioIt, intro, questions, answers, onPick, lang = "it" }: {
+function ListenBlock({ audioIt, intro, questions, answers, onPick, lang = "it", u }: {
   audioIt: string;
   intro: string;
   questions: MindQuiz[];
   answers: Record<number, number>;
   onPick: (i: number, oi: number) => void;
   lang?: import("@/lib/lms/types").LangCode;
+  u: ReturnType<typeof uiFor>;
 }) {
   const [playing, setPlaying] = useState(false);
   const [revealed, setRevealed] = useState(false);
@@ -378,7 +382,7 @@ function ListenBlock({ audioIt, intro, questions, answers, onPick, lang = "it" }
             className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-5 py-3 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-[1.03]"
           >
             <Ear className="h-4 w-4" aria-hidden="true" />
-            {playing ? "Sto ascoltando…" : "Ascolta l'audio"}
+            {playing ? u.mind.listening : u.mind.listenAudio}
           </button>
           <button
             type="button"
@@ -386,7 +390,7 @@ function ListenBlock({ audioIt, intro, questions, answers, onPick, lang = "it" }
             className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-soft bg-crema px-4 py-2.5 text-xs font-bold transition-all hover:border-verde/40 dark:bg-inchiostro/10"
           >
             {revealed ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-            {revealed ? "Nascondi il testo" : "Mostra il testo (dopo aver ascoltato)"}
+            {revealed ? u.mind.hideText : u.mind.showText}
           </button>
         </div>
         {revealed && (
@@ -396,7 +400,7 @@ function ListenBlock({ audioIt, intro, questions, answers, onPick, lang = "it" }
         )}
       </div>
       <div className="mt-4">
-        <QuizBlock items={questions} answers={answers} onPick={onPick} />
+        <QuizBlock items={questions} answers={answers} onPick={onPick} u={u} />
       </div>
     </div>
   );
@@ -404,6 +408,8 @@ function ListenBlock({ audioIt, intro, questions, answers, onPick, lang = "it" }
 
 /* ── Lectura individual ──────────────────────────────────────────── */
 export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading: MindReading; onCompleted: () => void; lang?: LangCode }) {
+  /* v9.18 · enunciados en la lengua de estudio */
+  const u = uiFor(lang);
   const [phase, setPhase] = useState<"predict" | "read">("predict");
   const [predictPick, setPredictPick] = useState<number | null>(null);
   const [showEs, setShowEs] = useState(false);
@@ -453,7 +459,7 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
     return (
       <div>
         <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-oro-scuro dark:text-oro">
-          Tema: {MIND_THEME_LABEL[reading.theme]} · {reading.minutes} min
+          {u.mind.topicLine}: {u.mind.themeLabels[reading.theme] ?? MIND_THEME_LABEL[reading.theme]} · {reading.minutes} min
         </p>
         <h4 className="mt-1 font-display text-2xl font-semibold">{reading.title}</h4>
         <p className="text-sm italic text-muted-it">{reading.titleEs}</p>
@@ -487,14 +493,14 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
           {predictPick !== null && (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
               <p className="mt-3 text-xs font-semibold leading-relaxed text-muted-it">
-                {predictPick === predictShuffled.answer ? "✔ Ottima previsione! " : "✘ "}{reading.predict.why}
+                {predictPick === predictShuffled.answer ? u.mind.goodPrediction : u.common.wrongMark}{reading.predict.why}
               </p>
               <button
                 type="button"
                 onClick={() => setPhase("read")}
                 className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-[1.03]"
               >
-                <BookOpen className="h-4 w-4" aria-hidden="true" /> Leggi il testo
+                <BookOpen className="h-4 w-4" aria-hidden="true" /> {u.mind.readText}
               </button>
             </motion.div>
           )}
@@ -509,7 +515,7 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-oro-scuro dark:text-oro">
-            Tema: {MIND_THEME_LABEL[reading.theme]} · {reading.minutes} min
+            {u.mind.topicLine}: {u.mind.themeLabels[reading.theme] ?? MIND_THEME_LABEL[reading.theme]} · {reading.minutes} min
           </p>
           <h4 className="font-display text-xl font-semibold">{reading.title}</h4>
           <p className="text-sm italic text-muted-it">{reading.titleEs}</p>
@@ -520,7 +526,7 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
             onClick={() => setPhase("predict")}
             className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-soft bg-crema px-4 py-2.5 text-xs font-bold transition-all hover:border-verde/40 dark:bg-inchiostro/10"
           >
-            <Sparkles className="h-4 w-4 text-oro" aria-hidden="true" /> Predizione
+            <Sparkles className="h-4 w-4 text-oro" aria-hidden="true" /> {u.mind.predictionBtn}
           </button>
           <button
             type="button"
@@ -528,7 +534,7 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
             className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-soft bg-crema px-4 py-2.5 text-xs font-bold transition-all hover:border-verde/40 dark:bg-inchiostro/10"
           >
             {showEs ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-            {showEs ? "Nascondi lo spagnolo" : "Mostra lo spagnolo"}
+            {showEs ? u.common.hideEs : u.common.showEs}
           </button>
         </div>
       </div>
@@ -536,7 +542,7 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
       {/* texto · pasa el cursor (o toca) una palabra para ver su traducción */}
       <p className="mb-3 rounded-xl bg-crema-scura px-3.5 py-2 text-xs font-semibold text-muted-it dark:bg-inchiostro/10">
         <MousePointerClick className="mr-1.5 inline h-3.5 w-3.5 text-verde" aria-hidden="true" />
-        Pasa el cursor (o toca) cualquier palabra subrayada para ver su traducción y escucharla.
+        {u.common.hoverHint}
       </p>
       <div className="mt-4 space-y-5">
         {reading.paragraphs.map((p, i) => (
@@ -554,19 +560,19 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
       <div className="mt-8 space-y-8">
         {reading.quiz && (
           <section>
-            <BlockTitle icon={<HelpCircle className="h-5 w-5 text-verde" aria-hidden="true" />} label="Cuestionario · literal, inferencial y crítico" hint="Preguntas de comprensión: la primera responde al texto, la segunda se deduce, la tercera te pide opinión razonada." />
-            <QuizBlock items={reading.quiz} answers={quizAnswers} onPick={(i, oi) => setQuizAnswers((a) => ({ ...a, [i]: oi }))} />
+            <BlockTitle icon={<HelpCircle className="h-5 w-5 text-verde" aria-hidden="true" />} label={u.mind.quizTitle} hint={u.mind.quizHint} />
+            <QuizBlock items={reading.quiz} answers={quizAnswers} u={u} onPick={(i, oi) => setQuizAnswers((a) => ({ ...a, [i]: oi }))} />
           </section>
         )}
         {reading.vf && (
           <section>
-            <BlockTitle icon={<Target className="h-5 w-5 text-rosso" aria-hidden="true" />} label="Vero o Falso · con justificación" hint="Elige Vero o Falso; después lee la justificación del texto." />
-            <VfBlock items={reading.vf} answers={vfAnswers} onPick={(i, v) => setVfAnswers((a) => ({ ...a, [i]: v }))} />
+            <BlockTitle icon={<Target className="h-5 w-5 text-rosso" aria-hidden="true" />} label={u.mind.vfTitle} hint={u.mind.vfHint} />
+            <VfBlock items={reading.vf} answers={vfAnswers} u={u} onPick={(i, v) => setVfAnswers((a) => ({ ...a, [i]: v }))} />
           </section>
         )}
         {reading.ideas && (
           <section>
-            <BlockTitle icon={<Lightbulb className="h-5 w-5 text-oro" aria-hidden="true" />} label="Idea principal e ideas secundarias" hint="Primero elige la idea principal; luego marca las ideas secundarias que de verdad aparecen en el texto." />
+            <BlockTitle icon={<Lightbulb className="h-5 w-5 text-oro" aria-hidden="true" />} label={u.mind.ideasTitle} hint={u.mind.ideasHint} />
             <IdeasBlock
               ideas={reading.ideas}
               mainPick={mainPick}
@@ -575,18 +581,19 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
               onToggle={(i) => setIdeaPicks((p) => (p.includes(i) ? p.filter((x) => x !== i) : [...p, i]))}
               checked={ideasChecked}
               onCheck={() => setIdeasChecked(true)}
+              u={u}
             />
           </section>
         )}
         {reading.intruder && (
           <section>
-            <BlockTitle icon={<Search className="h-5 w-5 text-verde-scuro" aria-hidden="true" />} label="Búsqueda del intruso" hint={reading.intruder.instr} />
-            <IntruderBlock intruder={reading.intruder} pick={intruderPick} onPick={setIntruderPick} />
+            <BlockTitle icon={<Search className="h-5 w-5 text-verde-scuro" aria-hidden="true" />} label={u.mind.intruderTitle} hint={reading.intruder.instr} />
+            <IntruderBlock intruder={reading.intruder} pick={intruderPick} onPick={setIntruderPick} u={u} />
           </section>
         )}
         {reading.sequence && (
           <section>
-            <BlockTitle icon={<ListOrdered className="h-5 w-5 text-oro" aria-hidden="true" />} label="Reconstrucción de secuencias" hint={reading.sequence.instr} />
+            <BlockTitle icon={<ListOrdered className="h-5 w-5 text-oro" aria-hidden="true" />} label={u.mind.seqTitle} hint={reading.sequence.instr} />
             <SequenceBlock
               sequence={reading.sequence}
               order={seqOrder}
@@ -594,17 +601,19 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
               onToggleEvent={toggleSeq}
               onCheck={() => setSeqChecked(true)}
               onReset={() => { setSeqOrder([]); setSeqChecked(false); }}
+              u={u}
             />
           </section>
         )}
         {reading.listen && (
           <section>
-            <BlockTitle icon={<Music4 className="h-5 w-5 text-verde" aria-hidden="true" />} label="Ascolto · comprensión de escucha" hint="Escucha el audio sin leerlo (puedes escucharlo dos veces) y responde." />
+            <BlockTitle icon={<Music4 className="h-5 w-5 text-verde" aria-hidden="true" />} label={u.mind.listenTitle} hint={u.mind.listenHint} />
             <ListenBlock
               audioIt={reading.listen.audioIt} lang={lang}
               intro={reading.listen.intro}
               questions={reading.listen.questions}
               answers={listenAnswers}
+              u={u}
               onPick={(i, oi) => setListenAnswers((a) => ({ ...a, [i]: oi }))}
             />
           </section>
@@ -615,13 +624,13 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
         <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 rounded-2xl bg-verde-tenue p-5 text-center dark:bg-verde-tenue/30">
           <p className="font-display text-lg font-bold text-verde-scuro dark:text-verde">
             <CheckCircle2 className="mr-1.5 inline h-5 w-5" aria-hidden="true" />
-            Lettura completata · tutte le strategie superate
+            {u.mind.readingComplete}
           </p>
-          <p className="mt-1 text-xs text-muted-it">Predizione ✔ Cuestionario ✔ Ideas ✔ Intruso ✔ Secuencia ✔ Ascolto ✔ · +5 XP</p>
+          <p className="mt-1 text-xs text-muted-it">{u.mind.strategiesLine}</p>
         </motion.div>
       ) : (
         <p className="mt-6 text-center text-xs font-semibold text-muted-it">
-          Completa todas las estrategias para cerrar la lectura
+          {u.mind.completeToClose}
         </p>
       )}
     </div>
@@ -631,6 +640,7 @@ export function MindReadingCard({ reading, onCompleted, lang = "it" }: { reading
 /* ── Sección completa: 3 lecturas temáticas con pestañas ─────────── */
 export function MindReadings({ unitId, lang }: { unitId: string; lang?: LangCode }) {
   const ulang: LangCode = lang ?? langOfId(unitId);
+  const u = uiFor(ulang);
   const readings = langContent(ulang)?.mind[unitId] ?? [];
   const addXp = useLms((s) => s.addXp);
   const markCambridgeSection = useLms((s) => s.markCambridgeSection);
@@ -657,25 +667,23 @@ export function MindReadings({ unitId, lang }: { unitId: string; lang?: LangCode
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
           <BookOpen className="h-5 w-5 text-oro" aria-hidden="true" />
-          Tre letture di consapevolezza
+          {u.mind.sectionTitle}
         </h3>
         <span className="rounded-full bg-oro-tenue px-3 py-1.5 text-[11px] font-bold text-oro-scuro dark:text-oro">
-          {Object.keys(completed).length}/{readings.length} completate
+          {u.mind.doneCount(Object.keys(completed).length, readings.length)}
         </span>
       </div>
       <p className="mt-1.5 text-sm leading-relaxed text-muted-it">
-        Meditación, espiritualidad, permanecer en el aquí y ahora, relajación física y mental:{" "}
-        <strong>3 textos con todas las estrategias de comprensión</strong> — predicción, cuestionario,
-        V/F con justificación, ideas, intruso, secuencia temporal y escucha.
+        {u.mind.sectionIntro}
       </p>
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {["Predizione", "Cuestionario", "V/F", "Idee", "Intruso", "Sequenza", "Ascolto"].map((s) => (
+        {u.mind.strategyChips.map((s) => (
           <span key={s} className="rounded-full bg-crema-scura px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-muted-it dark:bg-inchiostro/10">{s}</span>
         ))}
       </div>
 
       {/* pestañas */}
-      <div className="mt-4 flex gap-1.5" role="tablist" aria-label="Lecturas temáticas de la unidad">
+      <div className="mt-4 flex gap-1.5" role="tablist" aria-label={u.cloze.tabsAria}>
         {readings.map((r, i) => (
           <button
             key={r.id}
@@ -690,7 +698,7 @@ export function MindReadings({ unitId, lang }: { unitId: string; lang?: LangCode
             )}
           >
             {completed[i] && <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />}
-            Lettura {i + 1}
+            {u.mind.readingTab(i + 1)}
           </button>
         ))}
       </div>
@@ -701,8 +709,8 @@ export function MindReadings({ unitId, lang }: { unitId: string; lang?: LangCode
 
       {allDone && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-6 rounded-2xl bg-verde p-4 text-center text-white">
-          <p className="font-display text-lg font-bold">🧘 Tutte e tre le letture completate!</p>
-          <p className="mt-1 text-sm opacity-90">Comprensión lectora y de escucha superadas · +15 XP · sección registrada</p>
+          <p className="font-display text-lg font-bold">{u.mind.allDone}</p>
+          <p className="mt-1 text-sm opacity-90">{u.mind.allDoneSub}</p>
         </motion.div>
       )}
     </div>

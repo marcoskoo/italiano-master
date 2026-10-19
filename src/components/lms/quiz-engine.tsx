@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Eraser, Lightbulb, RotateCcw, Trophy, X } from "lucide-react";
 import type { Exercise } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
+import { useUi } from "@/lib/lms/ui";
 import { speak } from "@/lib/lms/tts";
 import { AudioButton, VoiceHint } from "./audio-button";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,8 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
   const recordCorrect = useLms((s) => s.recordCorrect);
   const recordQuiz = useLms((s) => s.recordQuiz);
   const audioRate = useLms((s) => s.settings.audioRate);
+  /* v9.18 · enunciados y feedback en la lengua de estudio */
+  const u = useUi();
 
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
@@ -104,7 +107,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
   const pct = useMemo(() => Math.round((score / Math.max(1, exercises.length)) * 100), [score, exercises.length]);
 
   if (!ex && !done) {
-    return <p className="rounded-2xl border border-soft bg-surface p-6 text-sm text-muted-it">No hay ejercicios disponibles todavía.</p>;
+    return <p className="rounded-2xl border border-soft bg-surface p-6 text-sm text-muted-it">{u.quiz.noExercises}</p>;
   }
 
   if (done) {
@@ -118,9 +121,9 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
         <div className={cn("mx-auto flex h-20 w-20 items-center justify-center rounded-full", passed ? "bg-verde-tenue" : "bg-rosso-tenue")}>
           <Trophy className={cn("h-9 w-9", passed ? "text-verde" : "text-rosso")} aria-hidden="true" />
         </div>
-        <h3 className="mt-4 font-display text-2xl font-semibold">{passed ? "Bravissimo!" : "Quasi!"}</h3>
+        <h3 className="mt-4 font-display text-2xl font-semibold">{passed ? u.quiz.great : u.quiz.almost}</h3>
         <p className="mt-2 text-muted-it">
-          {score} / {exercises.length} correctas · {pct}%
+          {u.quiz.scoreLine(score, exercises.length, pct)}
         </p>
         <div className="mx-auto mt-5 h-2.5 w-full max-w-xs overflow-hidden rounded-full bg-crema-scura dark:bg-inchiostro/20">
           <motion.div
@@ -129,11 +132,11 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
           />
         </div>
         <p className="mt-4 text-sm text-muted-it">
-          {passed ? "Has superado la prueba. +XP acreditados." : "Repasa los errores: el motor adaptativo te propondrá práctica extra."}
+          {passed ? u.quiz.passedMsg : u.quiz.failedMsg}
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <button onClick={restart} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-soft bg-crema px-5 py-2.5 text-sm font-semibold transition-all hover:scale-[1.02] active:scale-95">
-            <RotateCcw className="h-4 w-4" aria-hidden="true" /> Riprova
+            <RotateCcw className="h-4 w-4" aria-hidden="true" /> {u.quiz.retry}
           </button>
         </div>
       </motion.div>
@@ -174,7 +177,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
           <VoiceHint />
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-muted-it dark:bg-inchiostro/15">
-              {ex.type === "mc" ? "selección múltiple" : ex.type === "tf" ? "verdadero / falso" : ex.type === "fill" ? "completar" : ex.type === "order" ? "ordenar" : ex.type === "dictation" ? "dictado" : "traducción"}
+              {ex.type === "mc" ? u.quiz.typeMc : ex.type === "tf" ? u.quiz.typeTf : ex.type === "fill" ? u.quiz.typeFill : ex.type === "order" ? u.quiz.typeOrder : ex.type === "dictation" ? u.quiz.typeDict : u.quiz.typeTranslate}
             </span>
             <span className="rounded-full bg-oro-tenue px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-oro-scuro dark:text-oro">{ex.level}</span>
           </div>
@@ -194,7 +197,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
                     key={i}
                     onClick={() => !answered && setChoice(i)}
                     disabled={!!answered}
-                    aria-label={`Opción ${i + 1}: ${opt}`}
+                    aria-label={u.quiz.optionAria(i + 1, opt)}
                     className={cn(
                       "flex min-h-12 items-center justify-between gap-3 rounded-2xl border-2 border-soft bg-crema px-4 py-3 text-left font-medium transition-all",
                       !answered && choice === i && "border-verde bg-verde-tenue",
@@ -217,7 +220,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
           {/* ── TF ── */}
           {ex.type === "tf" && (
             <div className="mt-5 grid grid-cols-2 gap-3">
-              {[["Vero", true, "✔"], ["Falso", false, "✘"]].map(([lbl, val, sym]) => {
+              {[[u.quiz.true, true, "✔"], [u.quiz.false, false, "✘"]].map(([lbl, val, sym]) => {
                 const isRight = ex.answer === val;
                 const showRight = answered && isRight;
                 const showWrong = answered && choice === (val ? 1 : 0) && !isRight;
@@ -269,8 +272,8 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
               )}
               {ex.type === "dictation" && (
                 <div className="flex items-center gap-3 rounded-2xl bg-crema-scura p-4 dark:bg-inchiostro/10">
-                  <AudioButton text={ex.text} size="lg" label={`Escuchar de nuevo (velocidad ${audioRate}x)`} variant="full" />
-                  <span className="text-xs text-muted-it">Escribe exactamente lo que oyes.</span>
+                  <AudioButton text={ex.text} size="lg" label={u.quiz.listenAgain(audioRate)} variant="full" />
+                  <span className="text-xs text-muted-it">{u.quiz.writeExactly}</span>
                 </div>
               )}
               <input
@@ -279,8 +282,8 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
                 onChange={(e) => setTyped(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { if (answered) { next(); } else { submit(); } } }}
                 disabled={!!answered}
-                placeholder={ex.type === "dictation" ? "Scrivi qui…" : "Escribe tu respuesta…"}
-                aria-label="Respuesta"
+                placeholder={ex.type === "dictation" ? u.quiz.dictPh : u.quiz.answerPh}
+                aria-label={u.quiz.answerAria}
                 className={cn(
                   "mt-4 min-h-12 w-full rounded-2xl border-2 border-soft bg-crema px-4 py-3 text-base outline-none transition-colors focus:border-verde",
                   answered && answered.correct && "border-verde bg-verde-tenue quiz-correct",
@@ -289,7 +292,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
               />
               {answered && !answered.correct && (
                 <p className="mt-2 text-sm text-verde-scuro dark:text-verde">
-                  ✔ Respuesta correcta: <strong>{ex.type === "dictation" ? ex.text : (ex as { accepted?: string[] }).accepted?.[0]}</strong>
+                  {u.quiz.correctAnswer} <strong>{ex.type === "dictation" ? ex.text : (ex as { accepted?: string[] }).accepted?.[0]}</strong>
                 </p>
               )}
             </div>
@@ -302,7 +305,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
                 className="flex min-h-14 flex-wrap items-center gap-2 rounded-2xl border-2 border-dashed border-soft bg-crema-scura p-3 dark:bg-inchiostro/10"
                 aria-label="Frase construida"
               >
-                {built.length === 0 && <span className="px-2 text-sm text-muted-it">Toca las palabras en orden…</span>}
+                {built.length === 0 && <span className="px-2 text-sm text-muted-it">{u.quiz.tapOrder}</span>}
                 {built.map((b, pos) => (
                   <button
                     key={`${b.w}-${b.i}`}
@@ -331,7 +334,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
               </div>
               {answered && !answered.correct && (
                 <p className="mt-2 text-sm text-verde-scuro dark:text-verde">
-                  ✔ Orden correcto: <strong>{ex.answer.join(" ")}</strong>
+                  {u.quiz.correctOrder} <strong>{ex.answer.join(" ")}</strong>
                 </p>
               )}
             </div>
@@ -352,8 +355,8 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
           <div className="mt-6 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-sm font-bold">
               {answered && (isCorrect
-                ? <span className="inline-flex items-center gap-1.5 text-verde"><Check className="h-4 w-4" aria-hidden /> Corretto! +{xpPerCorrect} XP</span>
-                : <span className="inline-flex items-center gap-1.5 text-rosso"><X className="h-4 w-4" aria-hidden /> Sbagliato</span>)}
+                ? <span className="inline-flex items-center gap-1.5 text-verde"><Check className="h-4 w-4" aria-hidden /> {u.quiz.correctXp(xpPerCorrect)}</span>
+                : <span className="inline-flex items-center gap-1.5 text-rosso"><X className="h-4 w-4" aria-hidden /> {u.quiz.incorrect}</span>)}
             </div>
             {!answered ? (
               <button
@@ -361,7 +364,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
                 disabled={ex.type === "mc" || ex.type === "tf" ? choice === null : (ex.type === "order" ? built.length === 0 : typed.trim() === "")}
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-verde px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-[1.03] hover:bg-verde-scuro disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-verde dark:hover:text-inchiostro"
               >
-                Verifica <Check className="h-4 w-4" aria-hidden="true" />
+                {u.quiz.check} <Check className="h-4 w-4" aria-hidden="true" />
               </button>
             ) : (
               <button
@@ -369,7 +372,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
                 autoFocus
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-inchiostro px-6 py-2.5 text-sm font-bold text-crema transition-all hover:scale-[1.03] active:scale-95 dark:bg-verde dark:text-inchiostro"
               >
-                {idx + 1 >= exercises.length ? "Finisci" : "Avanti"} →
+                {idx + 1 >= exercises.length ? u.quiz.finish : u.quiz.next} →
               </button>
             )}
           </div>
@@ -379,7 +382,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
         </motion.div>
       </AnimatePresence>
       <div className="mt-4 text-center text-xs text-muted-it">
-        Puntuación actual: <strong>{score}</strong> de {exercises.length}
+        {u.quiz.currentScore} <strong>{score}</strong> {u.quiz.ofN(exercises.length)}
       </div>
     </div>
   );

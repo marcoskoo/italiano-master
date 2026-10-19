@@ -8,9 +8,9 @@ import {
 import type { ViewId } from "@/lib/lms/types";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { dueCards } from "@/lib/lms/srs";
-import { NAV_GROUPS, VIEW_TITLES, navGroupsFor } from "@/lib/lms/nav";
+import { NAV_GROUPS, VIEW_TITLES, navGroupsFor, viewSupportsLang } from "@/lib/lms/nav";
 import { LANG_LIST, SHIPPED_LEVELS, LANGS } from "@/lib/lms/languages";
-import { viewSupportsLang } from "@/lib/lms/nav";
+import { useUi, navLabelFor, navGroupFor, viewTitleFor } from "@/lib/lms/ui";
 import { PlanChip, UpgradeCta } from "./plan-badge";
 import { loginRequest, setAdminToken, setSessionToken, logoutRequest, getAdminToken, getSessionToken } from "@/lib/lms/remote";
 import { SearchPalette } from "./search-palette";
@@ -36,6 +36,7 @@ function NavItem({ id, label, icon: Icon, onNav, active }: { id: ViewId; label: 
 
 /* ── Pestaña de la barra inferior móvil ───────────────────────────── */
 function BottomNavItem({ label, icon: Icon, active, onClick, badge }: { label: string; icon: typeof Home; active?: boolean; onClick: () => void; badge?: number }) {
+  const u = useUi();
   return (
     <button
       onClick={onClick}
@@ -48,7 +49,7 @@ function BottomNavItem({ label, icon: Icon, active, onClick, badge }: { label: s
       )}>
         <Icon className="h-5 w-5" aria-hidden="true" />
         {badge != null && badge > 0 && (
-          <span className="absolute -right-0.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rosso px-1 text-[9px] font-bold leading-none text-white shadow-sm" aria-label={`${badge} tarjetas por repasar`}>
+          <span className="absolute -right-0.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rosso px-1 text-[9px] font-bold leading-none text-white shadow-sm" aria-label={u.shell.dueBadge(badge)}>
             {badge > 99 ? "99+" : badge}
           </span>
         )}
@@ -86,9 +87,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [loginBusy, setLoginBusy] = useState(false);
 
   const rank = rankFor(xp);
+  /* v9.18 · UI en la lengua de estudio activa */
+  const u = useUi();
   /* v9.5.1: vista corrupta/desconocida en el estado persistido → fallback a inicio.
      Antes VIEW_TITLES[view] era undefined y meta.title tumbaba toda la app. */
-  const meta = VIEW_TITLES[view] ?? VIEW_TITLES.inicio;
+  const meta = viewTitleFor(activeLang, view ?? "inicio") ?? VIEW_TITLES.inicio;
   const appName = remoteConfig?.appName || "Italiano Master";
   const dueCount = useMemo(() => dueCards(srs).length, [srs]);
 
@@ -105,7 +108,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         ? { id: "giochi" as ViewId, label: "Juegos", icon: Gamepad2 }
         : itOnly("grammatica")
           ? { id: "grammatica" as ViewId, label: "Gramática", icon: Brain }
-          : { id: "legal" as ViewId, label: "Privacidad", icon: Shield };
+          : { id: "legal" as ViewId, label: u.nav.items.legal ?? "Privacidad", icon: Shield };
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -130,7 +133,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       setLoginPass("");
       if (user.role === "admin") navigate("admin");
     } catch (err) {
-      setLoginError(err instanceof Error ? err.message : "Error de acceso");
+      setLoginError(err instanceof Error ? err.message : u.shell.loginErr);
     } finally {
       setLoginBusy(false);
     }
@@ -172,11 +175,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const sidebar = useMemo(
     () => (
-      <nav aria-label="Secciones del curso" className="flex h-full flex-col gap-5 overflow-y-auto px-3 py-5 scrollbar-thin">
+      <nav aria-label={u.shell.navAria} className="flex h-full flex-col gap-5 overflow-y-auto px-3 py-5 scrollbar-thin">
         {/* v9.17 · selector de lengua de estudio */}
-        <div className="mb-1 rounded-2xl border border-soft bg-surface p-3" role="group" aria-label="Lengua de estudio">
+        <div className="mb-1 rounded-2xl border border-soft bg-surface p-3" role="group" aria-label={u.shell.langAria}>
           <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.16em] text-inchiostro/40 dark:text-inchiostro/50">
-            Estudiando · {LANGS[activeLang].variantEs}
+            {u.shell.studying} · {activeLang === "it" ? LANGS[activeLang].variantEs : LANGS[activeLang].variant}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {LANG_LIST.filter((L) => (SHIPPED_LEVELS[L.code] ?? []).length > 0).map((L) => (
@@ -206,13 +209,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           if (items.length === 0) return null;
           return (
             <div key={g.group}>
-              <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-inchiostro/40 dark:text-inchiostro/50">{g.group}</p>
+              <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-inchiostro/40 dark:text-inchiostro/50">{navGroupFor(activeLang, g.group)}</p>
               <div className="flex flex-col gap-0.5">
                 {items.map((item) => (
                   <NavItem
                     key={item.id}
                     id={item.id}
-                    label={item.label}
+                    label={navLabelFor(activeLang, item.id)}
                     icon={item.icon}
                     active={view === item.id}
                     onNav={() => { navigate(item.id); setMenuOpen(false); }}
@@ -227,12 +230,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <FlaskConical className="h-3.5 w-3.5" aria-hidden="true" /> Italiano Master
           </p>
           <p className="mt-1 text-[11px] leading-relaxed text-muted-it">
-            Di livello in livello: la tua strada da A1 a C2, con repaso inteligente e tutor IA.
+            {u.shell.tagline}
           </p>
         </div>
       </nav>
     ),
-    [view, navigate, features, activeLang]
+    [view, navigate, features, activeLang, u]
   );
 
   return (
@@ -240,7 +243,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* ── header ── */}
       <header className="sticky top-0 z-40 border-b border-soft bg-crema/90 backdrop-blur-md pt-safe">
         <div className="flex h-16 items-center gap-2 px-3 sm:gap-3 sm:px-6">
-          <button onClick={() => navigate("inicio")} className="flex items-center gap-2.5" aria-label="Ir al inicio">
+          <button onClick={() => navigate("inicio")} className="flex items-center gap-2.5" aria-label={u.shell.goHome}>
             <span className={cn(
               "flex h-9 w-9 items-center justify-center rounded-xl p-[1.5px] transition-all",
               plan === "platinum" ? "plan-platinum-bg ring-platinum" : "bg-gradient-to-br from-verde via-crema to-rosso"
@@ -263,23 +266,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <button
               onClick={() => window.dispatchEvent(new Event("im:open-search"))}
               className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-soft px-2.5 text-xs font-bold text-inchiostro/70 transition-colors hover:bg-verde-tenue sm:px-3 dark:text-inchiostro/80"
-              aria-label="Ricerca globale (Ctrl+K)"
-              title="Ricerca globale · Ctrl K"
+              aria-label={u.shell.searchAria}
+              title={u.shell.searchTitle}
             >
               <Search className="h-4 w-4" aria-hidden="true" />
-              <span className="hidden md:inline">Cerca</span>
+              <span className="hidden md:inline">{u.shell.search}</span>
               <kbd className="hidden rounded-md border border-soft bg-crema-scura px-1.5 py-0.5 font-mono text-[10px] text-muted-it lg:inline dark:bg-inchiostro/10">Ctrl K</kbd>
             </button>
-            <span className="inline-flex items-center gap-1 rounded-full bg-oro-tenue px-2.5 py-1.5 text-[11px] font-bold text-oro-scuro sm:gap-1.5 sm:px-3 sm:text-xs dark:text-oro" title="Puntos de experiencia">
+            <span className="inline-flex items-center gap-1 rounded-full bg-oro-tenue px-2.5 py-1.5 text-[11px] font-bold text-oro-scuro sm:gap-1.5 sm:px-3 sm:text-xs dark:text-oro" title={u.shell.xpTitle}>
               <Zap className="h-3.5 w-3.5" aria-hidden="true" />
               {xp}
               <span className="hidden sm:inline">XP</span>
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-rosso-tenue px-2.5 py-1.5 text-[11px] font-bold text-rosso-scuro sm:gap-1.5 sm:px-3 sm:text-xs dark:text-rosso" title="Racha de estudio">
+            <span className="inline-flex items-center gap-1 rounded-full bg-rosso-tenue px-2.5 py-1.5 text-[11px] font-bold text-rosso-scuro sm:gap-1.5 sm:px-3 sm:text-xs dark:text-rosso" title={u.shell.streakTitle}>
               <Flame className="h-3.5 w-3.5" aria-hidden="true" />
               {streak}
             </span>
-            <span className="hidden items-center gap-1.5 rounded-full bg-verde-tenue px-3 py-1.5 text-xs font-bold text-verde-scuro sm:inline-flex dark:text-verde" title="Nivel y rango">
+            <span className="hidden items-center gap-1.5 rounded-full bg-verde-tenue px-3 py-1.5 text-xs font-bold text-verde-scuro sm:inline-flex dark:text-verde" title={u.shell.levelTitle}>
               <Medal className="h-3.5 w-3.5" aria-hidden="true" />
               {level ?? "—"} · {rank.name}
             </span>
@@ -295,7 +298,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     "hidden items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold sm:inline-flex",
                     account.role === "admin" ? "bg-rosso-tenue text-rosso-scuro dark:text-rosso" : "bg-verde-tenue text-verde-scuro dark:text-verde"
                   )}
-                  title={account.role === "admin" ? "Administrador de la plataforma" : "Sesión iniciada"}
+                  title={account.role === "admin" ? u.shell.adminTitle : u.shell.sessionTitle}
                 >
                   {account.role === "admin" ? <Shield className="h-3.5 w-3.5" aria-hidden="true" /> : null}
                   {account.username}
@@ -303,8 +306,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <button
                   onClick={handleLogout}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-soft transition-colors hover:bg-rosso-tenue"
-                  aria-label="Cerrar sesión"
-                  title="Cerrar sesión"
+                  aria-label={u.shell.logout}
+                  title={u.shell.logout}
                 >
                   <LogOut className="h-4.5 w-4.5" aria-hidden="true" />
                 </button>
@@ -313,18 +316,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 onClick={() => setLoginOpen(true)}
                 className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-soft px-3 text-xs font-bold transition-colors hover:bg-verde-tenue"
-                aria-label="Iniciar sesión"
-                title="Iniciar sesión (estudiantes y administración)"
+                aria-label={u.shell.loginAria}
+                title={u.shell.loginTitle}
               >
                 <LogIn className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Accedi</span>
+                <span className="hidden sm:inline">{u.shell.signIn}</span>
               </button>
             )}
             <button
               onClick={() => updateSettings({ theme: settings.theme === "dark" ? "light" : "dark" })}
               className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-soft transition-colors hover:bg-verde-tenue"
-              aria-label={settings.theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-              title={settings.theme === "dark" ? "Modo claro" : "Modo oscuro"}
+              aria-label={settings.theme === "dark" ? u.shell.themeToLight : u.shell.themeToDark}
+              title={settings.theme === "dark" ? u.shell.titleLight : u.shell.titleDark}
             >
               {settings.theme === "dark" ? "☀️" : "🌙"}
             </button>
@@ -344,17 +347,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* ── drawer móvil ── */}
         {menuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menú de navegación">
+          <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={u.shell.menuAria}>
             <div className="fade-overlay absolute inset-0 bg-inchiostro/50 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
             <div className="drawer-panel absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-2xl">
               <div className="flex h-16 shrink-0 items-center justify-between border-b border-soft px-4">
                 <p className="truncate font-display text-lg font-semibold">
-                  {/* v9.8.2: invitado sin nombre → "Ciao!" en vez del marcador "Studente" */}
+                  {/* v9.8.2: invitado sin nombre → saludo en vez del marcador "Studente" */}
                   {userName && userName !== "Studente"
-                    ? `Ciao, ${privacyMode ? "•••" : userName.split(" ")[0]} 👋`
-                    : "Ciao! 👋"}
+                    ? `${u.shell.hello}, ${privacyMode ? "•••" : userName.split(" ")[0]} 👋`
+                    : `${u.shell.hello}! 👋`}
                 </p>
-                <button onClick={() => setMenuOpen(false)} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-soft" aria-label="Cerrar menú">
+                <button onClick={() => setMenuOpen(false)} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-soft" aria-label={u.shell.closeMenu}>
                   <X className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
@@ -370,8 +373,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="h-1.5 w-full bg-gradient-to-r from-verde via-crema to-rosso" aria-hidden="true" />
             <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-muted-it sm:flex-row sm:px-6">
               <p>
-                <span className="font-display text-sm font-semibold text-inchiostro">{appName}</span> · LMS de
-                italiano para hispanohablantes · desde cero hasta C2
+                <span className="font-display text-sm font-semibold text-inchiostro">{appName}</span> · {u.shell.footer}
               </p>
               <p className="font-mono">A1 → A2 → B1 → B2 → C1 → C2</p>
             </div>
@@ -386,45 +388,45 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             fichas (iconos + etiquetas claras) invisibles. bg-crema-scura
             (#242019 en oscuro) da elevación sutil sobre el fondo #1b1814. */}
         <nav
-          aria-label="Navegación rápida"
+          aria-label={u.shell.quickNavAria}
           className="bottom-nav-in bottom-safe fixed inset-x-0 bottom-0 z-40 border-t border-soft bg-crema/95 backdrop-blur-md lg:hidden dark:bg-crema-scura/95"
         >
           <div className="mx-auto flex max-w-md items-stretch px-1.5">
-            <BottomNavItem label="Inicio" icon={Home} active={view === "inicio"} onClick={() => navigate("inicio")} />
-            <BottomNavItem label="Cursos" icon={GraduationCap} active={view === "cursos"} onClick={() => navigate("cursos")} />
+            <BottomNavItem label={u.nav.items.inicio ?? "Inicio"} icon={Home} active={view === "inicio"} onClick={() => navigate("inicio")} />
+            <BottomNavItem label={u.nav.items.cursos ?? "Cursos"} icon={GraduationCap} active={view === "cursos"} onClick={() => navigate("cursos")} />
             {itOnly("repaso")
-              ? <BottomNavItem label="Repaso" icon={RefreshCcw} active={view === "repaso"} onClick={() => navigate("repaso")} badge={dueCount} />
-              : <BottomNavItem label="Letture" icon={BookOpen} active={view === "letture"} onClick={() => navigate("letture")} />}
+              ? <BottomNavItem label={u.nav.items.repaso ?? "Repaso"} icon={RefreshCcw} active={view === "repaso"} onClick={() => navigate("repaso")} badge={dueCount} />
+              : <BottomNavItem label={u.nav.items.letture ?? "Letture"} icon={BookOpen} active={view === "letture"} onClick={() => navigate("letture")} />}
             <BottomNavItem label={extraTab.label} icon={extraTab.icon} active={view === extraTab.id} onClick={() => navigate(extraTab.id)} />
-            <BottomNavItem label="Más" icon={Menu} active={menuOpen} onClick={() => setMenuOpen(true)} />
+            <BottomNavItem label={u.shell.more} icon={Menu} active={menuOpen} onClick={() => setMenuOpen(true)} />
           </div>
         </nav>
         {/* ── modal de acceso ── */}
         {loginOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Iniciar sesión">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={u.shell.loginAria}>
             <div className="absolute inset-0 bg-inchiostro/50 backdrop-blur-sm" onClick={() => setLoginOpen(false)} />
             <form
               onSubmit={handleLogin}
               className="relative w-full max-w-sm rounded-3xl border border-soft bg-surface p-6 shadow-2xl"
             >
               <div className="mb-1 flex items-center justify-between">
-                <h2 className="font-display text-xl font-semibold">Accedi al tuo account</h2>
-                <button type="button" onClick={() => setLoginOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-soft" aria-label="Cerrar">
+                <h2 className="font-display text-xl font-semibold">{u.shell.loginHeading}</h2>
+                <button type="button" onClick={() => setLoginOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-soft" aria-label={u.shell.closeMenu}>
                   <X className="h-4.5 w-4.5" aria-hidden="true" />
                 </button>
               </div>
-              <p className="mb-4 text-xs text-muted-it">Estudiantes y administración de la plataforma</p>
-              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it" htmlFor="login-user">Usuario</label>
+              <p className="mb-4 text-xs text-muted-it">{u.shell.loginSub}</p>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it" htmlFor="login-user">{u.shell.userLabel}</label>
               <input
                 id="login-user"
                 value={loginUser}
                 onChange={(e) => setLoginUser(e.target.value)}
                 autoComplete="username"
                 className="mb-3 w-full rounded-xl border border-soft bg-crema px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-verde/40"
-                placeholder="p. ej. giulia"
+                placeholder={u.shell.userPh}
                 required
               />
-              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it" htmlFor="login-pass">Contraseña</label>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it" htmlFor="login-pass">{u.shell.passLabel}</label>
               <input
                 id="login-pass"
                 type="password"
@@ -443,10 +445,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 disabled={loginBusy}
                 className="mt-2 w-full rounded-xl bg-verde px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:bg-verde-scuro disabled:opacity-60"
               >
-                {loginBusy ? "Verifica…" : "Entra"}
+                {loginBusy ? u.shell.checking : u.shell.enter}
               </button>
               <p className="mt-3 text-center text-[11px] leading-relaxed text-muted-it">
-                ¿No tienes cuenta? Puedes estudiar como invitado; la administración puede crear cuentas de estudiante desde el Panel Admin.
+                {u.shell.loginNote}
               </p>
             </form>
           </div>

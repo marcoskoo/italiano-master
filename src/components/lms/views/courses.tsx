@@ -18,6 +18,7 @@ import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
 import { useLms } from "@/lib/lms/store";
 import { newCard } from "@/lib/lms/srs";
 import { levelAllowed, requiredPlanForLevel, PLANS } from "@/lib/lms/plans";
+import { useUi } from "@/lib/lms/ui";
 import { QuizEngine } from "../quiz-engine";
 import { LessonReinforcement } from "../reinforcement";
 import { AudioButton } from "../audio-button";
@@ -41,6 +42,8 @@ function langOfIdSafe(id: string): LangCode {
 export function CoursesView() {
   const navParams = useLms((s) => s.navParams);
   const navigate = useLms((s) => s.navigate);
+  /* v9.18 · UI en la lengua de estudio activa */
+  const u = useUi();
   /* v9.17 · lengua de estudio activa y su percorso */
   const activeLang = useLms((s) => s.activeLang) as LangCode;
   const setActiveLang = useLms((s) => s.setActiveLang);
@@ -91,16 +94,12 @@ export function CoursesView() {
           className="overflow-hidden rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue via-surface to-oro-tenue/50 p-6 sm:p-8 dark:from-verde-tenue/30"
         >
           <p className="font-mono text-xs font-bold uppercase tracking-widest text-verde-scuro dark:text-verde">
-            Percorso comunicativo · metodologia Cambridge · {LANGS[activeLang].variantEs}
+            {u.courses.kicker} · {activeLang === "it" ? LANGS[activeLang].variantEs : LANGS[activeLang].variant}
           </p>
           <h1 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl">
-            {activeLang === "it" ? "Aprende italiano per fare cose in italiano" : `Aprende ${LANGS[activeLang].name.toLowerCase()} para hacer cosas en ${LANGS[activeLang].name.toLowerCase()}`}
+            {u.courses.heroTitle}
           </h1>
-          <p className="mt-3 max-w-3xl leading-relaxed text-muted-it">
-            {totalCbUnits} unidades comunicativas en {LANGS[activeLang].country}. Cada unidad es una secuencia pedagógica completa de 12 pasos —
-            de la situación real a la misión final — donde la gramática es herramienta, no destino. La
-            <strong> evaluación por competencias</strong> mide qué puedes <em>hacer</em>, no cuánto recuerdas.
-          </p>
+          <p className="mt-3 max-w-3xl leading-relaxed text-muted-it" dangerouslySetInnerHTML={{ __html: u.courses.heroDesc(totalCbUnits, u.common.country) }} />
           {/* v9.17 · selector de lengua de estudio */}
           <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Lengua de estudio">
             {LANG_LIST.filter((L) => (SHIPPED_LEVELS[L.code] ?? []).length > 0).map((L) => (
@@ -120,32 +119,32 @@ export function CoursesView() {
             ))}
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-bold">
-            <span className="rounded-full bg-verde px-3 py-1.5 text-white">{totalCbUnits} unità A1–C2</span>
-            <span className="rounded-full bg-inchiostro/5 px-3 py-1.5 text-muted-it dark:bg-inchiostro/15">12 passi per unità</span>
-            <span className="rounded-full bg-oro-tenue px-3 py-1.5 text-oro-scuro dark:text-oro">{totalCbDone}/{totalCbUnits} completate</span>
+            <span className="rounded-full bg-verde px-3 py-1.5 text-white">{u.courses.chipUnits(totalCbUnits)}</span>
+            <span className="rounded-full bg-inchiostro/5 px-3 py-1.5 text-muted-it dark:bg-inchiostro/15">{u.courses.chipSteps}</span>
+            <span className="rounded-full bg-oro-tenue px-3 py-1.5 text-oro-scuro dark:text-oro">{u.courses.chipDone(totalCbDone, totalCbUnits)}</span>
           </div>
         </motion.header>
 
         {/* profilo competenze */}
         <section className="rounded-3xl border border-soft bg-surface p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-display text-xl font-semibold">Profilo delle competenze</h2>
+            <h2 className="font-display text-xl font-semibold">{u.courses.profileTitle}</h2>
             <span className="rounded-full bg-inchiostro/5 px-3 py-1.5 text-xs font-bold text-muted-it dark:bg-inchiostro/15">
-              MCER {userLevel ?? "—"} · matriz de evaluación
+              {u.courses.profileChip(userLevel ?? "—")}
             </span>
           </div>
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {SKILL_MATRIX.map((s) => (
               <div key={s.key} className="rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
                 <div className="flex items-center justify-between">
-                  <p className="font-display font-semibold">{s.skill}</p>
+                  <p className="font-display font-semibold">{u.courses.skillNames[s.key] || s.skill}</p>
                   <span className="font-mono text-xs font-bold text-verde-scuro dark:text-verde">{skillStats[s.key]}%</span>
                 </div>
                 <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-inchiostro/10">
                   <div className="h-full rounded-full bg-gradient-to-r from-verde to-verde-scuro transition-all" style={{ width: `${Math.min(100, skillStats[s.key])}%` }} />
                 </div>
                 <p className="mt-2.5 text-xs leading-relaxed text-muted-it">
-                  <strong className="text-inchiostro">{userLevel ?? "A1"}:</strong> {s.descriptors[userLevel ?? "A1"]}
+                  <strong className="text-inchiostro">{userLevel ?? "A1"}:</strong> {u.courses.skillDescs[s.key]?.[userLevel ?? "A1"] ?? s.descriptors[userLevel ?? "A1"]}
                 </p>
               </div>
             ))}
@@ -185,13 +184,13 @@ export function CoursesView() {
                     🔒 {required.name}
                   </span>
                 )}
-                {!locked && isCurrent && <span className="absolute right-4 top-4 rounded-full bg-verde px-2.5 py-1 text-[10px] font-bold uppercase text-white">tu nivel</span>}
+                {!locked && isCurrent && <span className="absolute right-4 top-4 rounded-full bg-verde px-2.5 py-1 text-[10px] font-bold uppercase text-white">{u.courses.yourLevel}</span>}
                 <p className="font-display text-4xl font-bold">{lv.level}</p>
                 <p className="mt-1 text-sm font-semibold">{lv.label}</p>
                 <p className={cn("mt-2 text-sm leading-relaxed text-muted-it", locked && "line-clamp-2 opacity-70")}>{lv.subtitle}</p>
                 {locked ? (
                   <p className="mt-4 flex items-center gap-1.5 text-xs font-bold text-oro-scuro dark:text-oro">
-                    🔒 Contenuto a pagamento — sblocca con {required.name}
+                    🔒 {u.courses.paidContent(required.name)}
                   </p>
                 ) : (
                   <>
@@ -199,9 +198,9 @@ export function CoursesView() {
                       <div className="h-full rounded-full bg-verde transition-all" style={{ width: `${pct}%` }} />
                     </div>
                     <div className="mt-3 flex items-center gap-3 text-xs text-muted-it">
-                      <span className="flex items-center gap-1"><Target className="h-3.5 w-3.5" aria-hidden="true" /> {lv.units.length} unità</span>
-                      <span className="flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5" aria-hidden="true" /> ~{lv.hours}h</span>
-                      <span className="ml-auto font-bold text-verde-scuro dark:text-verde">{doneUnits}/{lv.units.length} ✓</span>
+                      <span className="flex items-center gap-1"><Target className="h-3.5 w-3.5" aria-hidden="true" /> {u.courses.units(lv.units.length)}</span>
+                      <span className="flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5" aria-hidden="true" /> {u.courses.hours(lv.hours)}</span>
+                      <span className="ml-auto font-bold text-verde-scuro dark:text-verde">{u.courses.doneCheck(doneUnits, lv.units.length)}</span>
                     </div>
                   </>
                 )}
@@ -209,7 +208,8 @@ export function CoursesView() {
             );
           })}
 
-          {/* curso Da zero (flujo clásico intacto) */}
+          {/* curso Da zero (flujo clásico · solo curso italiano) */}
+          {activeLang === "it" && (
           <motion.button
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -218,19 +218,18 @@ export function CoursesView() {
             className="group relative overflow-hidden rounded-3xl border-2 border-dashed border-soft bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
           >
             <p className="font-display text-4xl font-bold">0</p>
-            <p className="mt-1 text-sm font-semibold">Primi passi · Desde cero</p>
-            <p className="mt-2 text-sm leading-relaxed text-muted-it">Alfabeto, saludos y números: el póliza previa al curso comunicativo.</p>
+            <p className="mt-1 text-sm font-semibold">{u.courses.zeroTitle}</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-it">{u.courses.zeroDesc}</p>
             <div className="mt-4 flex items-center gap-3 text-xs text-muted-it">
-              <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" aria-hidden="true" /> {totalLessons("zero")} lezioni</span>
+              <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" aria-hidden="true" /> {u.courses.zeroLessons(totalLessons("zero"))}</span>
             </div>
           </motion.button>
+          )}
         </div>
 
         <p className="rounded-2xl border border-soft bg-surface p-4 text-sm leading-relaxed text-muted-it">
-          💡 Cada unidad comunicativa sigue la secuencia completa: <strong>situación → escucha → comprensión →
-          vocabulario en bloques → gramática inductiva → pronunciación → expresión oral → lectura → escritura →
-          cultura → misión real → autoevaluación</strong>. Las secciones alimentan tu perfil de competencias y el
-          motor adaptativo.
+          💡 {u.courses.sequenceTipA}<strong>{u.courses.sequenceTipB}</strong>.
+          {activeLang === "it" ? " Las secciones alimentan tu perfil de competencias y el motor adaptativo." : ""}
         </p>
       </div>
     );
@@ -243,7 +242,7 @@ export function CoursesView() {
     return (
       <div>
         <button onClick={() => setOpenLevel(null)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Percorso comunicativo
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {u.courses.backPath}
         </button>
 
         <div className="rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue to-surface p-6 dark:from-verde-tenue/30">
@@ -251,50 +250,50 @@ export function CoursesView() {
             <p className="font-display text-4xl font-bold">{cbLevel.level}</p>
             <p className="font-display text-xl font-semibold">{cbLevel.label}</p>
             <span className="rounded-full bg-inchiostro/5 px-3 py-1.5 text-xs font-bold text-muted-it dark:bg-inchiostro/15">
-              {cbLevel.units.length} unità · ~{cbLevel.hours}h · {doneUnits} completate
+              {u.courses.levelMeta(cbLevel.units.length, cbLevel.hours, doneUnits)}
             </span>
           </div>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-it"><strong className="text-inchiostro">Obiettivo:</strong> {cbLevel.subtitle}</p>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-it"><strong className="text-inchiostro">{u.courses.goal}</strong> {cbLevel.subtitle}</p>
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {cbLevel.units.map((u, i) => {
-            const prog = cambridgeProgress[u.id];
+          {cbLevel.units.map((un, i) => {
+            const prog = cambridgeProgress[un.id];
             const secs = prog?.sections.length ?? 0;
             const isDone = prog?.done ?? false;
-            const locked = !levelAllowed(plan, u.level);
+            const locked = !levelAllowed(plan, un.level);
             return (
               <motion.button
-                key={u.id}
+                key={un.id}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
-                onClick={() => (locked ? navigate("piani") : setOpenUnit(u.id))}
+                onClick={() => (locked ? navigate("piani") : setOpenUnit(un.id))}
                 className={cn(
                   "group flex flex-col overflow-hidden rounded-3xl border-2 text-left transition-all",
                   isDone ? "border-verde/40 bg-verde-tenue/40" : "border-soft bg-surface hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg",
                 )}
               >
                 <div className="relative h-32 w-full overflow-hidden">
-                  <ThemeImg src={u.img} alt={u.titleIt} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <ThemeImg src={un.img} alt={un.titleIt} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-inchiostro/70 to-transparent" />
-                  <span className="absolute left-3 top-3 rounded-full bg-inchiostro/70 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-white">Unità {u.n}</span>
+                  <span className="absolute left-3 top-3 rounded-full bg-inchiostro/70 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-white">{u.courses.unitN(un.n)}</span>
                   {isDone && (
                     <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-verde px-2.5 py-1 text-[10px] font-bold text-white">
-                      <CheckCircle2 className="h-3 w-3" aria-hidden="true" /> Completata
+                      <CheckCircle2 className="h-3 w-3" aria-hidden="true" /> {u.courses.completed}
                     </span>
                   )}
-                  <p className="absolute bottom-2.5 left-3 right-3 font-display text-base font-semibold leading-tight text-white">{u.titleIt}</p>
+                  <p className="absolute bottom-2.5 left-3 right-3 font-display text-base font-semibold leading-tight text-white">{un.titleIt}</p>
                 </div>
                 <div className="flex flex-1 flex-col p-4">
-                  <p className="text-sm font-semibold">{u.title}</p>
-                  <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-it">{u.goal}</p>
+                  <p className="text-sm font-semibold">{un.title}</p>
+                  <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-it">{un.goal}</p>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-inchiostro/10">
                     <div className="h-full rounded-full bg-verde transition-all" style={{ width: `${Math.round(secs / 12 * 100)}%` }} />
                   </div>
                   <div className="mt-2.5 flex items-center justify-between text-[11px] font-bold text-muted-it">
-                    <span>{secs}/12 passi</span>
-                    {u.grammar.topicId && <span className="text-verde-scuro dark:text-verde">+10 XP per passo</span>}
+                    <span>{u.courses.stepsOf(secs)}</span>
+                    {un.grammar.topicId && <span className="text-verde-scuro dark:text-verde">{u.courses.xpPerStep}</span>}
                   </div>
                 </div>
               </motion.button>

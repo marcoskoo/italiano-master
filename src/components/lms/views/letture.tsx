@@ -62,7 +62,7 @@ export function LettureView() {
   if (collection === "mente") {
     return (
       <div className="space-y-6">
-        <VoiceHint />
+        <VoiceHint lang={activeLang} />
         <MindCollection initialId={useLms.getState().navParams.mindId} onBack={() => setCollection(activeLang === "it" ? "libri" : "mente")} />
       </div>
     );
@@ -70,7 +70,7 @@ export function LettureView() {
 
   return (
     <div className="space-y-6">
-      <VoiceHint />
+      <VoiceHint lang={activeLang} />
 
       {/* colección temática v9.14 */}
       <button

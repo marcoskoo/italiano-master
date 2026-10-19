@@ -40,14 +40,17 @@ export function PlanChip({ size = "md", onClick, className }: { size?: "sm" | "m
 }
 
 /** CTA dorada para usuarios FREE. */
-export function UpgradeCta({ className, label = "⚡ PRO" }: { className?: string; label?: string }) {
+export function UpgradeCta({ className, label }: { className?: string; label?: string }) {
   const navigate = useLms((s) => s.navigate);
+  /* v9.18 · CTA en la lengua de estudio (default histórico ⚡ PRO) */
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const finalLabel = label ?? (activeLang === "it" ? "⚡ PRO" : "⚡ PRO");
   if (plansDisabled()) return null;
   return (
     <button
       type="button"
       onClick={() => navigate("piani")}
-      aria-label="Passa a PRO · Premium · Platinum"
+      aria-label={activeLang === "it" ? "Passa a PRO · Premium · Platinum" : "Upgrade to PRO · Premium · Platinum"}
       className={cn(
         "inline-flex min-h-9 items-center gap-1.5 rounded-full plan-gold-bg px-3.5 py-1.5 text-[11px] font-bold tracking-wide text-white shadow-md shadow-oro/30 transition-all hover:scale-105 active:scale-95",
         className

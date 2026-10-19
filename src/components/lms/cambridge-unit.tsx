@@ -10,6 +10,7 @@ import {
 import { CB_STEPS, type CbQuizItem, type CbUnit, type CbStepId } from "@/lib/lms/cambridge";
 import { unitById, levelOfUnit, langContent } from "@/lib/lms/lang";
 import { langOfId, LANGS } from "@/lib/lms/languages";
+import { uiFor } from "@/lib/lms/ui";
 import { READINGS } from "@/lib/lms/reading";
 import { LETTURE_BY_ID } from "@/lib/lms/letture";
 import { GRAMMAR_IMG } from "@/lib/lms/grammar";
@@ -54,7 +55,8 @@ function cbPerm(seed: number, len: number): number[] {
 }
 
 /* ── Mini-quiz inline (comprensión / gaps / repaso) ───────────────── */
-function CbQuiz({ items, title, onPass, passPct = 60 }: { items: CbQuizItem[]; title?: string; onPass?: (score: number, total: number) => void; passPct?: number }) {
+function CbQuiz({ items, title, onPass, passPct = 60, ui }: { items: CbQuizItem[]; title?: string; onPass?: (score: number, total: number) => void; passPct?: number; ui?: ReturnType<typeof uiFor> }) {
+  const u = ui ?? uiFor("it");
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const shuffled = useMemo(() => items.map((it) => {
     const perm = cbPerm(cbHash(it.q), it.options.length);
@@ -97,7 +99,7 @@ function CbQuiz({ items, title, onPass, passPct = 60 }: { items: CbQuizItem[]; t
             </div>
             {answers[i] !== undefined && (
               <p className="mt-2 text-xs font-semibold text-muted-it">
-                {answers[i] === it.answer ? "✔ Esatto!" : "✘ "} {it.explain || (answers[i] === it.answer ? "" : `Respuesta: ${it.options[it.answer]}`)}
+                {answers[i] === it.answer ? u.unit.quizEsatto : u.common.wrongMark} {it.explain || (answers[i] === it.answer ? "" : u.unit.quizRespuesta(it.options[it.answer]))}
               </p>
             )}
           </div>
@@ -106,11 +108,11 @@ function CbQuiz({ items, title, onPass, passPct = 60 }: { items: CbQuizItem[]; t
       {finished && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn("mt-5 rounded-2xl p-4 text-center", passed ? "bg-verde-tenue" : "bg-rosso-tenue/30")}>
           <p className="font-display text-lg font-bold">{score}/{shuffled.length} · {Math.round(score / shuffled.length * 100)}%</p>
-          <p className="text-sm text-muted-it">{passed ? "Superato ✔" : `Necesitas ${Math.ceil(shuffled.length * passPct / 100)} aciertos — reintenta las falladas arriba`}</p>
+          <p className="text-sm text-muted-it">{passed ? u.unit.quizSuperato : u.unit.quizNeedMore(Math.ceil(shuffled.length * passPct / 100))}</p>
           {onPass && passed && <AutoPass onPass={() => onPass(score, items.length)} />}
         </motion.div>
       )}
-      {!finished && <p className="mt-3 text-center text-xs font-semibold text-muted-it">{answered}/{shuffled.length} respondidas</p>}
+      {!finished && <p className="mt-3 text-center text-xs font-semibold text-muted-it">{u.unit.quizAnswered(answered, shuffled.length)}</p>}
     </div>
   );
 }
@@ -142,13 +144,15 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
   const unit = unitById(unitId) as CbUnit | undefined;
   /* v9.17 · lengua de esta unidad: decide TTS, hover y contenidos */
   const ulang = unit ? langOfId(unit.id) : "it";
+  /* v9.18 · fichas y enunciados en la lengua de la unidad */
+  const u = uiFor(ulang);
   const ulContent = langContent(ulang);
   const ulangInfo = LANGS[ulang];
   const cast: Record<string, SpeakerVoice> = useMemo(() => (unit ? buildCast(unit.dialogue.map((d) => d.speaker), ulang) : {}), [unit, ulang]);
   const doneSections = progress?.sections ?? [];
   const unitDone = progress?.done ?? false;
 
-  if (!unit) return <p className="text-muted-it">Unidad no encontrada.</p>;
+  if (!unit) return <p className="text-muted-it">{u.common.unitNotFound}</p>;
 
   const done = (s: CbStepId) => doneSections.includes(s);
   const mark = (s: CbStepId) => markCambridgeSection(unitId, s);
@@ -172,7 +176,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
     <div>
       {/* cabecera */}
       <button onClick={onBack} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {unit.level} · Unidad {unit.n}
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {u.unit.back(unit.level, unit.n)}
       </button>
 
       <header className="overflow-hidden rounded-3xl border border-soft bg-surface">
@@ -180,13 +184,13 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           <ThemeImg src={unit.img} alt={unit.titleIt} className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-inchiostro/85 via-inchiostro/30 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-widest opacity-90">Corso comunicativo {unit.level} · Unità {unit.n} di 12</p>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-widest opacity-90">{u.unit.kicker(unit.level, unit.n)}</p>
             <h1 className="font-display text-2xl font-semibold leading-tight sm:text-3xl">{unit.titleIt}</h1>
             <p className="text-sm italic opacity-90">{unit.title} — {unit.goal}</p>
           </div>
           {unitDone && (
             <span className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-verde px-3 py-1.5 text-xs font-bold text-white shadow-lg">
-              <Trophy className="h-3.5 w-3.5" aria-hidden="true" /> Completata
+              <Trophy className="h-3.5 w-3.5" aria-hidden="true" /> {u.unit.completedBadge}
             </span>
           )}
         </div>
@@ -194,7 +198,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
 
       {/* stepper */}
       <div className="sticky top-[98px] z-30 -mx-4 mt-6 overflow-x-auto border-b border-soft bg-crema/90 px-4 py-2.5 backdrop-blur-md sm:-mx-6 sm:px-6 md:top-16">
-        <div className="flex gap-1.5" role="tablist" aria-label="Pasos de la unidad">
+        <div className="flex gap-1.5" role="tablist" aria-label={u.unit.stepsAria}>
           {CB_STEPS.map((s, i) => {
             const SIcon = STEP_ICONS[i];
             const isDone = done(s.id as CbStepId);
@@ -210,7 +214,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                 )}
               >
                 {isDone ? <CheckCircle2 className="h-3.5 w-3.5 text-verde-scuro dark:text-verde" aria-hidden="true" /> : <SIcon className="h-3.5 w-3.5" aria-hidden="true" />}
-                {i + 1}. {s.label}
+                {i + 1}. {u.unit.steps[s.id] ?? s.label}
               </button>
             );
           })}
@@ -224,13 +228,13 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
           {/* 1 · MOTIVAZIONE */}
           {stepId === "scenario" && (
             <div className="space-y-6">
-              <SectionTitle icon={<Lightbulb className="h-5 w-5 text-oro" aria-hidden="true" />} n={1} title="Motivazione · La situación" />
+              <SectionTitle icon={<Lightbulb className="h-5 w-5 text-oro" aria-hidden="true" />} n={1} title={u.unit.tScenario} />
               <p className="rounded-2xl bg-crema-scura p-5 text-lg leading-relaxed dark:bg-inchiostro/10">{unit.scenario}</p>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-display text-lg font-semibold">Al final de esta unidad podrás…</h3>
+                  <h3 className="font-display text-lg font-semibold">{u.unit.goalsTitle}</h3>
                   <span className="rounded-full bg-verde-tenue px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-verde-scuro dark:text-verde">
-                    QCER · Obiettivi can-do
+                    {u.unit.candoChip}
                   </span>
                 </div>
                 <ul className="mt-3 space-y-2.5">
@@ -242,36 +246,36 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   ))}
                 </ul>
                 <p className="mt-3 text-xs text-muted-it">
-                  Objetivos en formato <strong>can-do</strong> del Marco Común Europeo de Referencia (nivel {unit.level}).{" "}
+                  {u.unit.candoNote(unit.level)}{" "}
                   <button onClick={() => navigate("quadro")} className="font-bold text-verde underline underline-offset-2 hover:text-verde-scuro dark:hover:text-verde">
-                    Confronta con la scala globale →
+                    {u.unit.compareScale}
                   </button>
                 </p>
               </div>
-              <StepDone done={done("scenario")} onDone={() => mark("scenario")} label="He leído la situación y los objetivos" />
+              <StepDone done={done("scenario")} onDone={() => mark("scenario")} label={u.unit.doneScenario} ui={u} />
             </div>
           )}
 
           {/* 2 · ASCOLTO */}
           {stepId === "ascolto" && (
             <div className="space-y-5">
-              <SectionTitle icon={<Ear className="h-5 w-5 text-verde" aria-hidden="true" />} n={2} title="Ascolto · Escucha antes de analizar" />
+              <SectionTitle icon={<Ear className="h-5 w-5 text-verde" aria-hidden="true" />} n={2} title={u.unit.tAscolto} />
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={playDialogue}
                   className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-5 py-3 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-[1.03]"
                 >
                   {playing ? <Pause className="h-4 w-4" aria-hidden="true" /> : <Play className="h-4 w-4" aria-hidden="true" />}
-                  {playing ? "Ferma" : "Ascolta il dialogo"}
+                  {playing ? u.common.stop : u.unit.listenDialogue}
                 </button>
                 <button onClick={() => setShowTr(!showTr)} className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-soft bg-crema px-4 py-2.5 text-xs font-bold transition-all hover:border-verde/40">
                   {showTr ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-                  {showTr ? "Nascondi lo spagnolo" : "Mostra lo spagnolo"}
+                  {showTr ? u.common.hideEs : u.common.showEs}
                 </button>
               </div>
               {/* v9.15 · hover de traducción en cada battuta del dialogo */}
               <p className="rounded-xl bg-crema-scura px-3.5 py-2 text-xs font-semibold text-muted-it dark:bg-inchiostro/10">
-                Pasa el cursor (o toca) cualquier palabra subrayada del diálogo para ver su traducción y escucharla.
+                {u.common.hoverHint}
               </p>
               <div className="space-y-3">
                 {unit.dialogue.map((l, i) => (
@@ -288,7 +292,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                 ))}
               </div>
               <p className="text-xs font-semibold text-muted-it">💡 Consejo: escucha dos veces sin traducción, lee después.</p>
-              <StepDone done={done("ascolto")} onDone={() => mark("ascolto")} label="He escuchado el diálogo" />
+              <StepDone done={done("ascolto")} onDone={() => mark("ascolto")} label={u.unit.doneAscolto} ui={u} />
             </div>
           )}
 
@@ -319,7 +323,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   </div>
                 ))}
               </div>
-              <StepDone done={done("vocabolario")} onDone={() => mark("vocabolario")} label="He escuchado y repetido los chunks" />
+              <StepDone done={done("vocabolario")} onDone={() => mark("vocabolario")} label={u.unit.doneVocab} ui={u} />
             </div>
           )}
 
@@ -370,16 +374,16 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   ))}
                 </div>
               )}
-              <CbQuiz items={unit.grammar.gaps} title="Metti alla prova" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+              <CbQuiz items={unit.grammar.gaps} title={u.unit.putToTest} ui={u} onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
               {/* v9.15 · esercizio di uso: qué forma encaja en este contexto */}
               {deep && deep.usi.length > 0 && (
-                <CbQuiz items={deep.usi} title="Scegli l'uso · ¿cuál encaja y por qué?" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+                <CbQuiz items={deep.usi} title={u.unit.chooseUse} ui={u} onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
               )}
               {/* v9.13 · allenamiento extra: trasformazioni + correzione errori */}
               {ulContent?.drills[unit.id] && (
                 <>
-                  <CbQuiz items={ulContent.drills[unit.id].transform} title="Allenamento extra · Trasformazioni" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
-                  <CbQuiz items={ulContent.drills[unit.id].errors} title="Correggi l'errore · detective grammaticale" onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+                  <CbQuiz items={ulContent.drills[unit.id].transform} title={u.unit.extraTransform} ui={u} onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
+                  <CbQuiz items={ulContent.drills[unit.id].errors} title={u.unit.fixError} ui={u} onPass={() => { if (!done("grammatica")) mark("grammatica"); }} />
                 </>
               )}
               {unit.grammar.topicId && (
@@ -414,7 +418,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   </div>
                 ))}
               </div>
-              <StepDone done={done("pronuncia")} onDone={() => mark("pronuncia")} label="He escuchado y repetido los pares en voz alta" />
+              <StepDone done={done("pronuncia")} onDone={() => mark("pronuncia")} label={u.unit.donePron} ui={u} />
             </div>
           )}
 
@@ -432,7 +436,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   </div>
                 ))}
               </div>
-              <StepDone done={done("parlato")} onDone={() => mark("parlato")} label="He hecho la escalera de speaking en voz alta" />
+              <StepDone done={done("parlato")} onDone={() => mark("parlato")} label={u.unit.doneParlato} ui={u} />
             </div>
           )}
 
@@ -447,9 +451,9 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
               <details className="group rounded-3xl border border-soft bg-surface">
                 <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-5 py-3 text-sm font-bold text-muted-it transition-colors hover:text-verde">
                   <BookOpen className="h-4 w-4 shrink-0 text-oro" aria-hidden="true" />
-                  Lettura estesa del corso (opcional)
-                  <span className="ml-auto text-xs font-normal opacity-70 group-open:hidden">mostra</span>
-                  <span className="ml-auto hidden text-xs font-normal opacity-70 group-open:inline">nascondi</span>
+                  {u.unit.extReading}
+                  <span className="ml-auto text-xs font-normal opacity-70 group-open:hidden">{u.unit.show}</span>
+                  <span className="ml-auto hidden text-xs font-normal opacity-70 group-open:inline">{u.unit.hide}</span>
                 </summary>
                 <div className="space-y-4 border-t border-soft p-5">
               {reading ? (
@@ -477,7 +481,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
               ) : lettura ? (
                 <>
                   <div className="rounded-2xl border-l-4 border-oro bg-oro-tenue/30 p-5">
-                    <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-oro-scuro">Lettura del corso</p>
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-oro-scuro">{u.unit.courseReading}</p>
                     <h4 className="font-display text-xl font-semibold">{lettura.title}</h4>
                     <p className="text-sm italic text-muted-it">{lettura.titleEs}</p>
                   </div>
@@ -485,7 +489,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                     <ThemeImg src={`/images/letture/${lettura.id}.jpg`} alt={lettura.title} className="h-full w-full object-cover" />
                   </div>
                   <button onClick={() => navigate("letture", { letturaId: lettura.id } as never)} className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-verde/40 bg-verde-tenue px-4 py-2.5 text-xs font-bold transition-all hover:border-verde">
-                    <ExternalLink className="h-4 w-4" aria-hidden="true" /> Apri la lettura completa
+                    <ExternalLink className="h-4 w-4" aria-hidden="true" /> {u.unit.openFull}
                   </button>
                 </>
               ) : unit.reading.lines ? (
@@ -506,20 +510,20 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
               {unit.reading.question && (
                 <div className="rounded-2xl bg-verde-tenue/50 p-5">
                   <p className="font-semibold">🤔 {unit.reading.question}</p>
-                  <p className="mt-1 text-xs text-muted-it">Responde en voz alta o por escrito: la comprensión se demuestra produciendo.</p>
+                  <p className="mt-1 text-xs text-muted-it">{u.unit.readQuestion}</p>
                 </div>
               )}
-              <StepDone done={done("lettura")} onDone={() => mark("lettura")} label="He leído y respondido la pregunta" />
+              <StepDone done={done("lettura")} onDone={() => mark("lettura")} label={u.unit.doneLettura} ui={u} />
             </div>
           )}
 
           {/* 9 · SCRITTURA */}
           {stepId === "scrittura" && (
             <div className="space-y-5">
-              <SectionTitle icon={<PenLine className="h-5 w-5 text-rosso" aria-hidden="true" />} n={9} title="Scrittura · Escribe tú" />
+              <SectionTitle icon={<PenLine className="h-5 w-5 text-rosso" aria-hidden="true" />} n={9} title={u.unit.tScrittura} />
               <div className="rounded-2xl border-l-4 border-rosso bg-crema p-5 dark:bg-inchiostro/5">
                 <p className="leading-relaxed">{unit.writing.task}</p>
-                <p className="mt-2 font-mono text-xs font-bold text-muted-it">Mínimo {unit.writing.minWords} parole</p>
+                <p className="mt-2 font-mono text-xs font-bold text-muted-it">{u.unit.minWords(unit.writing.minWords)}</p>
               </div>
               <ul className="space-y-2">
                 {unit.writing.tips.map((t, i) => <li key={i} className="rounded-xl bg-crema-scura px-4 py-3 text-sm dark:bg-inchiostro/10">💡 {t}</li>)}
@@ -528,47 +532,47 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                 value={essay}
                 onChange={(e) => setEssay(e.target.value)}
                 rows={7}
-                placeholder="Scrivi qui il tuo testo in italiano…"
+                placeholder={u.unit.writePh}
                 className="w-full rounded-2xl border-2 border-soft bg-crema p-4 leading-relaxed outline-none transition-colors focus:border-verde dark:bg-inchiostro/10"
               />
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="font-mono text-xs font-bold text-muted-it">{essay.trim() ? essay.trim().split(/\s+/).length : 0} / {unit.writing.minWords} parole</p>
+                <p className="font-mono text-xs font-bold text-muted-it">{u.unit.wordsCount(essay.trim() ? essay.trim().split(/\s+/).length : 0, unit.writing.minWords)}</p>
                 <button onClick={() => setShowModel(!showModel)} className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-soft bg-crema px-4 py-2.5 text-xs font-bold transition-all hover:border-verde/40">
                   {showModel ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-                  {showModel ? "Nascondi il modello" : "Vedi il modello"}
+                  {showModel ? u.unit.hideModel : u.unit.viewModel}
                 </button>
               </div>
               {showModel && (
                 <div className="space-y-2 rounded-2xl bg-oro-tenue/40 p-5">
-                  <p className="font-mono text-[10px] font-bold uppercase tracking-wider">Modello di riferimento</p>
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-wider">{u.unit.modelTitle}</p>
                   {unit.writing.model.map((m, i) => <p key={i} className="leading-relaxed">{m}</p>)}
                 </div>
               )}
-              <StepDone done={done("scrittura")} onDone={() => mark("scrittura")} label="He escrito mi texto" />
+              <StepDone done={done("scrittura")} onDone={() => mark("scrittura")} label={u.unit.doneScrittura} ui={u} />
             </div>
           )}
 
           {/* 10 · CULTURA */}
           {stepId === "cultura" && (
             <div className="space-y-5">
-              <SectionTitle icon={<Globe2 className="h-5 w-5 text-verde-scuro" aria-hidden="true" />} n={10} title={`Cultura · ${unit.culture.title}`} />
+              <SectionTitle icon={<Globe2 className="h-5 w-5 text-verde-scuro" aria-hidden="true" />} n={10} title={u.unit.tCultura(unit.culture.title)} />
               <div className="relative overflow-hidden rounded-2xl">
                 <ThemeImg src={unit.img} alt={unit.culture.title} className="h-32 w-full object-cover" />
               </div>
               <p className="rounded-2xl bg-crema-scura p-5 leading-relaxed dark:bg-inchiostro/10">{unit.culture.text}</p>
-              <p className="text-xs font-semibold text-muted-it">Lingua + cultura + comunicazione: en Italia no se pueden separar.</p>
-              <StepDone done={done("cultura")} onDone={() => mark("cultura")} label="He leído la nota cultural" />
+              <p className="text-xs font-semibold text-muted-it">{u.unit.cultureNote}</p>
+              <StepDone done={done("cultura")} onDone={() => mark("cultura")} label={u.unit.doneCultura} ui={u} />
             </div>
           )}
 
           {/* 11 · MISSIONE */}
           {stepId === "missione" && (
             <div className="space-y-5">
-              <SectionTitle icon={<Sparkles className="h-5 w-5 text-oro" aria-hidden="true" />} n={11} title={`Missione finale · ${unit.finalTask.title}`} />
+              <SectionTitle icon={<Sparkles className="h-5 w-5 text-oro" aria-hidden="true" />} n={11} title={u.unit.tMissione(unit.finalTask.title)} />
               <div className="rounded-2xl border-2 border-dashed border-oro/50 bg-oro-tenue/25 p-5">
                 <p className="leading-relaxed">{unit.finalTask.brief}</p>
               </div>
-              <h4 className="font-display font-semibold">Checklist de éxito</h4>
+              <h4 className="font-display font-semibold">{u.unit.checklist}</h4>
               <ul className="space-y-2">
                 {unit.finalTask.checklist.map((c, i) => (
                   <li key={i} className="flex items-start gap-2 rounded-xl bg-crema px-4 py-3 text-sm dark:bg-inchiostro/5">
@@ -576,18 +580,17 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                   </li>
                 ))}
               </ul>
-              <StepDone done={done("missione")} onDone={() => mark("missione")} label="Misión completada" />
+              <StepDone done={done("missione")} onDone={() => mark("missione")} label={u.unit.doneMissione} ui={u} />
             </div>
           )}
 
           {/* 12 · AUTOVALUTAZIONE */}
           {stepId === "autovalutazione" && (
             <div className="space-y-6">
-              <SectionTitle icon={<Target className="h-5 w-5 text-rosso" aria-hidden="true" />} n={12} title="Autovalutazione · ¿Qué puedes hacer ya?" />
+              <SectionTitle icon={<Target className="h-5 w-5 text-rosso" aria-hidden="true" />} n={12} title={u.unit.tAutovalutazione} />
               <p className="rounded-2xl bg-crema-scura p-4 text-sm leading-relaxed dark:bg-inchiostro/10">
-                Marca solo lo que <strong>ya puedes hacer sin ayuda</strong>: son los descriptores can-do de la unidad (QCER {unit.level}).
-                Quedan guardados como evidencia de tu progreso en el{" "}
-                <button onClick={() => navigate("quadro")} className="font-bold text-verde underline underline-offset-2">Quadro MCER</button>.
+                {u.unit.selfIntroA} {u.unit.selfIntroB(unit.level)}{" "}
+                <button onClick={() => navigate("quadro")} className="font-bold text-verde underline underline-offset-2">{u.nav.items.quadro ?? "Quadro MCER"}</button>.
               </p>
               <div className="space-y-2.5">
                 {unit.cando.map((c, i) => {
@@ -614,7 +617,7 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                 return (
                   <div className="rounded-2xl border border-soft p-4">
                     <div className="flex items-center justify-between text-sm font-bold">
-                      <span>Obiettivi can-do confermati</span>
+                      <span>{u.unit.candoConfirmed}</span>
                       <span className={cn("font-mono", doneCount === unit.cando.length ? "text-verde" : "text-muted-it")}>
                         {doneCount}/{unit.cando.length}
                       </span>
@@ -628,34 +631,34 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                     </div>
                     {doneCount === unit.cando.length && (
                       <p className="mt-2 text-xs font-bold text-verde-scuro dark:text-verde">
-                        Tutti gli obiettivi dell'unità confermati — evidenza can-do completa ✓
+                        {u.unit.candoComplete}
                       </p>
                     )}
                   </div>
                 );
               })()}
-              <CbQuiz items={unit.review} title="Quiz de repaso de la unidad" onPass={() => {
+              <CbQuiz items={unit.review} title={u.unit.reviewQuiz} ui={u} onPass={() => {
                 setReviewPassed(true);
                 if (!done("autovalutazione")) mark("autovalutazione");
               }} />
               {reviewPassed && !unitDone && (
                 <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="rounded-3xl border-2 border-verde bg-verde-tenue p-6 text-center">
                   <PartyPopper className="mx-auto h-10 w-10 text-verde" aria-hidden="true" />
-                  <h3 className="mt-3 font-display text-2xl font-bold">Unità {unit.n} completata! 🎉</h3>
-                  <p className="mt-1 text-sm text-muted-it">+{60} XP · Has demostrado que puedes hacer cosas en italiano.</p>
+                  <h3 className="mt-3 font-display text-2xl font-bold">{u.unit.unitDone(unit.n)}</h3>
+                  <p className="mt-1 text-sm text-muted-it">+{60} XP · {u.unit.unitDoneSub}</p>
                   <button
                     onClick={() => completeCambridgeUnit(unitId, 100)}
                     className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 text-sm font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03]"
                   >
-                    <GraduationCap className="h-4 w-4" aria-hidden="true" /> Riscuoti il diploma dell'unità
+                    <GraduationCap className="h-4 w-4" aria-hidden="true" /> {u.unit.claimDiploma}
                   </button>
                 </motion.div>
               )}
               {unitDone && (
                 <div className="rounded-3xl border-2 border-verde bg-verde-tenue p-6 text-center">
                   <Trophy className="mx-auto h-10 w-10 text-verde" aria-hidden="true" />
-                  <h3 className="mt-3 font-display text-xl font-bold">Unità già completata</h3>
-                  <p className="mt-1 text-sm text-muted-it">Puedes repasar cualquier paso cuando quieras.</p>
+                  <h3 className="mt-3 font-display text-xl font-bold">{u.unit.alreadyDone}</h3>
+                  <p className="mt-1 text-sm text-muted-it">{u.unit.reviewAnytime}</p>
                 </div>
               )}
             </div>
@@ -665,11 +668,11 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
         {/* navegación inferior */}
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:justify-between">
           <button onClick={prevStep} disabled={step === 0} className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-soft bg-crema px-5 py-2.5 text-sm font-bold transition-all enabled:hover:border-verde/40 disabled:opacity-40">
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Precedente
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {u.unit.prev}
           </button>
-          <p className="order-first w-full text-center font-mono text-xs font-bold text-muted-it sm:order-none sm:w-auto">{step + 1} / {CB_STEPS.length} · {doneSections.length} secciones completadas</p>
+          <p className="order-first w-full text-center font-mono text-xs font-bold text-muted-it sm:order-none sm:w-auto">{u.unit.stepCount(step + 1, doneSections.length)}</p>
           <button onClick={nextStep} disabled={step === CB_STEPS.length - 1} className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all enabled:hover:scale-[1.03] disabled:opacity-40">
-            Successivo <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            {u.unit.next} <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       </motion.main>
@@ -687,7 +690,8 @@ function SectionTitle({ icon, n, title }: { icon: React.ReactNode; n: number; ti
   );
 }
 
-function StepDone({ done, onDone, label }: { done: boolean; onDone: () => void; label: string }) {
+function StepDone({ done, onDone, label, ui }: { done: boolean; onDone: () => void; label: string; ui?: ReturnType<typeof uiFor> }) {
+  const u = ui ?? uiFor("it");
   return (
     <button
       onClick={onDone}
@@ -698,7 +702,7 @@ function StepDone({ done, onDone, label }: { done: boolean; onDone: () => void; 
       )}
     >
       {done ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : <Circle className="h-4 w-4" aria-hidden="true" />}
-      {done ? "Sezione completata ✔ (+10 XP ya ganados)" : label}
+      {done ? u.unit.doneSection : label}
     </button>
   );
 }

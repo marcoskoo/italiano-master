@@ -11,6 +11,7 @@ import { unitById, levelOfUnit, langContent } from "@/lib/lms/lang";
 import { langOfId, LANGS } from "@/lib/lms/languages";
 import type { LangCode } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
+import { useUi } from "@/lib/lms/ui";
 import { MindReadingCard } from "./mind-readings";
 import { cn } from "@/lib/utils";
 
@@ -60,6 +61,9 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
   const markReadingDone = useLms((s) => s.markReadingDone);
   /* v9.17 · colección de la lengua activa */
   const activeLang = useLms((s) => s.activeLang) as LangCode;
+  /* v9.18 · colección y controles en la lengua de estudio */
+  const u = useUi();
+  const themeLabel = (t: MindTheme) => u.mind.themeLabels[t] ?? MIND_THEME_LABEL[t];
   const LIB = useMemo(
     () => (langContent(activeLang)?.mind ?? {}),
     [activeLang]
@@ -109,20 +113,20 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
             onClick={onBack}
             className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde"
           >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Meditazione e consapevolezza
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {u.mind.collectionName}
           </button>
 
           <div className="mb-4 flex flex-wrap items-center gap-2 text-xs font-bold">
             <span className="rounded-full bg-oro-tenue px-3 py-1.5 text-oro-scuro dark:text-oro">
-              {THEME_EMOJI[entry.reading.theme]} {MIND_THEME_LABEL[entry.reading.theme]}
+              {THEME_EMOJI[entry.reading.theme]} {themeLabel(entry.reading.theme)}
             </span>
             <span className="rounded-full bg-inchiostro/5 px-3 py-1.5 font-mono uppercase text-muted-it dark:bg-inchiostro/15">
               {lvl}
             </span>
             {unit && (
               <span className="rounded-full border border-soft bg-surface px-3 py-1.5 text-muted-it">
-                {lvl} · Unidad {unit.n} — {unit.title}
-                {idxInUnit >= 0 ? ` · Lettura ${idxInUnit + 1} di 3` : ""}
+                {lvl} · {u.mind.unitN(unit.n)} — {unit.title}
+                {idxInUnit >= 0 ? ` · ${u.mind.readingOf(idxInUnit + 1)}` : ""}
               </span>
             )}
           </div>
@@ -150,7 +154,7 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
               dir="prev"
             />
             <p className="text-center text-xs font-semibold text-muted-it">
-              {readingsRead.filter((id) => id.startsWith("md-")).length}/{LIB_ENTRIES.length} letture della collezione completate
+              {u.mind.libDone(readingsRead.filter((id) => id.startsWith("md-")).length, LIB_ENTRIES.length)}
             </p>
             <NavButton
               disabled={entries.findIndex((e) => e.reading.id === openId) === -1 || entries.findIndex((e) => e.reading.id === openId) >= entries.length - 1}
@@ -176,17 +180,15 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="flex items-center gap-2 font-display text-xl font-bold sm:text-2xl">
-              🧘 Meditazione e consapevolezza
+              🧘 {u.mind.collectionName}
             </h3>
             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-it">
-              198 lecturas de meditación, espiritualidad, presencia (aquí y ahora) y relajación física y mental —
-              de A1 a C2, cada una con predicción, traducción palabra a palabra al pasar el cursor y las 7
-              estrategias de comprensión lectora y de escucha.
+              {u.mind.collectionDesc(LIB_ENTRIES.length)}
             </p>
           </div>
           <div className="flex flex-col items-center rounded-2xl bg-surface/80 px-4 py-2.5 shadow-sm">
             <span className="font-display text-lg font-bold text-verde-scuro dark:text-verde">{doneCount}/{LIB_ENTRIES.length}</span>
-            <span className="text-[10px] font-bold uppercase tracking-wide text-muted-it">completate</span>
+            <span className="text-[10px] font-bold uppercase tracking-wide text-muted-it">{u.mind.completedLabel}</span>
           </div>
         </div>
       </div>
@@ -197,15 +199,15 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Cerca per parole chiave: respiro, silenzio, gratitudine…"
-          aria-label="Cerca letture della collezione per parole chiave"
+          placeholder={u.mind.searchPh}
+          aria-label={u.mind.searchAria}
           className="min-h-11 w-full bg-transparent text-sm outline-none placeholder:text-muted-it/60"
         />
         {query && (
           <button
             type="button"
             onClick={() => setQuery("")}
-            aria-label="Cancella la ricerca"
+            aria-label={u.mind.clearFilters}
             className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-it transition-colors hover:bg-crema-scura hover:text-inchiostro dark:hover:bg-inchiostro/10 dark:hover:text-surface"
           >
             <X className="h-4 w-4" aria-hidden="true" />
@@ -227,7 +229,7 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
                 : "border-soft bg-surface hover:border-verde/40"
             )}
           >
-            {t === "tutti" ? "Tutti i temi" : `${THEME_EMOJI[t]} ${MIND_THEME_LABEL[t]}`}
+            {t === "tutti" ? u.mind.allTopics : `${THEME_EMOJI[t]} ${themeLabel(t)}`}
           </button>
         ))}
       </div>
@@ -245,26 +247,26 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
                 : "border-soft bg-surface hover:border-verde/40"
             )}
           >
-            {l === "tutti" ? "MCER" : l}
+            {l === "tutti" ? u.mind.cefrChip : l}
           </button>
         ))}
       </div>
 
       <p className="mt-4 text-sm text-muted-it">
-        {entries.length} letture · comprensione di lettura e d'ascolto · traducción al pasar el cursor
-        {qTokens.length > 0 && <> · ricerca: <strong className="text-inchiostro dark:text-surface">{query.trim()}</strong></>}
+        {u.mind.countLine(entries.length)}
+        {qTokens.length > 0 && <> · {u.mind.searchTag} <strong className="text-inchiostro dark:text-surface">{query.trim()}</strong></>}
       </p>
 
       {qTokens.length > 0 && entries.length === 0 && (
         <div className="mt-3 rounded-2xl border-2 border-dashed border-soft bg-surface p-6 text-center">
-          <p className="font-semibold">Nessun risultato per «{query.trim()}»</p>
-          <p className="mt-1 text-sm text-muted-it">Prueba con otra palabra (puedes escribir sin acentos: «perche» encuentra «perché») o quita los filtros activos.</p>
+          <p className="font-semibold">{u.mind.noResults(query.trim())}</p>
+          <p className="mt-1 text-sm text-muted-it">{u.mind.noResultsHint}</p>
           <button
             type="button"
             onClick={() => { setQuery(""); setTheme("tutti"); setLevel("tutti"); }}
             className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-verde/40 bg-verde-tenue px-4 py-2.5 text-xs font-bold transition-all hover:border-verde"
           >
-            <X className="h-4 w-4" aria-hidden="true" /> Azzera filtri e ricerca
+            <X className="h-4 w-4" aria-hidden="true" /> {u.mind.clearFilters}
           </button>
         </div>
       )}
@@ -288,13 +290,13 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
               )}
             >
               {done && (
-                <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-verde text-white shadow-md" title="Completata">
+                <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-verde text-white shadow-md" title={u.mind.completedLabel}>
                   <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                 </span>
               )}
               <div className="flex items-center justify-between gap-2">
                 <span className="rounded-full bg-oro-tenue px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-oro-scuro dark:text-oro">
-                  {THEME_EMOJI[e.reading.theme]} {MIND_THEME_LABEL[e.reading.theme]}
+                  {THEME_EMOJI[e.reading.theme]} {themeLabel(e.reading.theme)}
                 </span>
                 <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">
                   {lvl}
@@ -303,12 +305,12 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
               <p className="mt-3 font-display text-lg font-semibold leading-snug">{e.reading.title}</p>
               <p className="mt-0.5 text-sm italic text-muted-it">{e.reading.titleEs}</p>
               <p className="mt-2.5 text-xs text-muted-it">
-                {e.reading.minutes} min · {e.reading.paragraphs.length} paragrafi{unit ? ` · Unidad ${unit.n}` : ""}
+                {u.mind.minPar(e.reading.minutes, e.reading.paragraphs.length)}{unit ? ` · ${u.mind.unitN(unit.n)}` : ""}
               </p>
               {/* estrategias incluidas */}
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {STRATEGY_ICONS.predict}
-                <span className="text-[10px] font-bold uppercase tracking-wide text-muted-it">Predizione</span>
+                <span className="text-[10px] font-bold uppercase tracking-wide text-muted-it">{u.mind.predictionBtn}</span>
                 {(e.reading.quiz ? ["quiz"] : []).concat(
                   e.reading.vf ? ["vf"] : [],
                   e.reading.ideas ? ["ideas"] : [],
@@ -330,6 +332,7 @@ export function MindCollection({ initialId, onBack }: { initialId?: string | nul
 }
 
 function NavButton({ dir, disabled, onClick }: { dir: "prev" | "next"; disabled: boolean; onClick: () => void }) {
+  const u = useUi();
   return (
     <button
       type="button"
@@ -341,7 +344,7 @@ function NavButton({ dir, disabled, onClick }: { dir: "prev" | "next"; disabled:
       )}
     >
       <ArrowLeft className={cn("h-4 w-4", dir === "next" && "rotate-180")} aria-hidden="true" />
-      {dir === "prev" ? "Precedente" : "Successiva"}
+      {dir === "prev" ? u.mind.prev : u.mind.next}
     </button>
   );
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Volume2 } from "lucide-react";
 import { speak } from "@/lib/lms/tts";
 import { useLms } from "@/lib/lms/store";
+import { useUi } from "@/lib/lms/ui";
 import type { LangCode } from "@/lib/lms/types";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ interface AudioButtonProps {
 /** Botón de audio TTS con velocidad de los ajustes y estado visual. */
 export function AudioButton({ text, size = "md", rate, label, variant = "icon", className, lang = "it" }: AudioButtonProps) {
   const settingsRate = useLms((s) => s.settings.audioRate);
+  const u = useUi();
   const [playing, setPlaying] = useState(false);
 
   const handle = useCallback((e: React.MouseEvent) => {
@@ -40,7 +42,7 @@ export function AudioButton({ text, size = "md", rate, label, variant = "icon", 
       <button
         type="button"
         onClick={handle}
-        aria-label={label ?? `Escuchar: ${text}`}
+        aria-label={label ?? `${lang === "it" ? "Escuchar" : "Listen"}: ${text}`}
         className={cn(
           "inline-flex min-h-11 items-center gap-2 rounded-xl border border-verde/30 bg-verde-tenue px-4 py-2.5 text-sm font-semibold text-verde-scuro transition-all hover:scale-[1.02] hover:border-verde/60 active:scale-95 dark:text-verde",
           playing && "animate-pulse",
@@ -48,7 +50,7 @@ export function AudioButton({ text, size = "md", rate, label, variant = "icon", 
         )}
       >
         <Volume2 className={cn(icons.md, playing && "animate-bounce")} aria-hidden="true" />
-        {label ?? "Ascolta"}
+        {label ?? (lang === "it" ? "Ascolta" : "Listen")}
       </button>
     );
   }
@@ -57,8 +59,8 @@ export function AudioButton({ text, size = "md", rate, label, variant = "icon", 
     <button
       type="button"
       onClick={handle}
-      aria-label={label ?? `Escuchar: ${text}`}
-      title="Escuchar (audio italiano)"
+      aria-label={label ?? `${lang === "it" ? "Escuchar" : "Listen"}: ${text}`}
+      title={lang === "it" ? "Escuchar (audio italiano)" : "Listen"}
       className={cn(
         "inline-flex shrink-0 items-center justify-center rounded-full border border-verde/30 bg-verde-tenue text-verde-scuro transition-all hover:scale-110 hover:border-verde/60 active:scale-90 dark:text-verde",
         sizes[size],
@@ -72,14 +74,14 @@ export function AudioButton({ text, size = "md", rate, label, variant = "icon", 
 }
 
 /** Muestra un aviso si el navegador no tiene voz italiana (solo una vez). */
-export function VoiceHint() {
+export function VoiceHint({ lang = "it" }: { lang?: import("@/lib/lms/types").LangCode }) {
   const [hasVoice, setHasVoice] = useState(true);
   useEffect(() => {
     const check = () => {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         const voices = window.speechSynthesis.getVoices();
         if (voices.length > 0) {
-          setHasVoice(voices.some((v) => v.lang?.toLowerCase().startsWith("it")));
+          setHasVoice(voices.some((v) => v.lang?.toLowerCase().startsWith(lang)));
         }
       }
     };
@@ -91,8 +93,9 @@ export function VoiceHint() {
   if (hasVoice) return null;
   return (
     <p className="rounded-xl border border-oro/40 bg-oro-tenue px-4 py-2.5 text-xs text-oro-scuro dark:text-oro">
-      🔈 Tu navegador no tiene voz italiana instalada: el audio usará la voz disponible. Para mejor
-      experiencia, usa Chrome o instala una voz it-IT en tu sistema.
+      {lang === "it"
+        ? "🔈 Tu navegador no tiene voz italiana instalada: el audio usará la voz disponible. Para mejor experiencia, usa Chrome o instala una voz it-IT en tu sistema."
+        : "🔈 Your browser has no matching voice installed: audio will use the available voice. For the best experience, use Chrome or install a matching voice on your system."}
     </p>
   );
 }

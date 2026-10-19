@@ -12,9 +12,11 @@ import type { ViewId, LangCode } from "./types";
 const IT_ONLY: LangCode[] = ["it"];
 
 export interface NavItem { id: ViewId; label: string; icon: typeof Home; langs?: LangCode[]; }
-export const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
+export interface NavGroup { group: string; groupId: "ruta" | "cursos" | "destrezas" | "herramientas" | "plugins" | "evaluacion" | "sistema"; items: NavItem[]; }
+export const NAV_GROUPS: NavGroup[] = [
   {
     group: "Tu ruta",
+    groupId: "ruta",
     items: [
       { id: "inicio", label: "Inicio", icon: Home },
       { id: "pianosettimanale", label: "Piano settimanale", icon: CalendarDays, langs: IT_ONLY },
@@ -28,10 +30,12 @@ export const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
   },
   {
     group: "Cursos",
+    groupId: "cursos",
     items: [{ id: "cursos", label: "Cursos A1–C2", icon: GraduationCap }],
   },
   {
     group: "Práctica por destreza",
+    groupId: "destrezas",
     items: [
       { id: "grammatica", label: "Gramática", icon: Brain, langs: IT_ONLY },
       { id: "vocabolario", label: "Vocabulario", icon: Library, langs: IT_ONLY },
@@ -46,6 +50,7 @@ export const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
   },
   {
     group: "Herramientas",
+    groupId: "herramientas",
     items: [
       { id: "dizionario", label: "Diccionario", icon: BookMarked },
       { id: "coniugatore", label: "Conjugador", icon: Calculator, langs: IT_ONLY },
@@ -62,6 +67,7 @@ export const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
   },
   {
     group: "Estensioni · Plugin",
+    groupId: "plugins",
     items: [
       { id: "proverbi", label: "Proverbi e modi di dire", icon: Quote, langs: IT_ONLY },
       { id: "falsiamici", label: "Falsi amici", icon: AlertTriangle, langs: IT_ONLY },
@@ -78,6 +84,7 @@ export const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
   },
   {
     group: "Evaluación",
+    groupId: "evaluacion",
     items: [
       { id: "repaso", label: "Repaso inteligente", icon: RefreshCcw, langs: IT_ONLY },
       { id: "esami", label: "Exámenes", icon: ScrollText, langs: IT_ONLY },
@@ -88,6 +95,7 @@ export const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
   },
   {
     group: "Sistema",
+    groupId: "sistema",
     items: [
       { id: "impostazioni", label: "Configuración", icon: Settings },
       { id: "legal", label: "Privacidad y legal", icon: Globe },

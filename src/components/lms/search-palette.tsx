@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BookMarked, Brain, CornerDownLeft, Search } from "lucide-react";
 import { useLms } from "@/lib/lms/store";
 import { NAV_FLAT, VIEW_TITLES, navFlatFor } from "@/lib/lms/nav";
+import { useUi, navLabelFor } from "@/lib/lms/ui";
 import { searchDictionary } from "@/lib/lms/dict/dictionary";
+import { EN_DICT } from "@/lib/lms/dict/lang-en";
 import { GRAMMAR } from "@/lib/lms/grammar";
 import type { ViewId } from "@/lib/lms/types";
 import { cn } from "@/lib/utils";
@@ -51,6 +53,7 @@ export function SearchPalette() {
 function PaletteInner({ onClose }: { onClose: () => void }) {
   const navigate = useLms((s) => s.navigate);
   const activeLang = useLms((s) => s.activeLang) ?? "it";
+  const u = useUi();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -65,35 +68,48 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
     const query = q.trim().toLowerCase();
     const out: Hit[] = [];
 
-    /* 1 · secciones de la app */
+    /* 1 · secciones de la app (etiquetas en la lengua activa) */
     const views = query
-      ? navFlatFor(activeLang).filter((v) => v.label.toLowerCase().includes(query) || VIEW_TITLES[v.id].title.toLowerCase().includes(query))
+      ? navFlatFor(activeLang).filter((v) => navLabelFor(activeLang, v.id).toLowerCase().includes(query) || (VIEW_TITLES[v.id]?.title ?? "").toLowerCase().includes(query))
       : navFlatFor(activeLang).slice(0, 6);
     for (const v of views.slice(0, 6)) {
       out.push({
         id: `v-${v.id}`,
         kind: "vista",
-        title: v.label,
+        title: navLabelFor(activeLang, v.id),
         sub: v.group,
         action: () => navigate(v.id as ViewId),
       });
     }
 
-    /* 2 · diccionario (solo con consulta) */
+    /* 2 · diccionario de la lengua activa (solo con consulta) */
     if (query.length >= 2) {
-      for (const w of searchDictionary(q.trim()).slice(0, 8)) {
-        out.push({
-          id: `p-${w.id}`,
-          kind: "parola",
-          title: w.it,
-          sub: `${w.es} · ${w.level}`,
-          action: () => navigate("dizionario", { wordId: w.id }),
-        });
+      if (activeLang === "it") {
+        for (const w of searchDictionary(q.trim()).slice(0, 8)) {
+          out.push({
+            id: `p-${w.id}`,
+            kind: "parola",
+            title: w.it,
+            sub: `${w.es} · ${w.level}`,
+            action: () => navigate("dizionario", { wordId: w.id }),
+          });
+        }
+      } else if (activeLang === "en") {
+        const nq = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        for (const w of EN_DICT.filter((w) => w.it.toLowerCase().includes(nq) || w.es.toLowerCase().includes(nq)).slice(0, 8)) {
+          out.push({
+            id: `p-${w.id}`,
+            kind: "parola",
+            title: w.it,
+            sub: `${w.es} · ${w.level}`,
+            action: () => navigate("dizionario", { wordId: w.id }),
+          });
+        }
       }
     }
 
-    /* 3 · gramática */
-    if (query.length >= 2) {
+    /* 3 · gramática (solo italiano: los temas son del curso IT) */
+    if (query.length >= 2 && activeLang === "it") {
       for (const g of GRAMMAR.filter((g) => g.title.toLowerCase().includes(query) || g.titleIt.toLowerCase().includes(query)).slice(0, 5)) {
         out.push({
           id: `g-${g.id}`,
@@ -106,7 +122,7 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
     }
 
     return out;
-  }, [q, navigate]);
+  }, [q, navigate, activeLang]);
 
   /* reset de la selección al cambiar la consulta (ajuste en render) */
   const [prevQ, setPrevQ] = useState(q);
@@ -133,7 +149,7 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
   }, [sel]);
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-start justify-center px-4 pt-[12vh]" role="dialog" aria-modal="true" aria-label="Ricerca globale">
+    <div className="fixed inset-0 z-[70] flex items-start justify-center px-4 pt-[12vh]" role="dialog" aria-modal="true" aria-label={u.search.dialogAria}>
       <div className="absolute inset-0 bg-inchiostro/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-xl overflow-hidden rounded-3xl border border-soft bg-surface shadow-2xl">
         {/* input */}
@@ -143,9 +159,9 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
             ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Cerca: parole, grammatica, sezioni… (8.022 lemi)"
+            placeholder={u.search.placeholder}
             className="min-h-14 w-full bg-transparent text-base outline-none placeholder:text-inchiostro/35"
-            aria-label="Consulta de búsqueda"
+            aria-label={u.search.aria}
             autoComplete="off"
             spellCheck={false}
           />
@@ -156,14 +172,14 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
         <div ref={listRef} className="max-h-[52vh] overflow-y-auto p-2 scrollbar-thin">
           {hits.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-muted-it">
-              Nessun risultato per «{q}». Prova con otra palabra o explora el diccionario.
+              {u.search.empty(q)}
             </p>
           ) : (
             <>
               {(["vista", "parola", "grammatica"] as const).map((kind) => {
                 const group = hits.map((h, i) => ({ h, i })).filter((x) => x.h.kind === kind);
                 if (group.length === 0) return null;
-                const label = kind === "vista" ? "Sezioni" : kind === "parola" ? "Dizionario" : "Grammatica";
+                const label = kind === "vista" ? u.search.gVista : kind === "parola" ? u.search.gParola : u.search.gGrammatica;
                 return (
                   <div key={kind} className="mb-1">
                     <p className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[0.16em] text-inchiostro/40 dark:text-inchiostro/50">{label}</p>
@@ -201,8 +217,8 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="flex items-center justify-between border-t border-soft px-4 py-2 text-[10px] text-muted-it">
-          <span>↑↓ navigare · ⏎ aprire</span>
-          <span>Ricerca globale · {hits.length} risultati</span>
+          <span>{u.search.navHint}</span>
+          <span>{u.search.results(hits.length)}</span>
         </div>
       </div>
     </div>

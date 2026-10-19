@@ -15,6 +15,9 @@ import { dueCards } from "@/lib/lms/srs";
 import { CEFR_LEVELS, LEVEL_LABELS } from "@/lib/lms/types";
 import { PLANS, levelAllowed, requiredPlanForLevel, generateWeeklyPlan, planLimits } from "@/lib/lms/plans";
 import { QUEST_DEFS, ALL_QUESTS_BONUS_XP } from "@/lib/lms/quests";
+import { useUi } from "@/lib/lms/ui";
+import { viewSupportsLang } from "@/lib/lms/nav";
+import { EN_DICT } from "@/lib/lms/dict/lang-en";
 import { InstallButton } from "../pwa";
 import { PremiumBanner } from "../plan-badge";
 import { AudioButton } from "../audio-button";
@@ -96,8 +99,12 @@ export function HomeView() {
   useEffect(() => { ensureDailyQuests(); }, [ensureDailyQuests]);
 
   const rank = rankFor(xp);
+  /* v9.18 · UI en la lengua de estudio activa */
+  const u = useUi();
   const due = dueCards(srs).length;
-  const wordOfDay = useMemo(() => pickDaily(VOCAB), []);
+  /* v9.18 · palabra del día del diccionario de la lengua activa */
+  const DAILY_SOURCE = activeLang === "en" ? EN_DICT : VOCAB;
+  const wordOfDay = useMemo(() => pickDaily(DAILY_SOURCE), [DAILY_SOURCE]);
   const weaknesses = useMemo(() => weakTopics(errorLog, 3), [errorLog]);
   const showWeekly = planLimits(plan).weeklyPlan && (remoteConfig?.features.weeklyPlan ?? true);
   const weeklyPlan = useMemo(
@@ -129,21 +136,21 @@ export function HomeView() {
         <div>
           <p className="inline-flex items-center gap-2 rounded-full border border-verde/30 bg-verde-tenue px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-verde-scuro dark:text-verde">
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-            LMS completo · da zero a C2
+            {u.home.heroChip}
           </p>
           {/* v9.8.2: saludo con nombre editable en línea (lápiz si ya hay nombre,
               "Come ti chiami?" si es invitado sin nombre). */}
           {editingName ? (
             <form onSubmit={saveName} className="mt-5 flex max-w-lg flex-wrap items-center gap-2.5">
-              <span className="font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">Ciao</span>
+              <span className="font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">{u.home.greetWord}</span>
               <input
                 autoFocus
                 value={nameDraft}
                 onChange={(e) => setNameDraft(e.target.value)}
                 maxLength={40}
                 enterKeyHint="done"
-                placeholder="Il tuo nome…"
-                aria-label="Il tuo nome"
+                placeholder={u.home.namePh}
+                aria-label={u.home.nameAria}
                 className="min-h-12 w-40 flex-1 rounded-2xl border-2 border-verde/40 bg-surface px-4 font-display text-2xl font-semibold tracking-tight outline-none transition-colors focus:border-verde sm:w-52"
               />
               <button
@@ -151,28 +158,28 @@ export function HomeView() {
                 disabled={!nameDraft.trim()}
                 className="inline-flex min-h-12 items-center gap-1.5 rounded-2xl bg-verde px-5 py-3 text-sm font-bold text-white shadow-md shadow-verde/25 transition-all hover:scale-[1.03] hover:bg-verde-scuro active:scale-95 disabled:opacity-50"
               >
-                Salva
+                {u.home.save}
               </button>
               <button
                 type="button"
                 onClick={() => setEditingName(false)}
                 className="inline-flex min-h-12 items-center rounded-2xl border-2 border-soft px-4 py-3 text-sm font-bold text-muted-it transition-colors hover:border-rosso/40 hover:text-rosso"
-                aria-label="Annulla"
+                aria-label={u.home.cancel}
               >
                 ✕
               </button>
             </form>
           ) : (
             <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-              Ciao{firstName ? ` ${firstName}` : "!"}
+              {u.home.greetWord}{firstName ? ` ${firstName}` : "!"}
               {firstName && activeTitle ? <span className="ml-2 align-middle text-base font-bold text-terracotta dark:text-verde">{TITLE_EMOJIS[activeTitle] ?? ""} {TITLES_SHORT[activeTitle] ?? ""}</span> : null}{firstName ? "," : ""}{" "}
-              <span className="italic text-verde-scuro dark:text-verde">impariamo l&apos;italiano.</span>
+              <span className="italic text-verde-scuro dark:text-verde">{u.home.greetTail}</span>
               {firstName && (
                 <button
                   onClick={() => { setNameDraft(firstName); setEditingName(true); }}
                   className="ml-2 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-soft align-middle text-muted-it transition-colors hover:border-verde/40 hover:text-verde-scuro dark:hover:text-verde"
-                  aria-label="Cambia il tuo nome"
-                  title="Cambia il tuo nome"
+                  aria-label={u.home.changeName}
+                  title={u.home.changeName}
                 >
                   <Pencil className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -184,41 +191,43 @@ export function HomeView() {
               onClick={() => { setNameDraft(""); setEditingName(true); }}
               className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-dashed border-verde/40 bg-verde-tenue/60 px-5 py-2.5 text-sm font-bold text-verde-scuro transition-all hover:border-verde hover:bg-verde-tenue active:scale-95 dark:text-verde"
             >
-              <Pencil className="h-4 w-4" aria-hidden="true" /> Come ti chiami? Personalizza il saluto
+              <Pencil className="h-4 w-4" aria-hidden="true" /> {u.home.askName}
             </button>
           )}
           {nameJustSaved && (
             <p className="mt-3 inline-flex items-center gap-2 rounded-2xl bg-verde-tenue px-4 py-2 text-sm font-bold text-verde-scuro dark:text-verde" role="status">
-              💚 Nome salvato! Benvenuto/a, {firstName} · +1 XP
+              {u.home.nameSaved(firstName)}
             </p>
           )}
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-it sm:text-lg">
-            Un sistema integral: lecciones conectadas, las 4 destrezas, gramática paso a paso,
-            pronunciación interactiva, repaso espaciado, tutor IA y certificados.{" "}
-            <span className="font-display italic text-inchiostro">La tua strada verso la padronanza.</span>
+            {u.home.heroDescA}{" "}
+            <span className="font-display italic text-inchiostro">{u.home.heroDescB}</span>
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            {!placementDone ? (
+            {/* v9.18 · el test de ubicación es del curso italiano: en otras lenguas se ofrece el curso directo */}
+            {!placementDone && activeLang === "it" ? (
               <button onClick={() => navigate("test")} className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03] hover:bg-verde-scuro active:scale-95">
-                <Compass className="h-4 w-4" aria-hidden="true" /> Haz el test de nivel
+                <Compass className="h-4 w-4" aria-hidden="true" /> {u.home.testCta}
               </button>
             ) : (
               <button onClick={() => (nextUnit ? navigate("cursos", { level: nextUnit.level, unitId: nextUnit.id }) : navigate("cursos", { level: level ?? "A1" }))} className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03] hover:bg-verde-scuro active:scale-95">
                 <GraduationCap className="h-4 w-4" aria-hidden="true" />
-                {nextUnit ? `Continúa: ${nextUnit.title}` : "Explora los cursos"}
+                {nextUnit ? u.home.continueCta(nextUnit.title) : u.home.exploreCta}
               </button>
             )}
-            <button onClick={() => navigate("tutor")} className="inline-flex min-h-12 items-center gap-2 rounded-2xl border-2 border-inchiostro/15 bg-surface px-6 py-3 font-bold transition-all hover:border-verde/40 active:scale-95">
-              <Sparkles className="h-4 w-4 text-verde" aria-hidden="true" /> Habla con el Tutor IA
-            </button>
+            {activeLang === "it" && (
+              <button onClick={() => navigate("tutor")} className="inline-flex min-h-12 items-center gap-2 rounded-2xl border-2 border-inchiostro/15 bg-surface px-6 py-3 font-bold transition-all hover:border-verde/40 active:scale-95">
+                <Sparkles className="h-4 w-4 text-verde" aria-hidden="true" /> {u.home.tutorCta}
+              </button>
+            )}
           </div>
 
           <dl className="mt-9 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {([
-              { label: "XP total", value: xp.toLocaleString(), icon: Zap, tone: "oro" },
-              { label: streakFreezes > 0 ? `Racha · ${streakFreezes}❄️` : "Racha", value: `${streak} d`, icon: Flame, tone: "rosso" },
-              { label: lastWheelDate === new Date().toISOString().slice(0, 10) ? "Monete" : "Monete · ruota!", value: coins.toLocaleString(), icon: Coins, tone: "oro", to: "premi" as const },
-              { label: "Tarjetas", value: String(Object.keys(srs).length), icon: Library, tone: "terracotta" },
+              { label: u.home.xpTotal, value: xp.toLocaleString(), icon: Zap, tone: "oro" },
+              { label: streakFreezes > 0 ? u.home.streakF(streakFreezes) : u.home.streak, value: `${streak} d`, icon: Flame, tone: "rosso" },
+              { label: lastWheelDate === new Date().toISOString().slice(0, 10) ? u.home.coins : u.home.coinsSpin, value: coins.toLocaleString(), icon: Coins, tone: "oro", to: "premi" as const },
+              { label: u.home.cards, value: String(Object.keys(srs).length), icon: Library, tone: "terracotta" },
             ] as const).map((card) => {
               const inner = (
                 <>
@@ -242,13 +251,15 @@ export function HomeView() {
           {/* v8.0 · avviso congelamento racha */}
           {lastFreezeDate === new Date().toISOString().slice(0, 10) && (
             <p className="mt-3 rounded-2xl border border-rosso/25 bg-rosso-tenue/60 px-4 py-3 text-sm font-semibold text-rosso-scuro dark:text-rosso">
-              ❄️ La tua racha è stata congelata oggi: i giorni persi non hanno interrotto la serie. Ti quedan {streakFreezes} congelamenti.
+              ❄️ {u.home.freezeNote(streakFreezes)}
             </p>
           )}
         </div>
-        <div className="relative">
-          <MorphingHero />
-        </div>
+        {activeLang === "it" && (
+          <div className="relative">
+            <MorphingHero />
+          </div>
+        )}
       </section>
 
       {/* ── BANNER PREMIUM (solo FREE) ── */}
@@ -308,7 +319,7 @@ export function HomeView() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-soft bg-surface p-6">
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-              <Target className="h-5 w-5 text-rosso" aria-hidden="true" /> Missione di oggi
+              <Target className="h-5 w-5 text-rosso" aria-hidden="true" /> {u.home.missionTitle}
             </h2>
             <span className="text-xs font-bold text-muted-it">{dailyXp} / {goal} XP</span>
           </div>
@@ -328,7 +339,7 @@ export function HomeView() {
                 <li key={q.id} className={cn("rounded-xl px-3.5 py-2.5 transition-colors", q.done ? "bg-verde-tenue dark:bg-verde-tenue/30" : "bg-crema-scura dark:bg-inchiostro/10")}>
                   <div className="flex items-center justify-between gap-3">
                     <span className="min-w-0 flex-1 font-semibold">
-                      <span aria-hidden="true">{def?.emoji ?? "🎯"}</span> {def?.label(q.target) ?? q.type}
+                      <span aria-hidden="true">{def?.emoji ?? "🎯"}</span> {u.questLabels[q.type] ? u.questLabels[q.type](q.target) : (def?.label(q.target) ?? q.type)}
                     </span>
                     <span className={cn("shrink-0 font-mono text-xs font-bold", q.done ? "text-verde-scuro dark:text-verde" : "text-muted-it")}>
                       {q.done ? "✓" : `${q.progress}/${q.target}`}
@@ -348,16 +359,16 @@ export function HomeView() {
           </ul>
           {quests.length > 0 && quests.every((q) => q.done) ? (
             <p className="mt-4 rounded-xl bg-verde-tenue px-4 py-2.5 text-center text-sm font-bold text-verde-scuro dark:text-verde">
-              🎉 Missioni completate! +{ALL_QUESTS_BONUS_XP} XP bonus
+              🎉 {u.home.missionsDone(ALL_QUESTS_BONUS_XP)}
             </p>
           ) : (
             <p className="mt-3 text-center text-[11px] text-muted-it">
-              Completa las 3 misiones → +{ALL_QUESTS_BONUS_XP} XP bonus
+              {u.home.missionsHint(ALL_QUESTS_BONUS_XP)}
             </p>
           )}
           {missionPct >= 100 && (
             <p className="mt-3 rounded-xl bg-verde-tenue px-4 py-2.5 text-center text-sm font-bold text-verde-scuro dark:text-verde">
-              🏁 Obiettivo giornaliero raggiunto!
+              🏁 {u.home.dailyGoalDone}
             </p>
           )}
         </motion.div>
@@ -366,7 +377,7 @@ export function HomeView() {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue to-surface p-6 dark:from-verde-tenue/40">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-                <Volume2 className="h-5 w-5 text-verde" aria-hidden="true" /> Parola del giorno
+                <Volume2 className="h-5 w-5 text-verde" aria-hidden="true" /> {u.home.wordOfDay}
               </h2>
               <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">{wordOfDay.level}</span>
             </div>
@@ -386,14 +397,14 @@ export function HomeView() {
         )}
       </section>
 
-      {/* ── DEBILIDADES (motor adaptativo) ── */}
-      {weaknesses.length > 0 && (
+      {/* ── DEBILIDADES (motor adaptativo · curso italiano) ── */}
+      {weaknesses.length > 0 && activeLang === "it" && (
         <section className="rounded-3xl border border-oro/30 bg-oro-tenue/60 p-6">
           <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-            <Trophy className="h-5 w-5 text-oro-scuro dark:text-oro" aria-hidden="true" /> Il motore adattivo ti consiglia
+            <Trophy className="h-5 w-5 text-oro-scuro dark:text-oro" aria-hidden="true" /> {u.home.weakTitle}
           </h2>
           <p className="mt-1.5 text-sm text-muted-it">
-            Detecté tus temas más flojos a partir de tus errores. Practícalos ahora para reforzarlos:
+            {u.home.weakDesc}
           </p>
           <div className="mt-4 flex flex-wrap gap-2.5">
             {weaknesses.map((w) => (
@@ -415,9 +426,11 @@ export function HomeView() {
 
       {/* ── ACCESO RÁPIDO ── */}
       <section>
-        <h2 className="font-display text-2xl font-semibold">Esplora la piattaforma</h2>
+        <h2 className="font-display text-2xl font-semibold">{u.home.exploreTitle}</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {QUICK.map((q, i) => (
+          {QUICK.filter((q) => viewSupportsLang(q.id, activeLang)).map((q, i) => {
+            const qd = u.home.quick[q.id] ?? { label: q.label, tag: q.it, desc: q.desc };
+            return (
             <motion.button
               key={q.id}
               initial={{ opacity: 0, y: 12 }}
@@ -430,21 +443,23 @@ export function HomeView() {
                 <q.icon className="h-5 w-5" aria-hidden="true" />
               </span>
               <p className="mt-3.5 font-display text-lg font-semibold">
-                {q.label} <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-it">{q.it}</span>
+                {qd.label} <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-it">{qd.tag}</span>
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-it">{q.desc}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-it">{qd.desc}</p>
             </motion.button>
-          ))}
+            );
+          })}
         </div>
       </section>
 
-      {/* ── PLUGIN · ESTENSIONI ── */}
+      {/* ── PLUGIN · ESTENSIONI (solo curso italiano) ── */}
+      {activeLang === "it" && (
       <section>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="font-display text-2xl font-semibold">Estensioni · Plugin</h2>
+          <h2 className="font-display text-2xl font-semibold">{u.home.pluginsTitle}</h2>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-it">v5.0 · 8 strumenti</p>
         </div>
-        <p className="mt-1.5 text-sm text-muted-it">Herramientas extra que amplían tu aprendizaje más allá de las lecciones.</p>
+        <p className="mt-1.5 text-sm text-muted-it">{u.home.pluginsNote}</p>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {PLUGINS.map((p, i) => (
             <motion.button
@@ -466,26 +481,29 @@ export function HomeView() {
           ))}
         </div>
       </section>
+      )}
 
       {/* ── NIVELES ── */}
       <section>
-        <h2 className="font-display text-2xl font-semibold">I sei livelli del MCER</h2>
-        <p className="mt-1.5 text-sm text-muted-it">66 unidades comunicativas con misión real y evaluación por competencias.</p>
+        <h2 className="font-display text-2xl font-semibold">{u.home.levelsTitle}</h2>
+        <p className="mt-1.5 text-sm text-muted-it">{u.home.levelsDesc(CAMB.reduce((n, l) => n + l.units.length, 0))}</p>
         <div className="mt-5 grid gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+          {activeLang === "it" && (
           <button
             onClick={() => navigate("cursos", { level: "zero" })}
             className="rounded-2xl border-2 border-dashed border-terracotta/40 bg-rosso-tenue/50 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-terracotta"
           >
-            <p className="font-display text-2xl font-bold text-terracotta">Da zero</p>
-            <p className="mt-1 text-xs text-muted-it">Alfabeto, saludos, números</p>
+            <p className="font-display text-2xl font-bold text-terracotta">{u.home.fromZero}</p>
+            <p className="mt-1 text-xs text-muted-it">{u.home.fromZeroDesc}</p>
           </button>
+          )}
           {CEFR_LEVELS.map((lv) => {
             const levelOff = !(remoteConfig?.levels?.[lv] ?? true);
             if (levelOff) {
               return (
                 <button key={lv} disabled className="cursor-not-allowed rounded-2xl border-2 border-dashed border-soft bg-inchiostro/5 p-4 text-left opacity-60">
                   <p className="font-display text-2xl font-bold text-muted-it">{lv}</p>
-                  <p className="mt-1 text-xs text-muted-it">Disattivato dall'amministrazione</p>
+                  <p className="mt-1 text-xs text-muted-it">{u.home.levelOff}</p>
                 </button>
               );
             }
@@ -507,8 +525,8 @@ export function HomeView() {
                 <p className={cn("font-display text-2xl font-bold", locked ? "text-oro-scuro dark:text-oro" : "text-verde-scuro dark:text-verde")}>
                   {locked ? "🔒" : ""} {lv}
                 </p>
-                <p className="mt-1 text-xs text-muted-it">{locked ? `Sblocca con ${required.name}` : LEVEL_LABELS[lv]}</p>
-                {!locked && <p className="mt-2 font-mono text-[10px] text-muted-it">{CAMB.find((l) => l.level === lv)?.units.length ?? 0} unità comunicative</p>}
+                <p className="mt-1 text-xs text-muted-it">{locked ? u.home.unlockWith(required.name) : u.home.levelLabels[lv]}</p>
+                {!locked && <p className="mt-2 font-mono text-[10px] text-muted-it">{u.home.commUnits(CAMB.find((l) => l.level === lv)?.units.length ?? 0)}</p>}
               </button>
             );
           })}
