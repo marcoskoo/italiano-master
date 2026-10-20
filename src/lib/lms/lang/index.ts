@@ -61,12 +61,10 @@ export function langContent(lang: LangCode): LangContent | undefined {
 
 /** Unidades por id (todas las lenguas mezcladas; el prefijo decide). */
 import { CB_UNIT_BY_ID } from "../cambridge";
-import { EN_A1 } from "./en/courses-a1";
-import { PT_A1 } from "./pt/courses-a1";
 const UNIT_INDEX: Record<string, import("../cambridge").CbUnit> = {
   ...CB_UNIT_BY_ID,
-  ...Object.fromEntries(EN_A1.map((u) => [u.id, u] as const)),
-  ...Object.fromEntries(PT_A1.map((u) => [u.id, u] as const)),
+  ...Object.fromEntries(EN_COURSES.flatMap((l) => l.units).map((u) => [u.id, u] as const)),
+  ...Object.fromEntries(PT_COURSES.flatMap((l) => l.units).map((u) => [u.id, u] as const)),
 };
 export function unitById(id: string): import("../cambridge").CbUnit | undefined {
   return UNIT_INDEX[id];
@@ -75,8 +73,8 @@ export function unitById(id: string): import("../cambridge").CbUnit | undefined 
 /** Nivel MCER de una unidad por su id (prefijo por lengua). */
 const LEVEL_OF: Record<string, import("../types").CefrLevel> = {};
 for (const lv of CAMBRIDGE) for (const u of lv.units) LEVEL_OF[u.id] = lv.level;
-for (const u of EN_A1) LEVEL_OF[u.id] = u.level;
-for (const u of PT_A1) LEVEL_OF[u.id] = u.level;
+for (const lv of EN_COURSES) for (const u of lv.units) LEVEL_OF[u.id] = lv.level;
+for (const lv of PT_COURSES) for (const u of lv.units) LEVEL_OF[u.id] = lv.level;
 export function levelOfUnit(id: string): import("../types").CefrLevel | undefined {
   return LEVEL_OF[id];
 }

@@ -251,8 +251,8 @@ export const CERTS_BY_LANG: Record<LangCode, LangCert[]> = {
    Se actualiza al aterrizar cada paquete (A2, B1… de cada lengua). */
 export const SHIPPED_LEVELS: Record<LangCode, string[]> = {
   it: ["A1", "A2", "B1", "B2", "C1", "C2"],
-  en: ["A1"],
-  pt: ["A1"],
+  en: ["A1", "A2", "B1", "B2", "C1", "C2"],
+  pt: ["A1", "A2", "B1", "B2", "C1", "C2"],
   fr: [],
   de: [],
 };
