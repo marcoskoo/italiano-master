@@ -425,6 +425,32 @@ export async function getPersistenceInfo(): Promise<PersistenceInfo & { trace?: 
   return { mode: s.mode, durable: s.durable, ...(s.initTrace ? { trace: s.initTrace } : {}) };
 }
 
+/* ── v9.20 · Coste 0: mediciones para el panel de infraestructura ─────
+   Tamaño del snapshot en bytes (el PUT de Blob escribe exactamente esto
+   cifrado + ~30 B de IV/tag), ocupación de telemetría frente a su tope
+   fijo MAX_TELEMETRY y número de entidades. Con esto el panel puede
+   comparar el uso real contra los límites del free tier en vivo.      */
+
+export interface InfraSnapshotStats {
+  bytes: number;
+  users: number;
+  students: number;
+  telemetry: number;
+  telemetryCap: number;
+  settings: number;
+}
+
+export async function infraSnapshot(): Promise<InfraSnapshotStats> {
+  return read((d) => ({
+    bytes: Buffer.byteLength(toJson(d), "utf8"),
+    users: d.users.length,
+    students: d.users.filter((u) => u.role === "student").length,
+    telemetry: d.telemetry.length,
+    telemetryCap: MAX_TELEMETRY,
+    settings: d.settings.length,
+  }));
+}
+
 /* ── API compatible con el subconjunto de Prisma usado por la app ───── */
 
 type UserWhere = { id?: string; username?: string };

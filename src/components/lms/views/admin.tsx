@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  Activity, BarChart3, Database, Download, FileJson, LayoutDashboard, Lock, LogOut,
+  Activity, BarChart3, Database, Download, FileJson, Gauge, LayoutDashboard, Lock, LogOut,
   RefreshCcw, ScrollText, Settings as SettingsIcon, Shield, Trash2, UserPlus, Users, Wrench,
 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -530,9 +530,254 @@ function DataTab({ onGlobalChanged }: { onGlobalChanged: () => void }) {
   );
 }
 
+/* ── v9.20 · Infraestructura y coste ──────────────────────────────────
+   La plataforma se sostiene íntegramente sobre free tiers: hosting,
+   datos, voces, tutor, push, cron, pagos y dominio. Esta pestaña mide
+   el uso real en vivo contra los límites incluidos, para que el coste
+   de producción se mantenga en 0 € sin capital.                        */
+
+export interface InfraData {
+  persistence: { mode: "blob" | "file" | "memory"; durable: boolean };
+  snapshot: { bytes: number; users: number; students: number; telemetry: number; telemetryCap: number; settings: number };
+  push: { configured: boolean; subscriptions: number };
+  env: { blob: boolean; cronSecret: boolean; tutorApi: boolean; adminPassword: boolean };
+  billing: { gateway: string; simulatedCheckout: boolean };
+}
+
+function fmtKb(bytes: number): string {
+  const kb = bytes / 1024;
+  if (kb >= 10) return `${Math.round(kb)} KB`;
+  if (kb >= 1) return `${kb.toFixed(1).replace(".", ",")} KB`;
+  return `${bytes} B`;
+}
+
+function InfraServiceRow({ name, status, ok, note }: { name: string; status: string; ok: boolean; note: string }) {
+  return (
+    <li className="rounded-2xl border border-soft bg-surface p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-bold">{name}</p>
+        <span className={cn(
+          "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase",
+          ok ? "bg-verde text-white" : "bg-oro text-inchiostro"
+        )}>
+          {status}
+        </span>
+      </div>
+      <p className="mt-1.5 text-xs leading-relaxed text-muted-it">{note}</p>
+    </li>
+  );
+}
+
+function InfraTab() {
+  const [data, setData] = useState<InfraData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    adminFetch<InfraData>("/api/admin/infra")
+      .then((d) => { if (alive) setData(d); })
+      .catch((e) => { if (alive) setError(e instanceof Error ? e.message : "Error"); });
+    return () => { alive = false; };
+  }, []);
+
+  if (error) {
+    return <p role="alert" className="rounded-xl bg-rosso-tenue px-3 py-2 text-xs font-semibold text-rosso-scuro dark:text-rosso">{error}</p>;
+  }
+  if (!data) return <p className="text-sm text-muted-it">Midiendo la infraestructura…</p>;
+
+  const kb = fmtKb(data.snapshot.bytes);
+  const pctBlob = (data.snapshot.bytes / 1073741824) * 100; // % de 1 GB
+  const telPct = Math.min(100, (data.snapshot.telemetry / Math.max(1, data.snapshot.telemetryCap)) * 100);
+
+  const services: { name: string; status: string; ok: boolean; note: string }[] = [
+    {
+      name: "Hosting · Vercel Hobby",
+      status: "Free para siempre",
+      ok: true,
+      note: "SSG + funciones serverless + PWA. Sin tarjeta asociada no existe cargo posible: los excesos degradan el servicio, nunca facturan.",
+    },
+    {
+      name: "Datos · Vercel Blob",
+      status: data.persistence.durable ? (data.persistence.mode === "blob" ? "Persistente" : "Archivo local") : "Efímero (memoria)",
+      ok: data.persistence.durable,
+      note: "Snapshot cifrado AES-256-GCM; cada escritura sube exactamente los bytes medidos arriba. Tope fijo de telemetría que impide el crecimiento indefinido.",
+    },
+    {
+      name: "Voces · TTS",
+      status: "Nativo del navegador",
+      ok: true,
+      note: "Web Speech API con 5 locales (it-IT · en-US · pt-PT · fr-FR · de-DE). Cero llamadas a servicios de voz de pago.",
+    },
+    {
+      name: "Tutor IA",
+      status: data.env.tutorApi ? "API externa configurada" : "Modo local (0 €)",
+      ok: !data.env.tutorApi,
+      note: data.env.tutorApi
+        ? "TUTOR_API está activa: cada mensaje consume la API externa. Desactívala para volver al coste 0."
+        : "Respuestas pedagógicas integradas en el código: ningún coste por mensaje.",
+    },
+    {
+      name: "Push · VAPID",
+      status: data.push.configured ? `Activo · ${data.push.subscriptions} sus.` : "No configurado",
+      ok: true,
+      note: "Envío directo a los endpoints del navegador, sin servicio de terceros. Sin claves VAPID la app funciona exactamente igual.",
+    },
+    {
+      name: "Cron diario",
+      status: data.env.cronSecret ? "Protegido (secret)" : "Solo cabecera Vercel",
+      ok: data.env.cronSecret,
+      note: "1 trabajo al día (límite Hobby: 2) a las 17:00 UTC: recordatorio de estudio para los suscritos.",
+    },
+    {
+      name: "Pagos · planes",
+      status: "Checkout simulado",
+      ok: true,
+      note: "Sin pasarela conectada: ni comisión ni coste de procesamiento. El flujo completo (resumen → pago → éxito) ya está montado para el día que se active.",
+    },
+    {
+      name: "Dominio",
+      status: ".vercel.app",
+      ok: true,
+      note: "Subdominio gratuito incluido con HTTPS. Un dominio propio (≈10 USD/año) puede esperar a que haya ingresos.",
+    },
+  ];
+
+  const limits: { svc: string; included: string; usage: string; onExceed: string }[] = [
+    {
+      svc: "Vercel Hobby (hosting)",
+      included: "≈100 GB de transferencia/mes · builds ilimitados desde GitHub",
+      usage: "App ligera: texto + CSS, 0 imágenes optimizadas, assets en caché del Service Worker",
+      onExceed: "Se ralentiza el despliegue; sin método de pago no hay factura posible",
+    },
+    {
+      svc: "Vercel Blob (datos)",
+      included: "1 GB almacenamiento · 10 GB ancho · ≈20.000 escrituras y ≈100.000 lecturas/mes",
+      usage: `${kb} (${pctBlob.toFixed(3).replace(".", ",")} % del almacenamiento) · escrituras acotadas por rate limits + debounce de 1,2 s`,
+      onExceed: "Sin presupuesto configurado las peticiones fallan; jamás se cobra",
+    },
+    {
+      svc: "Cron",
+      included: "2 trabajos (Hobby) · precisión diaria",
+      usage: "1 en uso (recordatorio diario)",
+      onExceed: "—",
+    },
+    {
+      svc: "Optimización de imágenes",
+      included: "5.000 unidades/mes",
+      usage: "0 (la app no usa next/image)",
+      onExceed: "—",
+    },
+  ];
+
+  const rules = [
+    "No añadas nunca un método de pago a la cuenta Vercel: sin tarjeta no existe cargo posible y los excesos degradan en vez de facturar.",
+    "Mantén Spend Management (presupuestos) desactivado: sin presupuesto, Vercel no puede emitir cargos de Blob.",
+    "No conectes APIs de pago: el tutor ya responde en modo local y las voces son del navegador; TUTOR_API solo si algún día sale gratis.",
+    "Sigue con el subdominio .vercel.app: el dominio propio (≈10 USD/año) se decide cuando haya ingresos que lo paguen.",
+    "El contenido nuevo (unidades, lecturas, diccionarios, idiomas, traducciones) lo produce el agente: producción 0 € por byte.",
+    "Monetización sin coste fijo: cuando quieras cobrar de verdad, usa una pasarela por transacción — cobra únicamente si hay venta; el checkout simulado ya enseña el recorrido completo.",
+  ];
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* KPIs de coste */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <KpiCard label="Coste de producción" value="0,00 €/mes" hint="hosting + datos + voces + push" tone="verde" />
+        <KpiCard label="Capital requerido" value="0 €" hint="cero fijo + cero variable" tone="oro" />
+        <KpiCard label="Snapshot de datos" value={kb} hint={`${pctBlob.toFixed(3).replace(".", ",")} % de 1 GB incluido`} tone="neutral" />
+        <KpiCard
+          label="Telemetría"
+          value={`${data.snapshot.telemetry} / ${data.snapshot.telemetryCap}`}
+          hint="tope fijo que impide crecer"
+          tone={telPct > 80 ? "rosso" : "neutral"}
+        />
+      </div>
+
+      {/* barra de telemetría */}
+      <div className="rounded-2xl border border-soft bg-surface p-4">
+        <div className="mb-2 flex items-center justify-between gap-2 text-xs font-bold">
+          <span>Telemetría acumulada (tope {data.snapshot.telemetryCap} · poda automática FIFO)</span>
+          <span className={cn("font-mono", telPct > 80 ? "text-rosso-scuro dark:text-rosso" : "text-muted-it")}>{telPct.toFixed(0)} %</span>
+        </div>
+        <div className="h-2.5 overflow-hidden rounded-full bg-inchiostro/10">
+          <div
+            className={cn("h-full rounded-full transition-all", telPct > 80 ? "bg-rosso" : "bg-gradient-to-r from-verde to-verde-scuro")}
+            style={{ width: `${Math.max(2, telPct)}%` }}
+          />
+        </div>
+        <p className="mt-2 text-[11px] leading-relaxed text-muted-it">
+          Cada evento de telemetría cuesta lo mismo que el anterior: nada. El tope solo existe para que el snapshot (y con él cada escritura de Blob) se mantenga pequeño.
+        </p>
+      </div>
+
+      {/* estado de servicios */}
+      <div>
+        <p className="mb-2.5 flex items-center gap-2 text-sm font-bold"><Gauge className="h-4 w-4 text-verde-scuro dark:text-verde" aria-hidden="true" /> Servicios en producción — todos gratuitos</p>
+        <ul className="grid gap-3 md:grid-cols-2">
+          {services.map((s) => <InfraServiceRow key={s.name} {...s} />)}
+        </ul>
+      </div>
+
+      {/* límites del free tier */}
+      <div className="rounded-2xl border border-soft bg-surface p-4">
+        <p className="mb-3 text-sm font-bold">Límites del free tier · uso real frente a lo incluido</p>
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full min-w-[720px] border-collapse text-left text-xs">
+            <thead>
+              <tr className="border-b border-soft text-[10px] uppercase tracking-wide text-muted-it">
+                <th scope="col" className="py-2 pr-3">Servicio</th>
+                <th scope="col" className="py-2 pr-3">Incluido sin coste</th>
+                <th scope="col" className="py-2 pr-3">Uso actual</th>
+                <th scope="col" className="py-2">Si se supera</th>
+              </tr>
+            </thead>
+            <tbody>
+              {limits.map((l) => (
+                <tr key={l.svc} className="border-b border-soft/60 align-top">
+                  <td className="py-2.5 pr-3 font-bold">{l.svc}</td>
+                  <td className="py-2.5 pr-3 text-muted-it">{l.included}</td>
+                  <td className="py-2.5 pr-3">{l.usage}</td>
+                  <td className="py-2.5 text-muted-it">{l.onExceed}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-[11px] leading-relaxed text-muted-it">
+          Cifras del free tier publicadas por Vercel (vercel.com/pricing). Los valores de la columna «Uso actual» se miden aquí en vivo: si algún número se acerca al techo, la pestaña Datos permite exportar y podar en un clic.
+        </p>
+      </div>
+
+      {/* reglas de oro */}
+      <div className="rounded-2xl border-2 border-verde/40 bg-verde-tenue/50 p-5">
+        <p className="flex items-center gap-2 text-sm font-bold text-verde-scuro dark:text-verde"><Shield className="h-4 w-4" aria-hidden="true" /> Reglas de oro para mantener el coste en 0 € para siempre</p>
+        <ol className="mt-3 flex flex-col gap-2 text-xs leading-relaxed">
+          {rules.map((r, i) => (
+            <li key={i} className="flex gap-2.5">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-verde text-[10px] font-bold text-white">{i + 1}</span>
+              <span className="text-inchiostro/85 dark:text-inchiostro/90">{r}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      {/* nota de crecimiento */}
+      <div className="rounded-2xl border border-soft bg-surface p-4">
+        <p className="mb-2 text-sm font-bold">Qué vigilar cuando la plataforma crezca</p>
+        <ul className="flex flex-col gap-1.5 text-xs leading-relaxed text-muted-it">
+          <li>· <strong className="text-inchiostro">Snapshot:</strong> mantenerlo por debajo de ~10 MB (tope blando interno) para que cada escritura de Blob siga siendo un PUT diminuto.</li>
+          <li>· <strong className="text-inchiostro">Telemetría:</strong> tope fijo de {data.snapshot.telemetryCap} eventos con poda FIFO — ya vigente, sin mantenimiento.</li>
+          <li>· <strong className="text-inchiostro">Lecturas de Blob:</strong> login, clasificación y sincronización leen el snapshot; el debounce de 1,2 s del cliente y los rate limits del servidor acotan el ritmo.</li>
+          <li>· <strong className="text-inchiostro">Usuarios:</strong> las cuentas se crean desde este panel (no hay registro público): el crecimiento es deliberado, no viral.</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 /* ── panel principal ───────────────────────────────────────────────── */
 
-type TabId = "panoramica" | "utenti" | "contenuti" | "impostazioni" | "attivita" | "dati";
+type TabId = "panoramica" | "utenti" | "contenuti" | "impostazioni" | "attivita" | "dati" | "infrastruttura";
 
 const TABS: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "panoramica", label: "Panorámica", icon: LayoutDashboard },
@@ -541,6 +786,7 @@ const TABS: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "impostazioni", label: "Impostazioni", icon: SettingsIcon },
   { id: "attivita", label: "Actividad", icon: Activity },
   { id: "dati", label: "Datos", icon: Database },
+  { id: "infrastruttura", label: "Infraestructura", icon: Gauge },
 ];
 
 export function AdminView() {
@@ -663,6 +909,7 @@ export function AdminView() {
 
       {tab === "attivita" && <ActivityTab />}
       {tab === "dati" && <DataTab onGlobalChanged={() => void loadOverview()} />}
+      {tab === "infrastruttura" && <InfraTab />}
     </div>
   );
 }

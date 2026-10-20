@@ -897,3 +897,23 @@ Work Log:
 
 Stage Summary:
 - v9.19 LIVE en italiano-master.vercel.app: al cambiar de lengua de estudio, el interior de TODAS las herramientas sigue a la lengua activa (9 vistas + plan-badge + datos de gamificación en EN-US); el italiano permanece verbatim; pt/fr/de heredan el esqueleto hasta que aterrice su contenido.
+
+---
+Task ID: 1 (v9.20)
+Agent: main (Super Z)
+Task: "Que la app sea cero costo de producción, no contamos con capital económico" — auditar toda la infraestructura, garantizar y mantener el coste en 0 €, y dar al propietario visibilidad en vivo
+
+Work Log:
+- Pedido: la app debe tener coste de producción cero (sin capital económico). Auditar todo lo que puede generar gasto y blindarlo.
+- Auditoría completa de la pila (resultado: YA era 0 €/mes en todos los frentes): Vercel Hobby (hosting+SSG+serverless+cron, sin tarjeta), Vercel Blob (snapshot cifrado de ~9 KB + push-subs, muy por debajo del 1 GB incluido), TTS nativo Web Speech (5 locales, 0 llamadas), Tutor IA con triple fallback que termina en modo offline (producción sin TUTOR_API: 0 €/mensaje), Web Push VAPID directo a endpoints (sin servicio de terceros), checkout de planes 100% simulado client-side (sin pasarela: ni comisión ni coste), subdominio .vercel.app gratuito, 0 usos de next/image (0 optimizaciones), telemetría propia en el snapshot (opt-in GDPR, sin terceros), contenido producido por el agente (0 € por byte).
+- Salvaguardas existentes verificadas que acotan el consumo del único recurso medido (Blob): rate limits en tutor 20/min, push 15/min, import 10/min, login, delete 10/15min, telemetría 60/min; debounce 1,2 s del cliente en la sincronización de perfil; MAX_TELEMETRY 2000 con poda FIFO; SSRF+timeout+2 MB en /api/import; cron protegido con CRON_SECRET; sin registro público de usuarios (crecimiento deliberado desde el panel).
+- Nueva medición en vivo: store.ts += infraSnapshot() (bytes del snapshot vía toJson, usuarios/estudiantes, telemetría vs tope, settings) — cada PUT de Blob escribe exactamente esos bytes.
+- Nueva ruta /api/admin/infra (requireAdmin): persistence+snapshot+push{configured,subscriptions}+env{blob,cronSecret,tutorApi,adminPassword SOLO booleanos, jamás valores}+billing{gateway:none, simulado}.
+- Nuevo panel «Infraestructura» (7ª pestaña del admin, icono Gauge, español del propietario como legal/admin por decisión documentada): 4 KPIs (Coste de producción 0,00 €/mes · Capital requerido 0 € · Snapshot en KB con % de 1 GB · Telemetría n/2000 con barra y umbral rojo >80 %), 8 servicios en vivo (Hobby/Blob/TTS/Tutor IA/Push/Cron/Pagos/Dominio con badges y avisos — p. ej. Tutor IA señala en ámbar si algún día se activa TUTOR_API de pago), tabla de límites del free tier (incluido vs uso real vs qué pasa al superar: degrada, nunca factura sin método de pago), 6 reglas de oro (no añadir método de pago; Spend Management desactivado; no APIs de pago; .vercel.app hasta que haya ingresos; contenido vía agente; monetización futura por transacción sin coste fijo) y nota de crecimiento (qué vigilar: snapshot <10 MB, telemetría 2000, lecturas Blob, usuarios deliberados).
+- SW im-v9-19-0 → im-v9-20-0. tsc: 0 errores en archivos propios (baseline preexistente 75 intacto). Lint: 0 problemas en los 3 archivos. Build OK con /api/admin/infra.
+- E2E local (scripts/e2e-v920.sh, standalone 3456, ADMIN_PASSWORD de prueba, sesión limpia): login Mkoo → Pannello di Controllo → pestaña Infraestructura; 15/15 textos verificados (KPIs, servicios, tabla, reglas, nota); JSON del endpoint: mode=file, bytes=9005, telemetry=37/2000, cap=2000; único page error = artefacto del E2E (prompt PWA sin user gesture por click programático — un usuario real no lo produce); capturas upload/v920-infra-{kpis,servicios,reglas}.png.
+
+Stage Summary:
+- v9.20: la app es y queda garantizada a 0 €/mes de producción: hosting, datos, voces, tutor, push, cron, pagos y dominio, todos sobre free tiers sin tarjeta asociada. El panel de Infraestructura mide en vivo el uso real contra los límites incluidos y enseña las 6 reglas de oro para que nunca haya factura (sin método de pago no existe cargo posible; los excesos degradan el servicio).
+- La monetización futura no requiere capital: pasarelas por transacción cobran solo si hay venta; el checkout simulado ya muestra el recorrido completo al usuario.
+- Pendiente natural (siguiente pase): paquetes de contenido pt-PT/fr-FR/de-DE (SHIPPED_LEVELS vacío; al aterrizar, completar sus secciones del diccionario ui).
