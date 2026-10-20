@@ -917,3 +917,16 @@ Stage Summary:
 - v9.20: la app es y queda garantizada a 0 €/mes de producción: hosting, datos, voces, tutor, push, cron, pagos y dominio, todos sobre free tiers sin tarjeta asociada. El panel de Infraestructura mide en vivo el uso real contra los límites incluidos y enseña las 6 reglas de oro para que nunca haya factura (sin método de pago no existe cargo posible; los excesos degradan el servicio).
 - La monetización futura no requiere capital: pasarelas por transacción cobran solo si hay venta; el checkout simulado ya muestra el recorrido completo al usuario.
 - Pendiente natural (siguiente pase): paquetes de contenido pt-PT/fr-FR/de-DE (SHIPPED_LEVELS vacío; al aterrizar, completar sus secciones del diccionario ui).
+
+---
+Task ID: 1 (v9.20-push)
+Agent: main (Super Z)
+Task: Push v9.20 a GitHub + verificación completa en producción
+
+Work Log:
+- Commit a8b7759 (8 archivos, +342/−3) → push 3c5d5a3..a8b7759 sin incidencias.
+- Auto-deploy Vercel: SW im-v9-20-0 servido en producción en ~60 s (antes im-v9-19-0).
+- Verificación en producción: /api/admin/infra responde 401 «Non autorizzato» sin token (ruta viva y protegida); el código del panel «Infraestructura» servido en el chunk /_next/static/chunks/1jnsbsssi6rig.js («Reglas de oro» presente). El flujo completo con login quedó verbatim en el E2E local sobre el mismo código.
+
+Stage Summary:
+- v9.20 LIVE en italiano-master.vercel.app: coste de producción 0 €/mes garantizado y medible — pestaña Infraestructura del panel con uso real en vivo frente a los límites del free tier, 6 reglas de oro para que nunca haya factura y ruta /api/admin/infra protegida. La pila completa (hosting, datos, voces, tutor, push, cron, pagos, dominio) funciona sobre free tiers sin tarjeta asociada: sin método de pago no existe cargo posible.
