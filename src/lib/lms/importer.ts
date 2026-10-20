@@ -7,20 +7,29 @@ import { VOCAB } from "./vocabulary";
 import type { CefrLevel, LangCode, VocabWord, WordType } from "./types";
 import { CEFR_LEVELS } from "./types";
 import { lookupWordEn } from "./dict/lookup-en";
+import { lookupWordPt } from "./dict/lookup-pt";
 import { EN_DICT } from "./dict/lang-en";
+import { PT_DICT } from "./dict/lang-pt";
 
 export const TOTAL_LEMMAS = VOCAB.length;
 
 /* v9.19 · lemas totales de la lengua activa (importador + HUD de cobertura) */
 export function totalLemmasFor(lang: LangCode): number {
-  return lang === "en" ? EN_DICT.length : TOTAL_LEMMAS;
+  if (lang === "en") return EN_DICT.length;
+  if (lang === "pt") return PT_DICT.length;
+  return TOTAL_LEMMAS;
 }
 
 /* v9.19 · lookup por lengua: en usa el lematizador americano (contracciones,
-   irregulares, -ing/-ed); el resto conserva el histórico italiano. */
+   irregulares, -ing/-ed); pt el portugués europeo (clíticos, conjugaciones,
+   plurales); el resto conserva el histórico italiano. */
 export function hitFor(lang: LangCode, token: string): DictHit | null {
   if (lang === "en") {
     const w = lookupWordEn(token);
+    return w ? { word: w } : null;
+  }
+  if (lang === "pt") {
+    const w = lookupWordPt(token);
     return w ? { word: w } : null;
   }
   return lookupWord(token);

@@ -13,6 +13,7 @@ import { CAMBRIDGE, CB_LEVEL_OF } from "@/lib/lms/cambridge";
 import { langContent, levelOfUnit } from "@/lib/lms/lang";
 import { CERTS_BY_LANG, LANGS, SHIPPED_LEVELS, langOfId } from "@/lib/lms/languages";
 import { EN_DICT_COUNT } from "@/lib/lms/dict/lang-en";
+import { PT_DICT_COUNT } from "@/lib/lms/dict/lang-pt";
 import type { LangCode } from "@/lib/lms/types";
 import { GRAMMAR } from "@/lib/lms/grammar";
 import { VOCAB } from "@/lib/lms/vocabulary";
@@ -99,7 +100,7 @@ export function QuadroView() {
   /* lemas del diccionario de la lengua activa (hover) */
   const covVocabCount = activeLang === "it"
     ? VOCAB.length
-    : (activeLang === "en" ? EN_DICT_COUNT : 0);
+    : activeLang === "en" ? EN_DICT_COUNT : activeLang === "pt" ? PT_DICT_COUNT : 0;
 
   /* ── nivel sugerido por la griglia (mediana conservadora) ── */
   const filled = CEFR_GRID.map((r) => langSelf[r.key]).filter(Boolean) as CefrLevel[];
@@ -339,7 +340,7 @@ export function QuadroView() {
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] font-bold text-muted-it">
                   <span>{cov.units} {u.quadro.covUnits}</span>
                   <span>{cov.grammar} {u.quadro.covGrammar}</span>
-                  <span>{(activeLang === "it" ? cov.vocab : covVocabCount).toLocaleString(activeLang === "en" ? "en-US" : "it-IT")} {u.quadro.covEntries}</span>
+                  <span>{(activeLang === "it" ? cov.vocab : covVocabCount).toLocaleString(activeLang === "en" ? "en-US" : activeLang === "pt" ? "pt-PT" : "it-IT")} {u.quadro.covEntries}</span>
                   <span>{cov.letture + cov.mind} {u.quadro.covReadings}</span>
                   {mine && <span className="text-verde-scuro dark:text-verde">{u.quadro.covDone(cov.unitsDone, cov.units)}</span>}
                 </div>

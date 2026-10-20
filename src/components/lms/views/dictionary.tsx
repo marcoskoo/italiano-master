@@ -8,6 +8,7 @@ import {
 } from "@/lib/lms/dict/dictionary";
 import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
 import { EN_DICT } from "@/lib/lms/dict/lang-en";
+import { PT_DICT } from "@/lib/lms/dict/lang-pt";
 import type { LangCode } from "@/lib/lms/types";
 import { CATEGORY_META, CATEGORY_IMG, CEFR_LEVELS, type VocabWord, type CefrLevel } from "@/lib/lms/types";
 import { ThemeImg } from "../theme-img";
@@ -30,8 +31,10 @@ const ALL_TYPES = ["sostantivo", "verbo", "aggettivo", "avverbio", "espressione"
 const PAGE = 60;
 
 /* v9.17 · diccionario por lengua: it → VOCAB (curso temático);
-   en → EN_DICT (inglés americano A1-A2 + lematizador en el hover). */
+   en → EN_DICT (inglés americano A1-A2 + lematizador en el hover);
+   pt → PT_DICT (portugués europeo A1-A2 + lematizador pt). */
 const EN_BY_ID: Record<string, VocabWord> = Object.fromEntries(EN_DICT.map((w) => [w.id, w]));
+const PT_BY_ID: Record<string, VocabWord> = Object.fromEntries(PT_DICT.map((w) => [w.id, w]));
 
 export function DictionaryView() {
   const u = useUi();
@@ -47,8 +50,8 @@ export function DictionaryView() {
   const [favReview, setFavReview] = useState(false);
 
   const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
-  const WORD_INDEX = activeLang === "it" ? VOCAB_BY_ID : activeLang === "en" ? EN_BY_ID : {};
-  const BASE_LIST: VocabWord[] = activeLang === "it" ? DICTIONARY : activeLang === "en" ? EN_DICT : [];
+  const WORD_INDEX = activeLang === "it" ? VOCAB_BY_ID : activeLang === "en" ? EN_BY_ID : activeLang === "pt" ? PT_BY_ID : {};
+  const BASE_LIST: VocabWord[] = activeLang === "it" ? DICTIONARY : activeLang === "en" ? EN_DICT : activeLang === "pt" ? PT_DICT : [];
   const srs = useLms((s) => s.srs);
   const upsertSrs = useLms((s) => s.upsertSrs);
   const addXp = useLms((s) => s.addXp);

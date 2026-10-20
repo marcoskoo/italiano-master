@@ -6,15 +6,16 @@ import type { LangCode, ViewId } from "../types";
 import type { UiStrings } from "./types";
 import { IT } from "./it";
 import { EN } from "./en";
-import { PT_CORE, FR_CORE, DE_CORE } from "./core";
+import { PT } from "./pt";
+import { FR_CORE, DE_CORE } from "./core";
 
-/* ═══ v9.18 · Resolutor de la interfaz por lengua de estudio ════════
-   uiFor(lang) devuelve el diccionario de la lengua activa con
-   fallback por sección al italiano (pt/fr/de traen el esqueleto).
+/* ═══ v9.18/v9.21 · Resolutor de la interfaz por lengua de estudio ═══
+   uiFor(lang) devuelve el diccionario de la lengua activa: it/en/pt
+   completos; fr/de con fallback por sección al italiano (esqueleto).
    useUi() es el hook reactivo que usan los componentes.           */
 
 const CORES: Partial<Record<LangCode, Partial<UiStrings>>> = {
-  pt: PT_CORE, fr: FR_CORE, de: DE_CORE,
+  fr: FR_CORE, de: DE_CORE,
 };
 
 function mergeCore(core: Partial<UiStrings>): UiStrings {
@@ -33,7 +34,7 @@ function mergeCore(core: Partial<UiStrings>): UiStrings {
 const BY_LANG: Record<LangCode, UiStrings> = {
   it: IT,
   en: EN,
-  pt: mergeCore(PT_CORE),
+  pt: PT,
   fr: mergeCore(FR_CORE),
   de: mergeCore(DE_CORE),
 };

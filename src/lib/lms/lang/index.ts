@@ -9,6 +9,7 @@ import { MIND_LIBRARY, MIND_READINGS } from "../extra/readings-mind";
 import { GRAMMAR_DEEP } from "../extra/grammar-deep";
 import { GRAMMAR_DRILLS } from "../extra/grammar-drills";
 import { EN_COURSES, EN_MIND, EN_CLOZE, EN_DEEP, EN_DRILLS } from "./en";
+import { PT_COURSES, PT_MIND, PT_CLOZE, PT_DEEP, PT_DRILLS } from "./pt";
 
 /* ═══ v9.17 · Resolutor de contenido por lengua de estudio ════════════
    La interfaz sigue en español; el contenido (unidades, lecturas,
@@ -40,9 +41,18 @@ const EN_CONTENT: LangContent = {
   drills: EN_DRILLS,
 };
 
+const PT_CONTENT: LangContent = {
+  courses: PT_COURSES,
+  cloze: PT_CLOZE,
+  mind: PT_MIND,
+  deep: PT_DEEP,
+  drills: PT_DRILLS,
+};
+
 const BY_LANG: Partial<Record<LangCode, LangContent>> = {
   it: IT_CONTENT,
   en: EN_CONTENT,
+  pt: PT_CONTENT,
 };
 
 export function langContent(lang: LangCode): LangContent | undefined {
@@ -52,9 +62,11 @@ export function langContent(lang: LangCode): LangContent | undefined {
 /** Unidades por id (todas las lenguas mezcladas; el prefijo decide). */
 import { CB_UNIT_BY_ID } from "../cambridge";
 import { EN_A1 } from "./en/courses-a1";
+import { PT_A1 } from "./pt/courses-a1";
 const UNIT_INDEX: Record<string, import("../cambridge").CbUnit> = {
   ...CB_UNIT_BY_ID,
   ...Object.fromEntries(EN_A1.map((u) => [u.id, u] as const)),
+  ...Object.fromEntries(PT_A1.map((u) => [u.id, u] as const)),
 };
 export function unitById(id: string): import("../cambridge").CbUnit | undefined {
   return UNIT_INDEX[id];
@@ -64,6 +76,7 @@ export function unitById(id: string): import("../cambridge").CbUnit | undefined 
 const LEVEL_OF: Record<string, import("../types").CefrLevel> = {};
 for (const lv of CAMBRIDGE) for (const u of lv.units) LEVEL_OF[u.id] = lv.level;
 for (const u of EN_A1) LEVEL_OF[u.id] = u.level;
+for (const u of PT_A1) LEVEL_OF[u.id] = u.level;
 export function levelOfUnit(id: string): import("../types").CefrLevel | undefined {
   return LEVEL_OF[id];
 }

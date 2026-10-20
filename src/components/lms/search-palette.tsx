@@ -7,6 +7,7 @@ import { NAV_FLAT, VIEW_TITLES, navFlatFor } from "@/lib/lms/nav";
 import { useUi, navLabelFor } from "@/lib/lms/ui";
 import { searchDictionary } from "@/lib/lms/dict/dictionary";
 import { EN_DICT } from "@/lib/lms/dict/lang-en";
+import { PT_DICT } from "@/lib/lms/dict/lang-pt";
 import { GRAMMAR } from "@/lib/lms/grammar";
 import type { ViewId } from "@/lib/lms/types";
 import { cn } from "@/lib/utils";
@@ -94,9 +95,10 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
             action: () => navigate("dizionario", { wordId: w.id }),
           });
         }
-      } else if (activeLang === "en") {
+      } else if (activeLang === "en" || activeLang === "pt") {
+        const DICT = activeLang === "en" ? EN_DICT : PT_DICT;
         const nq = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        for (const w of EN_DICT.filter((w) => w.it.toLowerCase().includes(nq) || w.es.toLowerCase().includes(nq)).slice(0, 8)) {
+        for (const w of DICT.filter((w) => w.it.toLowerCase().includes(nq) || w.es.toLowerCase().includes(nq)).slice(0, 8)) {
           out.push({
             id: `p-${w.id}`,
             kind: "parola",

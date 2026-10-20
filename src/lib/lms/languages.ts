@@ -252,7 +252,7 @@ export const CERTS_BY_LANG: Record<LangCode, LangCert[]> = {
 export const SHIPPED_LEVELS: Record<LangCode, string[]> = {
   it: ["A1", "A2", "B1", "B2", "C1", "C2"],
   en: ["A1"],
-  pt: [],
+  pt: ["A1"],
   fr: [],
   de: [],
 };
