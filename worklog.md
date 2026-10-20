@@ -952,3 +952,16 @@ Stage Summary:
 - La arquitectura multilengua queda probada de extremo a extremo con 3 lenguas completas (IT/EN/PT): la incorporación de FR y DE solo requiere repetir este mismo patrón (contenido + dict + lookup + ui completo).
 - Coste de producción: 0 € (todo el contenido es código estático generado; sin servicios externos; Vercel Hobby).
 - Pendiente natural (siguiente pase): paquetes fr-FR y de-DE (SHIPPED_LEVELS vacíos; sus esqueletos ui caen a IT hasta aterrizar).
+
+---
+Task ID: 1 (v9.21-push)
+Agent: main (Super Z)
+Task: Push v9.21 a GitHub + verificación completa en producción
+
+Work Log:
+- Commit 0d7e5a4 (25 archivos, +5.9k líneas) → push 685c3c2..0d7e5a4 sin incidencias.
+- Auto-deploy Vercel: SW im-v9-21-0 servido en producción en ~40 s (antes im-v9-20-0); home 200 OK.
+- E2E producción (italiano-master.vercel.app, sesión limpia): switch IT→PT con «A ESTUDAR · PORTUGUÊS»; Cursos → «Sobreviver em português» → las 12 unidades pt visíveis (Como te chamas?, A minha família, Missão: Porto!); Unidade 1 aberta com os 12 passos em português e «No fim desta unidade poderás…»; único page error = artefacto PWA conocido. Captura: upload/prod-v921-pt-unidade1.png.
+
+Stage Summary:
+- v9.21 LIVE en italiano-master.vercel.app: português de Portugal A1 completo (contenido + dicionário + lematizador + UI integral). Tres lenguas vivas: IT (A1–C2), EN-US (A1), PT-PT (A1). Próximo pase natural: fr-FR y de-DE.
