@@ -1120,3 +1120,17 @@ Work Log:
 Stage Summary:
 - v9.22: LAS TRES LENGUAS ACTIVAS TIENEN EL PERCORSO COMPLETO A1–C2 con 12 unidades por nivel (216 unidades totales): italiano 72 (C1 y C2 rematados con imprese/scienza/poesia/enogastronomia/scena/discorso), inglés americano 72 (Everyday → Independent → Advanced Communication → Academic & Professional → Mastering English) y portugués europeo 72 (O dia a dia → Independência → Comunicação avançada → Domínio académico → Dominar o português). Cada unidad conserva la metodología Cambridge de 12 pasos autocontenida.
 - Mind readings/cloze/deep/drills siguen disponibles solo para A1 de EN/PT (las unidades funcionan sin ellos); siguiente pase natural: enriquecer soporte por nivel o aterrizar FR/DE completos (cursos + dict + lookup + UI, patrón v9.20/v9.21).
+
+---
+Task ID: 1 (v9.22-push)
+Agent: main (Super Z)
+Task: Push v9.22 a GitHub + verificación completa en producción
+
+Work Log:
+- Commit 0b5e793 (29 archivos, +15.346 líneas) → push 74d87c7..0b5e793 sin incidencias.
+- Auto-deploy Vercel: SW im-v9-22-0 servido en producción en ~70 s (antes im-v9-21-0); home 200 OK.
+- E2E producción (italiano-master.vercel.app, sesión limpia plan free): switch IT→EN con los 6 niveles visibles (Survival → Mastering English) y chip «72 units»; switch EN→PT con «O dia a dia em português» y «Dominar o português» + chip «72 unidades». Los niveles B1+ muestran candado 🔒 (gating preexistente del plan free, idéntico al italiano; el checkout simulado de la vista Piani activa cualquier plan sin coste real — diseño zero-cost original).
+- Único page error = artefacto PWA conocido (BeforeInstallPromptEvent sin user gesture). Capturas: upload/prod-v922-en-cursos.png, upload/prod-v922-pt-c2.png.
+
+Stage Summary:
+- v9.22 LIVE en italiano-master.vercel.app: las tres lenguas activas (IT/EN/PT) ofrecen el percorso completo A1–C2 con 12 unidades por nivel (216 unidades totales, metodología Cambridge de 12 pasos). FR/DE siguen ocultos (SHIPPED_LEVELS vacío): su aterrizaje requiere el patrón completo v9.20/v9.21 (cursos + dict + lookup + UI) y queda como siguiente fase natural (v9.23 FR, v9.24 DE).
