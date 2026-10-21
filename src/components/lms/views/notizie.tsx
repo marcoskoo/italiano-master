@@ -1,6 +1,6 @@
 "use client";
 
-/* ── Notizie · Radiogiornale per studenti (v9.25 → v9.28) ───────────
+/* ── Notizie · Radiogiornale per studenti (v9.25 → v9.29) ───────────
    El método VOA Learning English (learningenglish.voanews.com) aplicado
    a la lengua de estudio, con texto y audio:
    1 · palabras clave ANTES de leer («Words in This Story»)
@@ -12,7 +12,10 @@
    7 · quiz de comprensión + debate con el Tutor IA
    v9.28 · TODO el cromo de la vista sale del diccionario ui.news
    (it/en/pt/fr/de): antes estaba hardcodeado en italiano y la sección
-   salía en italiano aunque la lengua de estudio fuera otra.        */
+   salía en italiano aunque la lengua de estudio fuera otra.
+   v9.29 · ilustración por noticia (90 webp en /public/news/): cabecera
+   de tarjeta + hero del Reader, como la foto de cabecera de cada
+   artículo de VOA. Fallback → emoji de la categoría.                */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
@@ -148,6 +151,13 @@ export function NotizieView() {
                   <Check className="h-4 w-4" aria-hidden="true" />
                 </span>
               )}
+              {/* v9.29 · ilustración de la noticia (estilo VOA) */}
+              <div className="relative aspect-[7/4] w-full overflow-hidden">
+                <NewsImg
+                  id={t.id} alt={t.title} cat={t.cat} eager={i < 3}
+                  className="h-full w-full transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
               <div className="p-5">
                 <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-it">
                   {u.news.edition(t.place, t.level)}
@@ -190,6 +200,38 @@ function FilterChip({ active, onClick, children, small }: { active: boolean; onC
     >
       {children}
     </button>
+  );
+}
+
+/* v9.29 · Ilustración de la noticia (/public/news/{id}.webp, 7:4).
+   Si el archivo no carga (p. ej. noticia futura sin imagen) cae a un
+   cromo degradado con el emoji de la categoría — nunca un broken img. */
+function NewsImg({ id, alt, cat, className, eager }: {
+  id: string; alt: string; cat: NewsCat; className?: string; eager?: boolean;
+}) {
+  const [err, setErr] = useState(false);
+  if (err) {
+    return (
+      <div
+        aria-hidden="true"
+        className={cn(
+          "flex items-center justify-center bg-gradient-to-br from-azzurro/15 via-crema-scura/40 to-verde-tenue/60 dark:from-azzurro/10 dark:via-inchiostro/25 dark:to-verde-tenue/15",
+          className
+        )}
+      >
+        <span className="text-4xl opacity-80">{NEWS_CATS[cat].emoji}</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={`/news/${id}.webp`}
+      alt={alt}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      onError={() => setErr(true)}
+      className={cn("bg-crema-scura/40 object-cover dark:bg-inchiostro/20", className)}
+    />
   );
 }
 
@@ -357,6 +399,12 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
           </div>
           <h2 className="mt-3 font-display text-2xl font-semibold leading-tight sm:text-3xl">{news.title}</h2>
           <p className="mt-1 text-sm italic text-muted-it">{news.titleEs}</p>
+
+          {/* v9.29 · ilustración de cabecera (estilo VOA: foto sobre el texto) */}
+          <NewsImg
+            id={news.id} alt={news.title} cat={news.cat} eager
+            className="mt-5 aspect-[7/4] w-full rounded-2xl border border-soft object-cover"
+          />
 
           {/* entradilla */}
           <p className="mt-4 border-l-4 border-azzurro/50 pl-4 text-base font-medium leading-relaxed text-inchiostro dark:text-surface">

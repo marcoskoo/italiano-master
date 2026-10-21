@@ -1447,3 +1447,20 @@ Work Log:
 
 Stage Summary:
 - v9.28: la sección Notizie · Radiogiornale (método VOA) ya se renderiza íntegramente en la lengua de estudio activa (nav, header, tarjeta del método, filtros, tarjetas, reproductor, velocidades, modo solo-audio, quiz y debate) en las 5 lenguas, eliminando el último bloque italiano hardcodeado de la vista. Con EN/PT/FR/DE seleccionado ya no aparece ni un string italiano; con IT, cero regresión (textos explicativos ES→IT por coherencia de inmersión).
+
+---
+Task ID: 1 (v9.29)
+Agent: main (Super Z)
+Task: Petición del usuario: agregar imágenes relacionadas a las noticias del Radiogiornale (método VOA) en las 5 lenguas.
+
+Work Log:
+- Explorado el módulo Notizie (v9.25–v9.28): 90 noticias (5 lenguas × 18, ids news-* / {en,pt,fr,de}-news-*), tarjetas y Reader 100% textuales; solo un 📻 en la tarjeta del método. VOA Learning English usa foto de cabecera en cada artículo → replicado.
+- Estrategia zero-cost: 1 ilustración vectorial editorial POR noticia generada con IA (z-ai image CLI), NO fotos externas (sin hotlinks, sin licencias, sin dependencias). 90 prompts artesanales (scripts/news-prompts.json) con estilo unificado «flat vector editorial illustration, warm muted palette, no text, no words, no letters» — cero texto en imagen (5 lenguas imposibles de renderizar bien); subject fiel al tema de cada noticia (café+corazón, abejas en tejados, Pena Palace, fado, bistrot-parlamento, Zugspitze, Hansa…).
+- Generación: scripts/gen_news_images.py v2 — asyncio con throttle global ≥15s entre requests (429 rate-limit aprendido con 5 workers: 6 FAIL instantáneos → backoff 45/90/150s + reanudable por PNG existente). 90/90 PNG 1344×768 en ~27 min. QA VLM sobre muestra de 5 (una por lengua): 0 texto visible, subjects correctos.
+- Compresión: scripts/compress_news.py → PIL LANCZOS 1008×576 + WebP q80 method=6 → public/news/{id}.webp · 90 archivos · 4,45 MB total (51 KB prom.) — repo/Vercel OK.
+- notizie.tsx v9.29: nuevo componente NewsImg (img /news/{id}.webp, loading lazy salvo 3 primeras eager, decoding async, onError → cromo degradado azzurro→crema→verde con emoji de la categoría — nunca un broken img). Tarjeta: cabecera aspect-[7/4] (ratio exacto 1344×768/1008×576, sin crop) con zoom suave group-hover:scale-105; marcador ✓ de completada encima (z-10). Reader: hero bajo el titular+titleEs, antes de la entradilla, rounded-2xl con border — como la foto de cabecera VOA. Alt = titular de la noticia (accesibilidad).
+- sw.js: im-v9-28-0 → im-v9-29-0 (imágenes same-origin ya cubiertas por la rama network-first+cache del fetch handler; sin precache de 4,4 MB).
+- Verificación: tsc --noEmit limpio en notizie.tsx (baseline idéntico), eslint 0 errores, npm run build OK. E2E agent-browser (dev :3000): IT biblioteca 18 imgs (9 lazy-visibles cargadas, news-a1-01.webp 1008×576) + reader hero con alt «Due caffè al giorno…»; EN tras switch: nav «News · Student radio» (v9.28 intacta), 18/18 en-news-*.webp, hero en-news-a1-01; FALLBACK probado ocultando en-news-c2-03.webp + reload + scroll → img reemplazada por cromo emoji (17 imgs, 1 fallback, 0 broken); móvil 390px scrollW=390 sin overflow; consola sin errores. Capturas: upload/v929-{it-reader,en-reader,en-fallback,en-mobile}.png.
+
+Stage Summary:
+- v9.29: las 90 noticias del Radiogiornale (5 lenguas) tienen ahora su ilustración de cabecera propia — en la tarjeta de la biblioteca y como hero del Reader, imitando la foto de cabecera de cada artículo de VOA Learning English. 90 WebP vectoriales-editoriales generadas con IA (1008×576, 51 KB prom., 4,45 MB total), sin texto dentro de la imagen, con fallback elegante por categoría si un archivo no carga. Coste 0 €, sin assets externos.
