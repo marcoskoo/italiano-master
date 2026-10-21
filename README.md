@@ -1,8 +1,8 @@
-# 🇮🇹 Italiano Master
+# 🌍 Políglota Master
 
-**🔗 Demo en vivo:** [italiano-master.vercel.app](https://italiano-master.vercel.app) · **Código:** [github.com/marcoskoo/italiano-master](https://github.com/marcoskoo/italiano-master)
+**🔗 Demo en vivo:** [poliglota-master.vercel.app](https://poliglota-master.vercel.app) · **Código:** [github.com/marcoskoo/italiano-master](https://github.com/marcoskoo/italiano-master)
 
-**Plataforma interactiva de aprendizaje de italiano para hispanohablantes** — un LMS completo que va desde cero hasta el nivel C2 del MCER, con tutor de conversación, motor de ejercicios adaptativo, repetición espaciada (SRS) y un **panel de administración con control total de la plataforma**.
+**Plataforma interactiva de aprendizaje de idiomas para hispanohablantes** — un LMS completo para **italiano, inglés, portugués, francés y alemán** que va desde cero hasta el nivel C2 del MCER, con tutor de conversación, motor de ejercicios adaptativo, repetición espaciada (SRS), noticias con el método VOA Learning English y un **panel de administración con control total de la plataforma**.
 
 ![Next.js](https://img.shields.io/badge/Next.js%2016-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)

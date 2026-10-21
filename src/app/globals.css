@@ -44,7 +44,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* ── Italiano Master · Italian editorial palette (dark-aware) ─────── */
+/* ── Políglota Master · Italian editorial palette (dark-aware) ─────── */
 @theme inline {
   --color-verde: var(--verde);
   --color-verde-scuro: var(--verde-scuro);
@@ -369,7 +369,7 @@
   }
 }
 
-/* ── Italiano Master LMS utilities ───────────────────────────────── */
+/* ── Políglota Master LMS utilities ───────────────────────────────── */
 html[data-textsize="lg"] { font-size: 17px; }
 html[data-textsize="xl"] { font-size: 18.5px; }
 
@@ -418,7 +418,7 @@ html[data-textsize="xl"] { font-size: 18.5px; }
   .noun-f { color: var(--rosso); }
 }
 
-/* ── Italiano Master · PRO / PREMIUM / PLATINUM ───────────────────── */
+/* ── Políglota Master · PRO / PREMIUM / PLATINUM ───────────────────── */
 @keyframes platinum-shimmer {
   0% { background-position: 0% center; }
   100% { background-position: 200% center; }

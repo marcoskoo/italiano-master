@@ -1480,3 +1480,19 @@ Work Log:
 
 Stage Summary:
 - v9.30: las 90 noticias del Radiogiornale usan ahora imágenes REALISTAS (fotoperiodismo IA) en lugar de ilustraciones vectoriales — mismo look de agencia de noticias de VOA Learning English. 90 WebP 1008×576 (77 KB prom., 6,76 MB), sin texto en imagen, mismos nombres de archivo (cero cambios de código) y SW bump para purgar caché. Coste 0 €.
+
+---
+Task ID: 1 (v9.31)
+Agent: main (Super Z)
+Task: Petición del usuario: renombrar la web (ya no es solo de italiano) a poliglota-master.vercel.app con token Vercel proporcionado.
+
+Work Log:
+- Elegido el nombre «Políglota Master» de la tanda de candidatos (verificada disponibilidad del subdominio con curl; ocupados: lingua-lab, poliglota-app, polyglot-master).
+- API Vercel con el token del usuario (Hobby + team): GET /v2/user → rkoo131077-2735; listado de proyectos → italiano-master (repo marcoskoo/italiano-master); PATCH /v9/projects → renombrado a poliglota-master; POST /v9/projects/poliglota-master/domains → añadido y verificado poliglota-master.vercel.app.
+- Rebranding del código (visible): layout.tsx metadata completa (title/description/keywords/authors/appleWebApp/openGraph con los 5 idiomas); manifest.json (name/short_name/description); offline.html (title+footer); shell.tsx logo «I»→«P»; page.tsx footer admin; sed masivo seguro «Italiano Master»→«Políglota Master» en src (nav, appconfig, ui/it, ui/en, globals.css, exams.tsx, security/types/store comentarios, export API + filename backup); email placeholder paypal → pagamenti@poliglotamaster.it; README.md (título 🌍, demo URL, descripción 5 idiomas).
+- Conservados a propósito (compatibilidad): clave localStorage «italiano-master-v1» (progreso de usuarios), salt scrypt «italiano-master/store/v1», hash de credenciales «italiano-master::», BLOB_PATHNAME «italiano-master/state.json» del admin, global __italianoMasterStore y prefijo de caché del SW — cambiarlos habría borrado progreso/credenciales/estado.
+- sw.js: im-v9-30-0 → im-v9-31-0. tsc limpio en tocados; npm run build OK.
+- E2E agent-browser (dev): title «Políglota Master — Aprende italiano…», header «P Políglota Master», chip sidebar «Políglota Master», logo P, regresión Notizie OK (18 imgs 9 lazy), switch a EN OK, sin errores de consola. Captura: upload/v931-rebrand.png.
+
+Stage Summary:
+- v9.31: la app se llama «Políglota Master» y vive en poliglota-master.vercel.app (proyecto Vercel renombrado vía API + dominio verificado). Branding actualizado en metadata/PWA/offline/UI/diccionarios/README. Identificadores internos (localStorage, salts, blob admin) intactos para preservar progreso y credenciales. Redirect del dominio antiguo pendiente de configurar tras el deploy.

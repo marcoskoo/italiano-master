@@ -70,7 +70,7 @@ export interface AppConfig {
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
-  appName: "Italiano Master",
+  appName: "Políglota Master",
   tagline: "Tu plataforma integral de italiano, desde cero hasta C2",
   maintenance: { enabled: false, message: "Stiamo aggiornando la piattaforma. Torna tra poco!" },
   features: { plans: true, tutor: true, games: true, certificates: true, weeklyPlan: true, numberLab: true, verbDrill: true, planner: true, analyzer: true, printables: true, proverbi: true, falsiAmici: true, dettato: true, parolaNascosta: true, preposizioni: true, pomodoro: true, muse: true },
@@ -91,7 +91,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
       iban: "",
       bic: "BCPLPEPL",
     },
-    paypal: { enabled: true, email: "pagamenti@italianomaster.it" },
+    paypal: { enabled: true, email: "pagamenti@poliglotamaster.it" },
     card: { enabled: true, provider: "Stripe (demo)" },
     vatRate: 18,
     invoicePrefix: "IM",

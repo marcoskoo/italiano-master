@@ -224,13 +224,13 @@ export function CertificatesView() {
       ctx.fillText(`Codice di verifica: ${code}`, 800, 986);
       ctx.fillStyle = "#6b6459";
       ctx.font = "22px Georgia, serif";
-      ctx.fillText("Marco · Tutor IA · Italiano Master LMS", 800, 1030);
+      ctx.fillText("Marco · Tutor IA · Políglota Master LMS", 800, 1030);
     } else {
       ctx.font = "italic 26px Georgia, serif";
       ctx.fillStyle = "#6b6459";
       ctx.fillText("“Impara l'italiano come si impara una canzone”", 800, 900);
       ctx.font = "22px Georgia, serif";
-      ctx.fillText("Marco · Tutor IA · Italiano Master LMS", 800, 970);
+      ctx.fillText("Marco · Tutor IA · Políglota Master LMS", 800, 970);
     }
 
     const link = document.createElement("a");
@@ -285,7 +285,7 @@ export function CertificatesView() {
             {/* preview del certificado */}
             <div className="relative bg-gradient-to-br from-crema to-crema-scura p-8 text-center">
               <div className="absolute inset-x-6 top-0 h-1.5 bg-gradient-to-r from-verde via-white to-rosso" aria-hidden="true" />
-              <p className="mt-3 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted-it">Italiano Master · LMS{verified ? " · PLATINUM" : ""}</p>
+              <p className="mt-3 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted-it">Políglota Master · LMS{verified ? " · PLATINUM" : ""}</p>
               <p className="mt-4 text-sm text-muted-it">si certifica che</p>
               <p className="font-display text-3xl font-semibold">{userName}</p>
               <p className="mt-1.5 text-sm text-muted-it">ha completato il livello</p>

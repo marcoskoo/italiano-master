@@ -27,15 +27,16 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Italiano Master — LMS de italiano desde cero hasta C2",
+  title: "Políglota Master — Aprende italiano, inglés, portugués, francés y alemán",
   description:
-    "Sistema integral de aprendizaje de italiano para hispanohablantes: cursos A1–C2, gramática paso a paso, vocabulario con repetición espaciada, escucha, lectura, escritura, conversación, pronunciación interactiva, situaciones reales, cultura, tutor IA y certificados.",
+    "Sistema integral de aprendizaje de idiomas para hispanohablantes: italiano, inglés, portugués, francés y alemán con cursos A1–C2, gramática paso a paso, vocabulario con repetición espaciada, escucha, lectura, escritura, conversación, pronunciación interactiva, noticias con método VOA, cultura, tutor IA y certificados.",
   keywords: [
-    "italiano", "aprender italiano", "curso de italiano", "gramática italiana",
-    "vocabulario italiano", "italiano para hispanohablantes", "LMS", "MCER",
+    "italiano", "aprender italiano", "inglés", "portugués", "francés", "alemán",
+    "curso de idiomas", "gramática italiana", "vocabulario", "idiomas para hispanohablantes",
+    "LMS", "MCER", "políglota", "aprender idiomas",
     "A1", "A2", "B1", "B2", "C1", "C2", "conjugador", "diccionario italiano",
   ],
-  authors: [{ name: "Italiano Master" }],
+  authors: [{ name: "Políglota Master" }],
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -47,13 +48,13 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Italiano Master",
+    title: "Políglota Master",
   },
   openGraph: {
-    title: "Italiano Master — LMS de italiano desde cero hasta C2",
+    title: "Políglota Master — Aprende italiano, inglés, portugués, francés y alemán",
     description:
-      "Tu plataforma integral de italiano: lecciones conectadas, 4 destrezas, repaso inteligente, tutor IA y certificados. Da zero a C2.",
-    siteName: "Italiano Master",
+      "Tu plataforma integral de idiomas: lecciones conectadas, 4 destrezas, repaso inteligente, tutor IA y certificados. Da zero a C2 en 5 lenguas.",
+    siteName: "Políglota Master",
     type: "website",
   },
 };

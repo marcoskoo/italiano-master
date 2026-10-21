@@ -1,6 +1,6 @@
 "use client";
 
-/* ── Italiano Master · Global store (Zustand + persist) ──────────── */
+/* ── Políglota Master · Global store (Zustand + persist) ──────────── */
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";

@@ -26,7 +26,7 @@ export async function GET(req: Request) {
 
   const dump = {
     exportedAt: new Date().toISOString(),
-    platform: "Italiano Master",
+    platform: "Políglota Master",
     users: users.map((u) => ({ ...u, passwordHash: `(${u.passwordHash.slice(0, 8)}…)` })), // hash truncado por seguridad
     settings: settings.map((s) => {
       if (SENSITIVE_KEYS.has(s.key)) return { key: s.key, value: "[protegido]" };

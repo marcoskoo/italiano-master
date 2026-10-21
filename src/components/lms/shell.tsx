@@ -92,7 +92,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   /* v9.5.1: vista corrupta/desconocida en el estado persistido → fallback a inicio.
      Antes VIEW_TITLES[view] era undefined y meta.title tumbaba toda la app. */
   const meta = viewTitleFor(activeLang, view ?? "inicio") ?? VIEW_TITLES.inicio;
-  const appName = remoteConfig?.appName || "Italiano Master";
+  const appName = remoteConfig?.appName || "Políglota Master";
   const dueCount = useMemo(() => dueCards(srs).length, [srs]);
 
   // features activables/desactivables desde el Panel Admin
@@ -227,7 +227,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         })}
         <div className="mt-auto rounded-2xl border border-soft bg-crema-scura p-3.5 dark:bg-inchiostro/10">
           <p className="flex items-center gap-2 text-xs font-bold text-muted-it">
-            <FlaskConical className="h-3.5 w-3.5" aria-hidden="true" /> Italiano Master
+            <FlaskConical className="h-3.5 w-3.5" aria-hidden="true" /> Políglota Master
           </p>
           <p className="mt-1 text-[11px] leading-relaxed text-muted-it">
             {u.shell.tagline}
@@ -249,7 +249,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               plan === "platinum" ? "plan-platinum-bg ring-platinum" : "bg-gradient-to-br from-verde via-crema to-rosso"
             )}>
               <span className="flex h-full w-full items-center justify-center rounded-[10px] bg-crema">
-                <span className="font-display text-lg font-bold italic text-verde-scuro dark:text-verde">I</span>
+                <span className="font-display text-lg font-bold italic text-verde-scuro dark:text-verde">P</span>
               </span>
             </span>
             <span className="hidden font-display text-lg font-semibold tracking-tight sm:block">

@@ -130,7 +130,7 @@ export const VIEW_TITLES: Record<ViewId, { title: string; sub: string }> = {
   cils: { title: "Preparazione CILS", sub: "Estructura del examen, estrategias por prueba y simulacro cronometrado con veredicto" },
   certificati: { title: "Certificati", sub: "Tus diplomas de italiano, listos para descargar" },
   impostazioni: { title: "Impostazioni", sub: "Tema, tamaño de texto, audio, perfil y backup" },
-  piani: { title: "Piani PRO · Premium · Platinum", sub: "Sblocca tutto il potenziale di Italiano Master" },
+  piani: { title: "Piani PRO · Premium · Platinum", sub: "Sblocca tutto il potenziale di Políglota Master" },
   admin: { title: "Pannello di Controllo", sub: "Amministrazione totale de la plataforma" },
   numerilab: { title: "Numeri lab", sub: "Conversor de números y hora + práctica con XP" },
   verbidrill: { title: "Allenamento verbi", sub: "Drill de conjugación contrarreloj con rachas" },

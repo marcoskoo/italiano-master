@@ -15,7 +15,7 @@ import { useLms } from "@/lib/lms/store";
 import { speak } from "@/lib/lms/tts";
 import { cn } from "@/lib/utils";
 
-/* ── Plugin v4.0 · Estensioni de Italiano Master ────────────────────
+/* ── Plugin v4.0 · Estensioni de Políglota Master ────────────────────
    1. Proverbi e modi di dire (73 entradas)
    2. Falsi amici IT–ES (87 trampas)
    3. Dettato · dictado con TTS y corrección palabra a palabra

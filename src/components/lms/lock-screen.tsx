@@ -145,7 +145,7 @@ export function LockScreen() {
       )}
 
       <p className="absolute bottom-6 text-center text-[10px] uppercase tracking-[0.2em] text-inchiostro/35">
-        Italiano Master · Sicurezza estrema
+        Políglota Master · Sicurezza estrema
       </p>
     </div>
   );

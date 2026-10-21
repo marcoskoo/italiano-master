@@ -69,7 +69,7 @@ function sheetShell(title: string, subtitle: string, body: string) {
   return `<!doctype html><html lang="it"><head><meta charset="utf-8"><title>${esc(title)}</title><style>${PAGE_CSS}</style></head>
 <body><header><h1>Italiano <span>Master</span></h1><div class="meta">${esc(subtitle)} · ${new Date().toLocaleDateString("es")}</div></header>
 ${body}
-<footer>Italiano Master · Scheda di studio generata dall'app · italianomaster.app</footer></body></html>`;
+<footer>Políglota Master · Scheda di studio generata dall'app · italianomaster.app</footer></body></html>`;
 }
 
 export function PrintablesView() {

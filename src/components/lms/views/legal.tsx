@@ -316,7 +316,7 @@ export function LegalView() {
         <Doc title="Política de privacidad" updated={TOS_VERSION}>
           <h3>1. Responsable del tratamiento</h3>
           <p>
-            Italiano Master (plataforma educativa multi-idioma), operada por su desarrollador independiente
+            Políglota Master (plataforma educativa multi-idioma), operada por su desarrollador independiente
             («el responsable»). Contacto: canal de soporte de la app o el correo indicado en Configuración → Soporte.
             Encargado principal del tratamiento: Vercel Inc. (hosting), con DPA estándar incluido en sus términos.
           </p>

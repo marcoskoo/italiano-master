@@ -12,7 +12,7 @@ import { useLms } from "@/lib/lms/store";
 import { AudioButton } from "@/components/lms/audio-button";
 import { cn } from "@/lib/utils";
 
-/* ── Plugins v6.0 · Estensioni de Italiano Master ────────────────────
+/* ── Plugins v6.0 · Estensioni de Políglota Master ────────────────────
    9  · Indovinelli — adivinanzas italianas con pistas graduales
    10 · Vero o Falso — afirmaciones rápidas sobre idioma y cultura
    11 · Completa il proverbio — empareja las mitades de 193 proverbi ── */

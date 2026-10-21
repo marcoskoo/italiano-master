@@ -1,4 +1,4 @@
-/* ── Seguridad del servidor · Italiano Master ──────────────────────────
+/* ── Seguridad del servidor · Políglota Master ──────────────────────────
    Endurecimiento v5.0:
    · Rate limiting en memoria (ventana fija + bloqueo temporal)
    · Comparación en tiempo constante (anti timing-attack)

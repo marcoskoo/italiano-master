@@ -46,7 +46,7 @@ import { LegalView } from "@/components/lms/views/legal";
 import { CookieBanner } from "@/components/lms/cookie-banner";
 import { LockScreen } from "@/components/lms/lock-screen";
 
-/* ── Italiano Master · LMS completo de italiano (SPA) ─────────────── */
+/* ── Políglota Master · LMS completo de italiano (SPA) ─────────────── */
 
 const emptySubscribe = () => () => {};
 
@@ -94,7 +94,7 @@ function MaintenanceScreen({ message, onAdminLogin }: { message: string; onAdmin
         </form>
       )}
 
-      <p className="mt-10 font-mono text-[10px] uppercase tracking-[0.24em] text-inchiostro/40">italiano master · admin panel</p>
+      <p className="mt-10 font-mono text-[10px] uppercase tracking-[0.24em] text-inchiostro/40">poliglota master · admin panel</p>
     </div>
   );
 }

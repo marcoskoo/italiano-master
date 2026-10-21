@@ -1,7 +1,7 @@
 {
-  "name": "Italiano Master — LMS de italiano A1–C2",
-  "short_name": "Italiano Master",
-  "description": "Aprende italiano desde cero hasta C2: cursos, gramática, vocabulario con repaso espaciado, shadowing, tutor IA y preparación CILS.",
+  "name": "Políglota Master — Aprende 5 idiomas A1–C2",
+  "short_name": "Políglota Master",
+  "description": "Aprende italiano, inglés, portugués, francés y alemán desde cero hasta C2: cursos, gramática, vocabulario con repaso espaciado, noticias con método VOA, shadowing, tutor IA y preparación de certificados.",
   "lang": "es",
   "dir": "ltr",
   "start_url": "/",
