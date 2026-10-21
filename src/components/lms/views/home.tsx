@@ -109,8 +109,14 @@ export function HomeView() {
   const weaknesses = useMemo(() => weakTopics(errorLog, 3), [errorLog]);
   const showWeekly = planLimits(plan).weeklyPlan && (remoteConfig?.features.weeklyPlan ?? true);
   const weeklyPlan = useMemo(
-    () => generateWeeklyPlan(level, due, weaknesses.map((w) => TOPIC_LABELS[w.topic] ?? w.topic)),
-    [level, due, weaknesses]
+    () => generateWeeklyPlan(
+      level,
+      due,
+      /* v9.27 · etiquetas de tema en la lengua activa (it → histórico ES) */
+      weaknesses.map((wk) => u.data.topics[wk.topic] ?? TOPIC_LABELS[wk.topic] ?? wk.topic),
+      u.weekly
+    ),
+    [level, due, weaknesses, u]
   );
   /* v9.8.1: "Continúa" apunta al curso comunicativo (metodologia Cambridge), no al
      curso gramatical clásico. Primera unidad no completada desde el nivel del usuario;
@@ -272,11 +278,10 @@ export function HomeView() {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="flex items-center gap-2 font-display text-2xl font-semibold">
-                <span aria-hidden="true">🗓️</span> Il tuo piano settimanale <span className="rounded-full plan-gold-bg px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-white">{PLANS[plan].name}</span>
+                <span aria-hidden="true">🗓️</span> {u.weekly.title} <span className="rounded-full plan-gold-bg px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-white">{PLANS[plan].name}</span>
               </h2>
               <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-it">
-                Generado esta semana según tu nivel {level ?? "A1"}, {due} tarjetas por repasar y tus puntos débiles.
-                Toca cada actividad para ir directo.
+                {u.weekly.subtitle(level ?? "A1", due)}
               </p>
             </div>
           </div>

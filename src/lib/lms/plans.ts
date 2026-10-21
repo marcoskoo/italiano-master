@@ -1,4 +1,5 @@
 import type { CefrLevel, ViewId } from "./types";
+import type { UiWeeklyStrings } from "./ui/types";
 
 /* ── PRO · PREMIUM · PLATINUM · definiciones de planes y gating ───── */
 
@@ -171,46 +172,47 @@ export function todayUsage(count: number, date: string): number {
 export interface PlanActivity { emoji: string; label: string; view: ViewId; minutes: number }
 export interface DayPlan { day: string; focus: string; activities: PlanActivity[] }
 
-const GWP_DAYS = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
-
-export function generateWeeklyPlan(level: CefrLevel | null, dueCount: number, weakLabels: string[]): DayPlan[] {
+/* v9.27 · los textos del plan llegan del diccionario UI de la lengua de
+   estudio (ui.weekly): antes estaban hardcodeados en italiano y el plan
+   salía en italiano aunque la lengua activa fuera en/pt/fr/de.        */
+export function generateWeeklyPlan(level: CefrLevel | null, dueCount: number, weakLabels: string[], w: UiWeeklyStrings): DayPlan[] {
   const lv = level ?? "A1";
   const weak = weakLabels[0] ?? null;
   const due = Math.min(dueCount, 15);
   const dueAct: PlanActivity = due > 0
-    ? { emoji: "🔄", label: `${due} flashcards dovute`, view: "repaso", minutes: 10 }
-    : { emoji: "🔄", label: "Aggiungi 5 parole al ripasso", view: "vocabolario", minutes: 5 };
+    ? { emoji: "🔄", label: w.act.due(due), view: "repaso", minutes: 10 }
+    : { emoji: "🔄", label: w.act.addWords, view: "vocabolario", minutes: 5 };
 
   return [
-    { day: GWP_DAYS[0], focus: "Nuova lezione + ripasso", activities: [
-      { emoji: "📚", label: `Lezione del corso ${lv}`, view: "cursos", minutes: 20 },
+    { day: w.days[0], focus: w.focus.mon, activities: [
+      { emoji: "📚", label: w.act.lesson(lv), view: "cursos", minutes: 20 },
       dueAct,
     ] },
-    { day: GWP_DAYS[1], focus: weak ? `Grammatica mirata: ${weak}` : "Grammatica passo a passo", activities: [
-      { emoji: "🧠", label: weak ? `Rinforzo: ${weak}` : "Un tema di grammatica nuovo", view: "grammatica", minutes: 15 },
-      { emoji: "🎧", label: "Un dialogo in ascolto", view: "ascolto", minutes: 10 },
+    { day: w.days[1], focus: weak ? w.focus.tueWeak(weak) : w.focus.tue, activities: [
+      { emoji: "🧠", label: weak ? w.act.reinforce(weak) : w.act.grammarNew, view: "grammatica", minutes: 15 },
+      { emoji: "🎧", label: w.act.listen, view: "ascolto", minutes: 10 },
     ] },
-    { day: GWP_DAYS[2], focus: "Ascolto e pronuncia", activities: [
-      { emoji: "🎧", label: "Dialogo + dettato", view: "ascolto", minutes: 15 },
-      { emoji: "🎨", label: "Laboratorio di vocali e intonazione", view: "pronuncia", minutes: 10 },
+    { day: w.days[2], focus: w.focus.wed, activities: [
+      { emoji: "🎧", label: w.act.dictation, view: "ascolto", minutes: 15 },
+      { emoji: "🎨", label: w.act.vowelLab, view: "pronuncia", minutes: 10 },
     ] },
-    { day: GWP_DAYS[3], focus: "Scrittura con correzione IA", activities: [
-      { emoji: "✍️", label: "Un testo breve + correzione", view: "scrittura", minutes: 15 },
-      { emoji: "📖", label: "Una lettura graduata", view: "lettura", minutes: 10 },
+    { day: w.days[3], focus: w.focus.thu, activities: [
+      { emoji: "✍️", label: w.act.writing, view: "scrittura", minutes: 15 },
+      { emoji: "📖", label: w.act.reading, view: "lettura", minutes: 10 },
     ] },
-    { day: GWP_DAYS[4], focus: "Conversazione con Marco", activities: [
-      { emoji: "🗣️", label: "Scenario di conversazione", view: "conversazione", minutes: 15 },
-      { emoji: "🤖", label: "Chiacchierata col tutor IA", view: "tutor", minutes: 10 },
+    { day: w.days[4], focus: w.focus.fri, activities: [
+      { emoji: "🗣️", label: w.act.conversation, view: "conversazione", minutes: 15 },
+      { emoji: "🤖", label: w.act.tutor, view: "tutor", minutes: 10 },
     ] },
-    { day: GWP_DAYS[5], focus: "Cultura e studio libero", activities: [
-      { emoji: "🇮🇹", label: "Un articolo di cultura", view: "cultura", minutes: 10 },
-      { emoji: "📚", label: "Lezione bonus del corso", view: "cursos", minutes: 15 },
+    { day: w.days[5], focus: w.focus.sat, activities: [
+      { emoji: w.flag, label: w.act.culture, view: "cultura", minutes: 10 },
+      { emoji: "📚", label: w.act.bonus, view: "cursos", minutes: 15 },
     ] },
-    { day: GWP_DAYS[6], focus: "Ripasso leggero e gioco", activities: [
-      { emoji: "🎮", label: "Un gioco a scelta", view: "giochi", minutes: 10 },
+    { day: w.days[6], focus: w.focus.sun, activities: [
+      { emoji: "🎮", label: w.act.game, view: "giochi", minutes: 10 },
       due > 0
-        ? { emoji: "🔄", label: "Ripasso veloce", view: "repaso", minutes: 10 }
-        : { emoji: "🗓️", label: "Anteprima della prossima settimana", view: "progreso", minutes: 5 },
+        ? { emoji: "🔄", label: w.act.quickReview, view: "repaso", minutes: 10 }
+        : { emoji: "🗓️", label: w.act.preview, view: "progreso", minutes: 5 },
     ] },
   ];
 }

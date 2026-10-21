@@ -568,6 +568,47 @@ export interface UiImpostazioniStrings {
   a11y: string[];
 }
 
+/* ═══ v9.27 · Plan de estudio semanal del Home en la lengua de estudio ═
+   generateWeeklyPlan() recibe este bloque y produce días/focos/
+   actividades localizados (antes: hardcode italiano).                    */
+export interface UiWeeklyStrings {
+  title: string;
+  subtitle: (level: string, due: number) => string;
+  /** lunes→domingo, 7 elementos */
+  days: string[];
+  /** bandera de la cultura de la lengua (🇮🇹/🇺🇸/🇵🇹/🇫🇷/🇩🇪) */
+  flag: string;
+  focus: {
+    mon: string;
+    tueWeak: (w: string) => string;
+    tue: string;
+    wed: string;
+    thu: string;
+    fri: string;
+    sat: string;
+    sun: string;
+  };
+  act: {
+    lesson: (lv: string) => string;
+    due: (n: number) => string;
+    addWords: string;
+    reinforce: (w: string) => string;
+    grammarNew: string;
+    listen: string;
+    dictation: string;
+    vowelLab: string;
+    writing: string;
+    reading: string;
+    conversation: string;
+    tutor: string;
+    culture: string;
+    bonus: string;
+    game: string;
+    quickReview: string;
+    preview: string;
+  };
+}
+
 export interface UiStrings {
   common: UiCommonStrings;
   nav: UiNavStrings;
@@ -576,6 +617,8 @@ export interface UiStrings {
   shell: UiShellStrings;
   search: UiSearchStrings;
   home: UiHomeStrings;
+  /** v9.27 · plan de estudio semanal (sección premium del Home) */
+  weekly: UiWeeklyStrings;
   courses: UiCoursesStrings;
   unit: UiUnitStrings;
   quiz: UiQuizStrings;
