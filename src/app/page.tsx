@@ -39,6 +39,7 @@ import { ImporterView } from "@/components/lms/views/importer";
 import { StatisticheView } from "@/components/lms/views/statistiche";
 import { ClassificaView } from "@/components/lms/views/classifica";
 import { LettureView } from "@/components/lms/views/letture";
+import { NotizieView } from "@/components/lms/views/notizie";
 import { PremiView } from "@/components/lms/views/premi";
 import { PwaRegister, InstallBanner } from "@/components/lms/pwa";
 import { LegalView } from "@/components/lms/views/legal";
@@ -301,6 +302,7 @@ export default function Home() {
         {view === "statistiche" && <StatisticheView />}
         {view === "classifica" && <ClassificaView />}
         {view === "letture" && <LettureView />}
+        {view === "notizie" && <NotizieView />}
         {view === "premi" && <PremiView />}
         {view === "legal" && <LegalView />}
       </div>

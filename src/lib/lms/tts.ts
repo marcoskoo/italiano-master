@@ -149,6 +149,10 @@ export function voiceCountFor(lang: LangCode) {
 export function defaultVoiceFor(lang: LangCode) {
   return defaults.get(lang) ?? null;
 }
+/** v9.25 · pool de voces de una lengua (selector de locutor del notiziario) */
+export function voicesFor(lang: LangCode): SpeechSynthesisVoice[] {
+  return pools.get(lang) ?? [];
+}
 
 /* ── Reparto de voces por personaje ───────────────────────────────── */
 

@@ -1,0 +1,535 @@
+"use client";
+
+/* ── Notizie · Radiogiornale per studenti (v9.25) ─────────────────────
+   El método VOA Learning English (learningenglish.voanews.com) aplicado
+   al italiano, con texto y audio:
+   1 · palabras clave ANTES de leer («Words in This Story»)
+   2 · audio TTS a velocidad reducida, como VOA Special English
+   3 · transcripción siempre visible + traducción ES conmutable
+   4 · lectura sincronizada FRASE por frase con resaltado y auto-scroll
+   5 · clic en cualquier frase para repetirla (sentence-level replay)
+   6 · modo «solo audio»: escuchar antes de leer, como en la radio
+   7 · quiz de comprensión + debate con el Tutor IA                  */
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  ArrowLeft, BookOpen, Check, ChevronLeft, ChevronRight, Coins, Ear, Headphones, Lightbulb,
+  ListFilter, MessageCircle, Mic2, Pause, Play, Radio, Square, Volume2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useLms } from "@/lib/lms/store";
+import { speak, stopSpeaking, onVoices, voicesFor, defaultVoiceFor, prettyVoiceName } from "@/lib/lms/tts";
+import { VoiceHint } from "../audio-button";
+import { HoverWords } from "../hover-words";
+import { QuizEngine } from "../quiz-engine";
+import {
+  NEWS, NEWS_BY_ID, NEWS_CATS, NEWS_RATES, DEFAULT_RATE,
+  newsExercises, newsSentences, newsWordCount,
+  type NewsCat, type NewsItem,
+} from "@/lib/lms/news";
+import type { CefrLevel } from "@/lib/lms/types";
+
+const LEVELS: (CefrLevel | "tutti")[] = ["tutti", "A1", "A2", "B1", "B2", "C1", "C2"];
+
+/** velocidad inicial de la noticia: preset más cercano al default del nivel */
+function startRate(level: CefrLevel): number {
+  const target = DEFAULT_RATE[level];
+  return NEWS_RATES.reduce((best, r) => (Math.abs(r.value - target) < Math.abs(best - target) ? r.value : best), NEWS_RATES[0].value);
+}
+
+export function NotizieView() {
+  const [cat, setCat] = useState<NewsCat | "tutte">("tutte");
+  const [level, setLevel] = useState<CefrLevel | "tutti">("tutti");
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  const readingsRead = useLms((s) => s.readingsRead);
+
+  const texts = useMemo(
+    () => NEWS.filter((t) => (cat === "tutte" || t.cat === cat) && (level === "tutti" || t.level === level)),
+    [cat, level]
+  );
+  const text = openId ? NEWS_BY_ID[openId] : null;
+
+  if (text) return <Reader key={text.id} news={text} onBack={() => setOpenId(null)} />;
+
+  return (
+    <div className="space-y-6">
+      <VoiceHint lang="it" />
+
+      {/* método VOA */}
+      <section className="overflow-hidden rounded-3xl border-2 border-azzurro/30 bg-gradient-to-br from-azzurro/10 via-crema to-verde-tenue/40 p-5 sm:p-6 dark:via-inchiostro/10 dark:to-verde-tenue/10">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-surface text-2xl shadow-sm">📻</span>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-display text-lg font-bold leading-snug">
+              Radiogiornale per studenti · il metodo VOA
+              <span className="ml-2 rounded-full bg-azzurro px-2 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wide text-white">A1–C2</span>
+            </h2>
+            <p className="mt-1 text-sm leading-relaxed text-muted-it">
+              Notizie reali adattate al tuo livello, come fa <b>Voice of America</b> per l&apos;inglese: testo e audio siempre juntos, velocidad a medida y comprensión al final.
+            </p>
+          </div>
+        </div>
+        <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+          {[
+            { n: 1, t: "Le parole prima del testo", d: "«Parole per questa notizia»: le parole chiave con audio, prima di leggere (come «Words in This Story»)." },
+            { n: 2, t: "Ascolta a velocità ridotta", d: "Audio frase per frase come alla radio: riduci la velocità, oppure ascolta in modalità «solo audio»." },
+            { n: 3, t: "Leggi, segui e rispondi", d: "Transcrizione sempre visible con resaltado sincronizzato; clic su una frase per riascoltarla. Quiz finale." },
+          ].map((s) => (
+            <li key={s.n} className="rounded-2xl border border-soft bg-surface p-4">
+              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-it">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-azzurro text-white">{s.n}</span>
+                {s.t}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-it">{s.d}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* filtros */}
+      <div className="flex flex-wrap gap-2">
+        <FilterChip active={cat === "tutte"} onClick={() => setCat("tutte")}>Tutte</FilterChip>
+        {(Object.keys(NEWS_CATS) as NewsCat[]).map((c) => (
+          <FilterChip key={c} active={cat === c} onClick={() => setCat(c)}>
+            {NEWS_CATS[c].emoji} {NEWS_CATS[c].label}
+          </FilterChip>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {LEVELS.map((l) => (
+          <FilterChip key={l} active={level === l} onClick={() => setLevel(l)} small>
+            {l === "tutti" ? "MCER" : l}
+          </FilterChip>
+        ))}
+      </div>
+
+      <p className="text-sm text-muted-it">
+        <ListFilter className="mr-1 inline h-4 w-4" aria-hidden="true" />
+        {texts.length} notizie disponibili · audio sincronizzato frase per frase · quiz incluso
+      </p>
+
+      {/* tarjetas */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {texts.map((t, i) => {
+          const done = readingsRead.includes(t.id);
+          const w = newsWordCount(t);
+          return (
+            <motion.button
+              key={t.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              onClick={() => setOpenId(t.id)}
+              className={cn(
+                "group relative overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-azzurro/40 hover:shadow-lg",
+                done && "border-verde/50"
+              )}
+            >
+              {done && (
+                <span className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-verde text-white shadow-md" title="Completata">
+                  <Check className="h-4 w-4" aria-hidden="true" />
+                </span>
+              )}
+              <div className="p-5">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-it">
+                  {t.place} · edizione {t.level}
+                </p>
+                <div className="mt-2.5 flex items-center justify-between gap-2">
+                  <span className={cn("rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase", NEWS_CATS[t.cat].chip)}>
+                    {NEWS_CATS[t.cat].emoji} {NEWS_CATS[t.cat].label}
+                  </span>
+                  <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">
+                    {t.level}
+                  </span>
+                </div>
+                <p className="mt-3 font-display text-lg font-semibold leading-snug">{t.title}</p>
+                <p className="mt-1 text-sm italic text-muted-it">{t.titleEs}</p>
+                <p className="mt-2.5 text-xs text-muted-it">
+                  ~{w} parole · {t.minutes} min · {t.questions.length} domande
+                </p>
+                <p className="mt-3 flex items-center gap-1.5 text-xs font-bold text-azzurro-scuro dark:text-azzurro">
+                  <Headphones className="h-3.5 w-3.5" aria-hidden="true" /> Ascolta con testo · {NEWS_RATES.length} velocità
+                </p>
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function FilterChip({ active, onClick, children, small }: { active: boolean; onClick: () => void; children: React.ReactNode; small?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-full border-2 font-bold transition-all",
+        small ? "px-3 py-1 text-xs" : "min-h-11 px-4 py-2 text-sm",
+        active ? "border-azzurro bg-azzurro text-white shadow-md shadow-azzurro/25" : "border-soft bg-surface hover:border-azzurro/40"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+/* ══════════ READER ════════════════════════════════════════════════ */
+
+function Reader({ news, onBack }: { news: NewsItem; onBack: () => void }) {
+  const settingsSubs = useLms((s) => s.settings.showSubtitles);
+  const trackQuest = useLms((s) => s.trackQuest);
+  const markReadingDone = useLms((s) => s.markReadingDone);
+  const navigate = useLms((s) => s.navigate);
+
+  const [rate, setRate] = useState(() => startRate(news.level));
+  const [subs, setSubs] = useState(settingsSubs);
+  const [mode, setMode] = useState<"lettura" | "ascolto">("lettura");
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voiceIdx, setVoiceIdx] = useState(-1); // -1 = voz de sistema
+
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [linePlaying, setLinePlaying] = useState<number | null>(null);
+  const [quizOpen, setQuizOpen] = useState(false);
+  const [result, setResult] = useState<{ score: number; total: number; coins: number } | null>(null);
+
+  const cancelRef = useRef<(() => void) | null>(null);
+  const sentRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  /* frases "planas" + índices por párrafo */
+  const flat = useMemo(() => newsSentences(news), [news]);
+  const parGroups = useMemo(() => {
+    const g: number[][] = news.paragraphs.map(() => []);
+    flat.forEach((f, fi) => g[f.p].push(fi));
+    return g;
+  }, [flat, news]);
+
+  /* pool de voces it (selector de locutor) */
+  useEffect(() => {
+    const upd = () => setVoices(voicesFor("it"));
+    upd();
+    const off = onVoices(upd);
+    return () => { off(); };
+  }, []);
+  useEffect(() => () => { cancelRef.current?.(); stopSpeaking(); }, []);
+
+  const voice = voiceIdx >= 0 && voices[voiceIdx] ? voices[voiceIdx] : null;
+  const voiceLabel = voice
+    ? prettyVoiceName(voice, "it")
+    : voiceIdx === -1
+      ? prettyVoiceName(defaultVoiceFor("it") ?? null, "it")
+      : "voce di sistema";
+
+  const stopAll = useCallback(() => {
+    cancelRef.current?.();
+    cancelRef.current = null;
+    stopSpeaking();
+    setPlaying(false);
+    setLinePlaying(null);
+    setActiveIdx(null);
+  }, []);
+
+  /* reproducción continua desde una frase, con resaltado + auto-scroll */
+  const playFrom = useCallback((start: number) => {
+    cancelRef.current?.();
+    let i = start;
+    const next = () => {
+      if (i >= flat.length) { setPlaying(false); setActiveIdx(null); return; }
+      const idx = i;
+      i += 1;
+      setActiveIdx(idx);
+      if (mode === "lettura") sentRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      speak(flat[idx].text, {
+        rate, voice,
+        onEnd: () => setTimeout(next, 300),
+      });
+    };
+    setPlaying(true);
+    trackQuest("listen");
+    next();
+    cancelRef.current = () => { cancelRef.current = null; stopSpeaking(); };
+  }, [flat, rate, voice, mode, trackQuest]);
+
+  /* reproducir una sola frase (replay) */
+  const playSentence = useCallback((idx: number) => {
+    cancelRef.current?.();
+    setLinePlaying(idx);
+    setActiveIdx(idx);
+    trackQuest("listen");
+    speak(flat[idx].text, { rate, voice, onEnd: () => { setLinePlaying(null); setActiveIdx(null); } });
+  }, [flat, rate, voice, trackQuest]);
+
+  const toggleSentence = useCallback((fi: number) => {
+    if (activeIdx === fi && (playing || linePlaying === fi)) { stopAll(); return; }
+    if (playing) { playFrom(fi); return; }
+    playSentence(fi);
+  }, [activeIdx, playing, linePlaying, playFrom, playSentence, stopAll]);
+
+  /* salto de frase (⏮ / ⏭) */
+  const step = useCallback((d: number) => {
+    const cur = activeIdx ?? 0;
+    const t = Math.min(Math.max(cur + d, 0), flat.length - 1);
+    if (playing) playFrom(t);
+    else playSentence(t);
+  }, [activeIdx, flat.length, playing, playFrom, playSentence]);
+
+  const onFinishQuiz = useCallback((score: number, total: number) => {
+    const r = markReadingDone(news.id);
+    setResult({ score, total, coins: r.coinsEarned });
+  }, [markReadingDone, news.id]);
+
+  if (quizOpen) {
+    return (
+      <div>
+        <button onClick={() => setQuizOpen(false)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Torna alla notizia
+        </button>
+        <QuizEngine
+          exercises={newsExercises(news)}
+          title={`Comprensione · ${news.title}`}
+          kind="prueba"
+          label={`Notizia: ${news.title}`}
+          skill="lettura"
+          xpPerCorrect={12}
+          onFinish={onFinishQuiz}
+        />
+        {result && (
+          <div className="mt-5 rounded-2xl border border-verde/40 bg-verde-tenue p-5 text-center">
+            <p className="font-display text-lg font-bold">
+              {result.score}/{result.total} · Notizia completata! {result.coins > 0 ? <>+{result.coins} <Coins className="inline h-4 w-4 text-oro" aria-hidden="true" /></> : null}
+            </p>
+            <p className="mt-1 text-sm text-muted-it">Riascolta la notizia o continua con le idee per discutere qui sotto.</p>
+            <button onClick={() => setQuizOpen(false)} className="mt-3 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white">
+              Torna alla notizia
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const progIdx = activeIdx !== null && playing ? activeIdx : linePlaying;
+  const progress = progIdx !== null ? ((progIdx + 1) / flat.length) * 100 : 0;
+  const catInfo = NEWS_CATS[news.cat];
+
+  return (
+    <div>
+      <button onClick={() => { stopAll(); onBack(); }} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-azzurro">
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Tutte le notizie
+      </button>
+
+      <article className="overflow-hidden rounded-3xl border border-soft bg-surface">
+        <div className="p-5 sm:p-8">
+          {/* cabecera estilo noticia */}
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-it">
+            📻 Radiogiornale per studenti · {news.place} · edizione {news.level}
+          </p>
+          <div className="mt-2.5 flex items-center justify-between gap-2">
+            <span className={cn("rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase", catInfo.chip)}>
+              {catInfo.emoji} {catInfo.label}
+            </span>
+            <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">
+              {news.level} · {news.minutes} min
+            </span>
+          </div>
+          <h2 className="mt-3 font-display text-2xl font-semibold leading-tight sm:text-3xl">{news.title}</h2>
+          <p className="mt-1 text-sm italic text-muted-it">{news.titleEs}</p>
+
+          {/* entradilla */}
+          <p className="mt-4 border-l-4 border-azzurro/50 pl-4 text-base font-medium leading-relaxed text-inchiostro dark:text-surface">
+            {news.lead.it}
+          </p>
+          {subs && <p className="mt-1.5 border-l-4 border-transparent pl-4 text-sm italic text-muted-it">{news.lead.es}</p>}
+
+          {/* palabras clave ANTES del texto (método VOA: Words in This Story) */}
+          <div className="mt-5 rounded-2xl border border-oro/35 bg-oro-tenue/60 p-5 dark:bg-oro-tenue/20">
+            <p className="text-xs font-bold uppercase tracking-widest text-oro-scuro dark:text-oro">
+              Parole per questa notizia
+            </p>
+            <p className="mt-1 text-xs text-muted-it">Leggile e ascoltale prima del testo: come «Words in This Story» di VOA, ti preparano alla lettura.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {news.words.map((w, i) => (
+                <button
+                  key={i}
+                  onClick={() => { trackQuest("listen"); speak(w.it, { rate }); }}
+                  className="group inline-flex items-center gap-1.5 rounded-full border border-oro/40 bg-surface px-3 py-1.5 text-xs font-semibold transition-all hover:border-oro hover:scale-105"
+                  title="Ascolta la pronuncia"
+                >
+                  <Volume2 className="h-3 w-3 text-oro-scuro opacity-70 group-hover:opacity-100 dark:text-oro" aria-hidden="true" />
+                  <span className="font-display italic">{w.it}</span>
+                  <span className="text-muted-it">· {w.es}{w.note ? ` (${w.note})` : ""}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* barra del reproductor (sticky) */}
+          <div className="sticky top-2 z-10 mt-5 rounded-2xl border border-azzurro/25 bg-surface/95 p-3 shadow-sm backdrop-blur">
+            <div className="flex flex-wrap items-center gap-2">
+              {!playing ? (
+                <button onClick={() => playFrom(0)} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-azzurro px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-azzurro/25 transition-all hover:scale-105">
+                  <Play className="h-4 w-4" aria-hidden="true" /> Ascolta tutto
+                </button>
+              ) : (
+                <button onClick={stopAll} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-rosso px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:scale-105">
+                  <Square className="h-4 w-4" aria-hidden="true" /> Ferma
+                </button>
+              )}
+              <div className="flex items-center">
+                <button onClick={() => step(-1)} aria-label="Frase precedente" className="inline-flex h-11 w-9 items-center justify-center rounded-l-xl border-2 border-r-0 border-soft transition-colors hover:border-azzurro/50 hover:text-azzurro">
+                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                </button>
+                <button onClick={() => step(1)} aria-label="Frase successiva" className="inline-flex h-11 w-9 items-center justify-center rounded-r-xl border-2 border-soft transition-colors hover:border-azzurro/50 hover:text-azzurro">
+                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+              <div className="flex items-center gap-1" role="group" aria-label="Velocità audio (metodo VOA)">
+                {NEWS_RATES.map((r) => (
+                  <button
+                    key={r.value}
+                    onClick={() => setRate(r.value)}
+                    aria-pressed={rate === r.value}
+                    title={r.label}
+                    className={cn(
+                      "rounded-lg border-2 px-2.5 py-1.5 text-xs font-bold transition-all",
+                      rate === r.value ? "border-azzurro bg-azzurro/10 text-azzurro-scuro dark:text-azzurro" : "border-soft"
+                    )}
+                  >
+                    {r.value}×
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setVoiceIdx((v) => { const nv = v + 1; return nv >= voices.length ? -1 : nv; })}
+                title="Cambia voce del locutor"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-soft px-3 py-2 text-xs font-bold transition-all hover:border-azzurro/50"
+              >
+                <Mic2 className="h-3.5 w-3.5 text-azzurro-scuro dark:text-azzurro" aria-hidden="true" /> Voce: {voiceLabel}
+              </button>
+              <button
+                onClick={() => setMode(mode === "lettura" ? "ascolto" : "lettura")}
+                aria-pressed={mode === "ascolto"}
+                className={cn(
+                  "inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-bold transition-all",
+                  mode === "ascolto" ? "border-azzurro bg-azzurro text-white shadow-md shadow-azzurro/25" : "border-soft hover:border-azzurro/50"
+                )}
+                title="Ascolta senza leggere, come alla radio (prima l'orecchio, poi gli occhi)"
+              >
+                <Ear className="h-3.5 w-3.5" aria-hidden="true" /> Solo audio
+              </button>
+              <label className="ml-auto flex cursor-pointer items-center gap-2 text-xs font-semibold text-muted-it">
+                <input type="checkbox" checked={subs} onChange={(e) => setSubs(e.target.checked)} className="h-4 w-4 accent-[var(--azzurro)]" />
+                Traduzione ES
+              </label>
+            </div>
+            <p className="mt-2 px-1 font-mono text-[10px] uppercase tracking-wider text-muted-it">
+              VOA style: {NEWS_RATES.find((r) => r.value === rate)?.label ?? `${rate}×`} · {flat.length} frasi · trascrizione {mode === "ascolto" ? "nascosta" : "visible"}
+            </p>
+          </div>
+
+          {/* cuerpo: modo ascolto (solo audio) o lettura (transcripción) */}
+          {mode === "ascolto" ? (
+            <div className="mt-6 rounded-2xl border-2 border-dashed border-azzurro/40 bg-azzurro/5 p-6 text-center sm:p-10">
+              <Radio className={cn("mx-auto h-10 w-10 text-azzurro-scuro dark:text-azzurro", playing && "animate-pulse")} aria-hidden="true" />
+              <p className="mt-3 font-display text-lg font-bold">
+                {playing
+                  ? <>Ascolto in corso · frase {(activeIdx ?? 0) + 1} di {flat.length}</>
+                  : linePlaying !== null
+                    ? <>Frase {linePlaying + 1} di {flat.length}</>
+                    : <>Solo audio: prima l&apos;orecchio</>}
+              </p>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-it">
+                La trascrizione resta nascosta, como en la radio de VOA: ascolta la noticia entera, luego vuelve a «Solo audio» para leer y seguir el texto frase por frase.
+              </p>
+              <div className="mx-auto mt-4 h-2 w-full max-w-sm overflow-hidden rounded-full bg-inchiostro/10 dark:bg-inchiostro/20" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
+                <div className="h-full rounded-full bg-azzurro transition-all duration-500" style={{ width: `${progress}%` }} />
+              </div>
+              <button onClick={() => setMode("lettura")} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-azzurro px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-azzurro/25 transition-all hover:scale-105">
+                <BookOpen className="h-4 w-4" aria-hidden="true" /> Rivela il testo
+              </button>
+            </div>
+          ) : (
+            <div className="mt-6 space-y-5">
+              {news.paragraphs.map((par, p) => (
+                <div key={p} className="group">
+                  <p className="text-lg leading-[1.95]">
+                    {parGroups[p].map((fi) => {
+                      const active = activeIdx === fi;
+                      return (
+                        <span
+                          key={fi}
+                          ref={(el) => { sentRefs.current[fi] = el; }}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => toggleSentence(fi)}
+                          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSentence(fi); } }}
+                          aria-label={`Ascoltare la frase ${fi + 1}`}
+                          className={cn(
+                            "cursor-pointer rounded-sm transition-colors",
+                            active
+                              ? "bg-verde-tenue px-1 font-medium text-inchiostro underline decoration-azzurro decoration-2 underline-offset-4 dark:text-surface"
+                              : "hover:bg-crema-scura/70 dark:hover:bg-inchiostro/10"
+                          )}
+                        >
+                          <HoverWords text={flat[fi].text} />{" "}
+                        </span>
+                      );
+                    })}
+                  </p>
+                  {subs && <p className="mt-1 text-sm italic leading-relaxed text-muted-it">{par.es}</p>}
+                </div>
+              ))}
+              <p className="pt-1 text-center text-xs text-muted-it">
+                <Ear className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
+                Clic su una frase per ascoltarla · durante la lettura continua la frase attiva resta evidenziata
+              </p>
+            </div>
+          )}
+
+          {/* comprensión */}
+          <button
+            onClick={() => { stopAll(); setQuizOpen(true); }}
+            className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-azzurro px-6 py-3 font-bold text-white shadow-lg shadow-azzurro/25 transition-all hover:scale-[1.01]"
+          >
+            <BookOpen className="h-4 w-4" aria-hidden="true" /> Rispondi alle domande ({news.questions.length}) · +12 XP per risposta
+          </button>
+
+          <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-wider text-muted-it">
+            Notizia adattata al livello {news.level} · contenuto originale a scopo didattico · metodo ispirato a VOA Learning English
+          </p>
+        </div>
+      </article>
+
+      {/* debate */}
+      <section className="mt-6 rounded-3xl border border-oro/30 bg-oro-tenue/50 p-6 dark:bg-oro-tenue/20">
+        <h3 className="flex items-center gap-2 font-display text-xl font-semibold">
+          <Lightbulb className="h-5 w-5 text-oro-scuro dark:text-oro" aria-hidden="true" /> Idee per discutere
+        </h3>
+        <p className="mt-1.5 text-sm text-muted-it">
+          Usa estas preguntas para pensar, escribir o hablar. Cada idea puede abrirse directamente en el Tutor IA.
+        </p>
+        <div className="mt-4 space-y-2.5">
+          {news.discuss.map((d, i) => (
+            <div key={i} className="rounded-2xl border border-soft bg-surface p-4">
+              <p className="flex gap-2.5 text-base leading-relaxed">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-oro-tenue text-xs font-bold text-oro-scuro dark:text-oro">{i + 1}</span>
+                {d.it}
+              </p>
+              <p className="mt-1 pl-8.5 text-sm italic text-muted-it">{d.es}</p>
+              <button
+                onClick={() => navigate("tutor", { tutorSeed: `${d.it} (Rispondi in italiano semplice, livello ${news.level}, e correggi i miei errori.)` })}
+                className="mt-2.5 ml-8.5 inline-flex min-h-9 items-center gap-1.5 rounded-xl border-2 border-azzurro/30 bg-azzurro/10 px-3.5 py-1.5 text-xs font-bold text-azzurro-scuro transition-all hover:scale-105 dark:text-azzurro"
+              >
+                <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" /> Discutine con il Tutor IA
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

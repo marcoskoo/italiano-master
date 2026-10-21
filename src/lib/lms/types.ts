@@ -324,7 +324,9 @@ export type ViewId =
   /* v9.0 · letture & gamificación */
   | "letture" | "premi"
   /* v9.16 · Quadro MCER (estándares internacionales) */
-  | "quadro";
+  | "quadro"
+  /* v9.25 · notizie adaptadas (método VOA Learning English) */
+  | "notizie";
 
 export interface NavParams {
   level?: CefrLevel | "zero";

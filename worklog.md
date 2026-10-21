@@ -1380,3 +1380,20 @@ Work Log:
 
 Stage Summary:
 - v9.23+v9.24 LIVE en italiano-master.vercel.app: las CINCO lenguas de la app (IT/EN/PT/FR/DE) ofrecen el percorso completo A1–C2 con 12 unidades por nivel — 360 unidades totales con la metodología Cambridge de 12 pasos, UI íntegra por lengua y diccionarios con lematizador propio. Coste de producción: 0 €.
+
+---
+Task ID: 1 (v9.25)
+Agent: main (Super Z)
+Task: Añadir el módulo «Notizie · Radiogiornale per studenti» con las estrategias de VOA Learning English (learningenglish.voanews.com), con texto y audio, A1–C2
+
+Work Log:
+- Explorada la arquitectura actual (worklog v9.23/v9.24: 360 unidades completas en 5 lenguas) y la infraestructura TTS multi-voz (tts.ts v9.17) y el patrón de la vista letture (audio sincronizado párrafo a párrafo).
+- Creado src/lib/lms/news.ts: tipos (NewsItem/NewsCat/NewsQuestion), 9 categorías con chips de color, DEFAULT_RATE por nivel (VOA Special English: A1 0.65 → C2 1.0), NEWS_RATES (0.65/0.8/0.95/1.1), splitSentences() (puntuación it. + «» + paréntesis), newsSentences() (frases planas), newsExercises() para QuizEngine.
+- Escritas 18 notizie originales 100% didácticas (3 por nivel A1–C2) en 3 archivos: news-data-a.ts (A1/A2), news-data-b.ts (B1/B2), news-data-c.ts (C1/C2). Categorías variadas; léxico controlado por nivel; cada noticia: titular it+es, dateline, entradilla, 4-8 párrafos con traducción ES, 6-8 parole chiave (VOA «Words in This Story»), 4-8 preguntas MC con explicación, 2 ideas de debate.
+- tts.ts: +voicesFor(lang) (selector de locutor). types.ts: ViewId += "notizie". nav.ts: ítem «Notizie · Radiogiornale» (IT_ONLY, grupo destrezas, icono Newspaper) + VIEW_TITLES. page.tsx: dispatch <NotizieView/>. sw.js: im-v9-25-0.
+- Creada la vista notizie.tsx: biblioteca (tarjeta del método VOA con 3 pasos, filtros categoría+nivel, tarjetas con nº palabras/minutos/domande/marcador de completada) + Reader con las 7 estrategias VOA: (1) parole chiave ANTES del texto con audio por palabra, (2) sticky player con Ascolta tutto/Ferma, ⏮⏭ de frase, 4 velocidades (default por nivel), selector de voz del locutor, (3) transcripción siempre visible con resaltado sincronizado frase por frase + auto-scroll, clic en cualquier frase para repetirla, (4) modo «solo audio» (escuchar antes de leer, con barra de progreso y «Rivela il testo»), (5) traducción ES conmutable por párrafo, (6) quiz QuizEngine (skill lettura, +12 XP/respuesta, monetas via markReadingDone), (7) debate con deep-link al Tutor IA + disclaimer didáctico.
+- Lint: 0 errores nuevos (6 preexistentes en archivos no tocados); 1 parse error mío (comillas anidadas news-data-c.ts:247) corregido con «».
+- E2E agent-browser (dev :3000): nav OK; biblioteca 18 notizie + filtros combi (Scienza→3, Scienza+C2→1); reader A1 (13 frases) y C2 (14 frases) con split correcto; parole chiave con audio; velocidades con aria-pressed; voz «voce di sistema» fallback (headless sin voces it) + selector; «Solo audio» con panel radio + progressbar + Rivela; clic en frase sin crash; quiz completo 4/4 → «Bravissimo!» + banner «4/4 · Notizia completata! +20 monete»; readingsRead persistido en localStorage (news-a1-01); marcador verde en tarjeta; hover-dictionary activo en las frases (role=tooltip); móvil 390px sin overflow; escritorio OK; sin errores de consola/página. Capturas: upload/v925-notizie-{biblioteca,c2-reader,mobile}.png.
+
+Stage Summary:
+- v9.25 en dev: módulo «Notizie · Radiogiornale per studenti» completo (18 notizie A1–C2, 9 categorie) con el método VOA Learning English íntegro: texto y audio sincronizado frase por frase, parole chiave pre-lectura, 4 velocidades (lentas por defecto en niveles bajos, como VOA Special English), selector de locutor, modo solo-audio, transcripción+traducción ES, quiz con recompensas y debate con Tutor IA. Contenido 100% original; coste 0 €.
