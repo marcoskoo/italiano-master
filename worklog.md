@@ -1368,3 +1368,15 @@ Stage Summary:
 - Alemán: 6 cursos (~8.400 líneas) + UI completa 1.167 líneas (23 secciones + titles, Hochdeutsch) + Wörterbuch 557 lemmas con lematizador (índice bare sin artículos, declinación de caso, 9 falsos amigos) — 49/50 tests + smoke Sie/sie.
 - Extras de calidad: 2 bugs PT de v9.21 corregidos (extras sin parsear + suplemento acentuado), headers de vista localizados en PT/DE, 4 vistas migradas al despacho central de diccionario (fix FR/DE en dict/búsqueda/palabra del día/quadro).
 - Pendiente natural: mind/cloze/deep/drills por nivel para FR/DE (solo hay cursos; las unidades funcionan sin ellos), y aterrizar el resto de vistas monolingües italianas (letture, situazioni, cultura…) si se decide multilenguaje total.
+---
+Task ID: 1 (v9.23+v9.24-push)
+Agent: main (Super Z)
+Task: Push v9.23+v9.24 a GitHub + verificación completa en producción
+
+Work Log:
+- Commit 1468471 (28 archivos: 12 cursos nuevos + 2 UI + 4 dict/lookup + 2 índices lang + 6 wiring + 2 fixes PT + 2 titles + SW) → push 2409258..1468471 sin incidencias.
+- Auto-deploy Vercel: SW im-v9-23-0 servido en producción en ~75 s; home 200 OK.
+- E2E producción (italiano-master.vercel.app): FR con 6 niveles, «Survivre en français», chip «72 unités» y título «Le parcours complet»; DE con 6 niveles, «Überleben auf Deutsch» y «Deutsch meistern»; unidad C2 «L'art de l'essai» abierta con los 12 pasos en francés (9/9 etiquetas: Motivation/Écoute/…/Auto-évaluation) con plan platinum sembrado (el gating B1+ con candado es el plan free preexistente, idéntico en las 5 lenguas). Capturas: upload/prod-v923-fr-cursos.png, prod-v924-de-cursos.png, prod-v923-fr-c2-essai.png.
+
+Stage Summary:
+- v9.23+v9.24 LIVE en italiano-master.vercel.app: las CINCO lenguas de la app (IT/EN/PT/FR/DE) ofrecen el percorso completo A1–C2 con 12 unidades por nivel — 360 unidades totales con la metodología Cambridge de 12 pasos, UI íntegra por lengua y diccionarios con lematizador propio. Coste de producción: 0 €.
