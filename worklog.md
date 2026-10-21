@@ -1414,3 +1414,20 @@ Work Log:
 
 Stage Summary:
 - v9.26 en dev: el Radiogiornale VOA ya no es solo italiano. 90 noticias totales (5 lenguas × 18), texto+audio sincronizado frase por frase en la lengua de estudio, parole chiave pre-lectura, 4 velocidades, modo solo-audio, traducción ES, quiz con recompensas y debate con Tutor IA. Contenido 100% original; coste 0 €. Incluye fix del splitter heredado de v9.25 (párrafos duplicados como frase).
+
+---
+Task ID: 1 (v9.27)
+Agent: main (Super Z)
+Task: Fix reportado por el usuario: con Inglés seleccionado, el horario semanal del Home («Il tuo piano settimanale», días y actividades) seguía mostrándose en italiano. Localizar la sección en las 5 lenguas.
+
+Work Log:
+- Diagnóstico: generateWeeklyPlan() (plans.ts) tenía días (GWP_DAYS), focos y actividades hardcodeados en italiano; el título «Il tuo piano settimanale» y el subtítulo (en español) estaban incrustados en home.tsx. El resto del Home ya usaba el diccionario UI v9.18+ (useUi), pero esta sección premium se quedó fuera.
+- types.ts: nueva interfaz UiWeeklyStrings (title, subtitle(level,due), days[7], flag, focus{mon/tueWeak/tue/wed/thu/fri/sat/sun}, act{lesson/due/addWords/reinforce/grammarNew/listen/dictation/vowelLab/writing/reading/conversation/tutor/culture/bonus/game/quickReview/preview}) + campo weekly obligatorio en UiStrings (los 5 diccionarios tipados UiStrings lo exigen; core.ts es Partial y no se toca).
+- plans.ts: generateWeeklyPlan(level, dueCount, weakLabels, w: UiWeeklyStrings) — todo el texto sale del diccionario; bandera de cultura por lengua en la actividad del sábado (🇮🇹/🇺🇸/🇵🇹/🇫🇷/🇩🇪).
+- Diccionarios weekly en it/en/pt/fr/de (registro informal coherente con greetWord de cada lengua: Ciao/Hi/Olá/Salut/Hallo; pt europeo «O teu», fr «Ton», de «Dein»; en americano). IT conserva las cadenas exactas históricas (solo el subtítulo pasa de ES a IT, coherente con la sección).
+- home.tsx: título y subtítulo vía u.weekly; weakLabels del plan vía u.data.topics[wk.topic] ?? TOPIC_LABELS[wk.topic] (it → histórico ES; en/pt/fr/de → etiquetas ya localizadas v9.19+).
+- sw.js: im-v9-26-0 → im-v9-27-0. Lint 0 errores en los 8 archivos tocados; tsc: 82 líneas de error preexistentes idénticas antes/después (cils/plugins/skills, ninguna en archivos tocados); npm run build OK.
+- E2E agent-browser (dev :3000, platinum+C2 sembrado en localStorage): EN plan completo en inglés (Your weekly plan, Monday→Sunday, C2 course lesson, One new grammar topic…, 🇺🇸, subtítulo «Generated this week…», cero Lunedì/piano settimanale); ramas due=0 («Add 5 words to review») y due=5 («5 flashcards due» + Quick review en domingo); PT (O teu plano semanal, Segunda→Domingo, Lição do curso C2, 🇵🇹); FR (Ton plan hebdomadaire, Lundi→Dimanche, Leçon du cours C2, 🇫🇷); DE (Dein Wochenplan, Montag→Sonntag, Kurslektion C2, Wiederholung con diéresis, 🇩🇪); IT regresión (Il tuo piano settimanale, Lunedì→Domenica, 5 flashcards dovute, Ripasso veloce, 🇮🇹). Clic en actividad del plan → navega a Repaso. Móvil 390px scrollW=390 sin overflow. Sin errores de página/consola. Nota E2E: usar http://localhost:3000 (Next 16 bloquea dev-resources de 127.0.0.1) y sembrar SrsCard.due como timestamp numérico. Capturas: upload/v927-{en,de,it}-weekly.png, v927-en-mobile.png.
+
+Stage Summary:
+- v9.27: el plan de estudio semanal del Home ya se renderiza en la lengua de estudio activa en las 5 lenguas (título, subtítulo, días, focos, actividades, bandera y etiquetas de puntos débiles), eliminando el último bloque italiano hardcodeado visible del Home para usuarios EN/PT/FR/DE.
