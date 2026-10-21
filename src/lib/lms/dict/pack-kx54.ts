@@ -29,7 +29,7 @@ tenere duro|aguantar firme|teˈnere ˈduːro|E|cnn|4|Tenete duro, arrivano i soc
 tenere botta|aguantar el golpe|teˈnere ˈbɔt ta|E|col|4|L'imbarcazione tiene botta bene.|La embarcación aguanta bien el golpe.|r=col
 reggere il colpo|aguantar el golpe|redˈdʒere il ˈkɔl po|E|cnn|4|Il mercato ha retto il colpo dello spread.|El mercado ha aguantado el golpe del spread.
 reggere il confronto|aguantar la comparación|redˈdʒere il konˈfronto|E|cnn|4|Il vino italiano regge il confronto coi francesi.|El vino italiano aguanta la comparación con los franceses.
-non reggere il confronto|no aguantar la comparación|non redˈdʒere il konˈfronto|E|cnn|4|La copia non regge il confronto con l'originale.|La copia no aguantа la comparación con el original.
+non reggere il confronto|no aguantar la comparación|non redˈdʒere il konˈfronto|E|cnn|4|La copia non regge il confronto con l'originale.|La copia no aguanta la comparación con el original.
 sorpassare il maestro|superar al maestro|sorpaˈsare il maˈɛstro|E|art|5|L'allievo ha superato il maestro.|El alumno ha superado al maestro.
 dare del filo da torcere a|hacer pasar trabajo|dare del ˈfilo da torˈtsjere a|E|col|4|Quei ragazzi gli danno filo da torcere.|Aquellos chicos le hacen pasar trabajo.
 fare i salti di gioia|saltar de alegría|fare i ˈsalti di dʒoˈia|E|emo|4|Ha fatto i salti di gioia per il regalo.|Ha saltado de alegría por el regalo.
@@ -54,7 +54,7 @@ bruciare i vascelli|quemar las naves|burˈtʃjaːre i vaʃˈʃɛl li|E|let|5|Com
 mettere una pietra sopra|poner una piedra encima|metˈtere una ˈpjɛtra ˈsopra|E|emo|4|Mettiamoci una pietra sopra.|Pongámosle una piedra encima.
 pietra tombale|piedra tombal|ˈpjɛtra tombaˈle|L|cnn|5|Quel capitolo fu la pietra tombale del progetto.|Aquel capítulo fue la piedra tombal del proyecto.
 archiviare l'argomento|archivar el asunto|arkiˈvjaːre l arɡoˈmento|E|cnn|4|Archiviamo l'argomento e cambiamo.|Archivemos el asunto y cambiemos.
-battere il ferro finché è caldo|batir el hierro mientras está caliente|batˈtere il ˈfɛrro finkе kalˈdo|E|cnn|4|Battiamo il ferro finché è caldo.|Hagamos batir el hierro mientras está caliente.
+battere il ferro finché è caldo|batir el hierro mientras está caliente|batˈtere il ˈfɛrro finke kalˈdo|E|cnn|4|Battiamo il ferro finché è caldo.|Hagamos batir el hierro mientras está caliente.
 finché è caldo|mientras está caliente|ˌfinker kalˈdo|E|cnn|5|Vendere finché il mercato è caldo.|Vender mientras el mercado está caliente.
 a quattr'occhi|a solas|a kwattrɔk ki|E|rel|4|Parliamone a quattr'occhi.|Hablémoslo a solas.
 restare tra noi|quedar entre nosotros|reˈstare tra ˈnɔi|E|cmu|4|Questo resti tra noi.|Esto queda entre nosotros.

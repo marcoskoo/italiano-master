@@ -115,7 +115,7 @@ export function InstallBanner() {
   return (
     <div className="fixed inset-x-3 bottom-20 z-50 mx-auto max-w-md rounded-2xl border border-verde/30 bg-surface p-4 shadow-2xl md:bottom-6" role="dialog" aria-label="Instalar la aplicación">
       <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-verde text-xl text-white" aria-hidden="true">🇮🇹</span>
+        <img src="/mascot/hello.webp" alt="" aria-hidden="true" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">Installa Políglota Master</p>
           <p className="text-xs text-muted-it">Acceso directo, pantalla completa y funciona offline.</p>

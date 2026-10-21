@@ -141,6 +141,8 @@ export function HomeView() {
       {/* ── HERO ── */}
       <section className="grid items-center gap-8 lg:grid-cols-[1.15fr_1fr]">
         <div>
+          {/* v9.33 · Pappagallo, la mascota de Políglota Master */}
+          <img src="/mascot/hello.webp" alt="" aria-hidden="true" loading="lazy" className="mb-4 h-20 w-20 rounded-full border-2 border-soft bg-crema object-cover shadow-sm sm:h-24 sm:w-24" />
           <p className="inline-flex items-center gap-2 rounded-full border border-verde/30 bg-verde-tenue px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-verde-scuro dark:text-verde">
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
             {u.home.heroChip}

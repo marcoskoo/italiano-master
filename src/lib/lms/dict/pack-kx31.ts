@@ -10,7 +10,7 @@ pil|PIB|pil|S|fin|3|Il pil pro capite in calo.|El PIB per cápita a la baja.|g=m
 deflazione|deflación|deflaˈtsjone|S|fin|5|Il rischio deflazione spaventa la Bce.|El riesgo deflación asusta al BCE.|g=f
 stagflazione|estanflación|staɡflaˈtsjone|S|fin|5|La stagflazione degli anni Settanta.|La estanflación de los años setenta.|g=f
 ripresa|recuperación|riˈpreːsa|S|fin|3|La ripresa dopo il Covid è stata a scatti.|La recuperación tras el Covid fue a tirones.|g=f;p=riprese
-decollo económico → no; decollo economico|despegue económico|deˈkɔllo ekoˈnomiko|L|fin|5|Il decollo economico del dopoguerra.|El despegue económico de la posguerra.
+decollo economico|despegue económico|deˈkɔllo ekoˈnomiko|L|fin|5|Il decollo economico del dopoguerra.|El despegue económico de la posguerra.
 stagnazione|estancamiento|staɲɲaˈtsjone|S|fin|4|Dieci anni di stagnazione dei salari.|Diez años de estancamiento salarial.|g=f
 congiunturale|coyuntural|kondʒuntuˈrale|A|fin|5|Un fattore congiunturale e non strutturale.|Un factor coyuntural y no estructural.|r=for
 strutturale|estructural|struttuˈrale|A|fin|3|Le riforme strutturali del mercato del lavoro.|Las reformas estructurales del mercado laboral.|r=for
@@ -67,7 +67,7 @@ assunzione a tempo indeterminato|contratación indefinida|assunˈtsjone a ˈtɛm
 contratto a progetto|contrato por proyecto|konˈtratto a proˈdʒetto|L|lav|4|Il contratto a progetto è stato abolito.|El contrato por proyecto fue abolido.
 lavoro precario|trabajo precario|laˈvoro preˈkarjo|L|lav|3|Una generazione di lavoro precario.|Una generación de trabajo precario.
 precariato|precariedad|prekaˈrjato|S|lav|4|Il precariato dilaga tra i giovani.|La precariedad abunda entre los jóvenes.|g=m
-lavatore → no; lavoratore autonomo|trabajador autónomo|lavoraˈtore auˈtɔnomo|L|lav|3|Come lavoratore autonomo paga l'iva.|Como autónomo paga el IVA.
+lavoratore autonomo|trabajador autónomo|lavoraˈtore auˈtɔnomo|L|lav|3|Come lavoratore autonomo paga l'iva.|Como autónomo paga el IVA.
 partita iva|autónomo (alta fiscal)|ˈpartita ˈiːva|L|lav|3|Ha aperto la partita iva a gennaio.|Ha abierto el alta de autónomo en enero.|n=Literalmente "patente de IVA"
 aprire la partita iva|abrir la actividad de autónomos|ˈaprire la ˈpartita ˈiːva|E|lav|4|Aprire la partita iva conviene?|¿Conviene abrir la actividad de autónomos?
 riforma del lavoro|reforma laboral|rifˈfɔrma del laˈvoro|L|lav|3|La riforma del lavoro del 2012.|La reforma laboral de 2012.

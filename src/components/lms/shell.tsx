@@ -248,7 +248,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               "flex h-9 w-9 items-center justify-center rounded-xl p-[1.5px] transition-all",
               plan === "platinum" ? "plan-platinum-bg ring-platinum" : "bg-gradient-to-br from-verde via-crema to-rosso"
             )}>
-              <img src="/icon-192.png" alt="" aria-hidden="true" className="h-full w-full rounded-[10px] object-cover" />
+              <img src="/icon-192.png" alt="" aria-hidden="true" className="h-full w-full rounded-[10px] object-cover dark:hidden" />
+              <img src="/icon-dark-192.png" alt="" aria-hidden="true" className="hidden h-full w-full rounded-[10px] object-cover dark:block" />
             </span>
             <span className="hidden font-display text-lg font-semibold tracking-tight sm:block">
               {appName.split(" ")[0]} <span className="italic text-verde-scuro dark:text-verde">{appName.split(" ").slice(1).join(" ") || "Master"}</span>

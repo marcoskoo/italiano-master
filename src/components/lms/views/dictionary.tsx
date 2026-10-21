@@ -138,7 +138,7 @@ export function DictionaryView() {
         <button onClick={() => setFavReview(false)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {u.dizionario.back}
         </button>
-        <FlashcardSession cardIds={favoriteWords.map((w) => w.id)} onExit={() => setFavReview(false)} />
+        <FlashcardSession cardIds={favoriteWords.map((w) => w.id)} onExit={() => setFavReview(false)} lang={activeLang} />
       </div>
     );
   }
@@ -159,7 +159,7 @@ export function DictionaryView() {
             <div className="min-w-0">
               <div className="flex items-center gap-3">
                 <h2 className="font-display text-4xl font-semibold sm:text-5xl">{word.it}</h2>
-                <AudioButton text={word.it} size="lg" />
+                <AudioButton text={word.it} size="lg" lang={activeLang} />
                 {word.ff && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-rosso-tenue px-3 py-1.5 text-xs font-bold text-rosso-scuro dark:text-rosso">
                     <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" /> {u.dizionario.ffTag}
@@ -488,7 +488,7 @@ export function DictionaryView() {
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openWord(w.id); } }}
             className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-soft bg-surface p-4 text-left transition-all hover:-translate-y-0.5 hover:border-verde/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-verde/50"
           >
-            <AudioButton text={w.it} size="sm" />
+            <AudioButton text={w.it} size="sm" lang={activeLang} />
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-2 font-display text-lg font-semibold leading-tight">
                 {w.it}

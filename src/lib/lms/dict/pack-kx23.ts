@@ -67,7 +67,7 @@ desistere|desistir|deˈsistere|V|cnn|5|Non ha desistito dal suo proposito.|No ha
 rinunciare|renunciar|rinuˈntʃare|V|ast|2|Ha rinunciato all'appuntamento.|Ha renunciado a la cita.|c=rinunciare a un progetto
 arrendersi|rendirse|arˈrendersi|V|ast|3|Non arrenderti al primo ostacolo.|No te rindas ante el primer obstáculo.
 astenersi|abstenerse|asteˈnersi|V|ist|4|Tre consiglieri si sono astenuti dal voto.|Tres consejeros se han abstenido en la votación.|c=astenersi dal voto;r=for
-adesire|adherir|adeˈzire|V|ist|5|Molti cittadini aderiscono all'appello.|Muchos ciudadanos adhieren al llamamiento.|r=for
+aderire|adherir|adeˈrire|V|ist|5|Molti cittadini aderiscono all'appello.|Muchos ciudadanos adhieren al llamamiento.|r=for
 sottoscrivere|suscribir|sottoskriˈvere|V|ist|5|Hanno sottoscritto un accordo storico.|Han suscrito un acuerdo histórico.|r=for
 approvare|aprobar|approˈvare|V|ist|3|Il senato ha approvato la riforma.|El senado ha aprobado la reforma.|a=bocciare
 disporre|disponer|disˈporre|V|ist|4|Il sindaco dispone lo sgombero dell'edificio.|El alcalde dispone el desalojo del edificio.|r=for

@@ -6,7 +6,7 @@ import type { VocabWord } from "../types";
 export const PACK_KX40: VocabWord[] = parsePack(`
 # ══ chimica e fisica ══
 legame chimico|enlace químico|leˈɡame kiˈmiko|L|sci|5|Il legame chimico covalente.|El enlace químico covalente.
-covalente|covalente|kovalente → IPA fix abajo|A|sci|5|Il legame covalente doppio.|El enlace covalente doble.|r=tec
+covalente|covalente|kovaˈlente|A|sci|5|Il legame covalente doppio.|El enlace covalente doble.|r=tec
 ionico|iónico|joˈniko|A|sci|5|Il legame ionico del sale comune.|El enlace iónico de la sal común.|r=tec
 reazione chimica|reacción química|reatˈtsjone kiˈmika|L|sci|4|La reazione chimica di combustione.|La reacción química de combustión.
 catalizzatore|catalizador|katalitˈtsatore|S|sci|5|Il catalizzatore accelera la reazione.|El catalizador acelera la reacción.|g=m;p=catalizzatori
@@ -73,7 +73,7 @@ patch (software)|parche (software)|patʃ|S|tec|4|La patch di sicurezza urgente.|
 bug|error (bug)|baɡ|S|tec|4|Un bug nel sistema di prenotazione.|Un bug en el sistema de reserva.|g=m;n=Anglicismo
 debugging|depuración|diˈbaɡɡiŋ|S|tec|5|Il debugging del codice legacy.|La depuración del código legado.|g=m;n=Anglicismo
 open source|código abierto|ˈopen ˈsɔrs|L|tec|4|Il software open source della comunità.|El software de código abierto de la comunidad.
-codice sorgente|código fuente|ˈkɔditʃе sorˈdʒente|L|tec|4|Il codice sorgente su repository.|El código fuente en el repositorio.
+codice sorgente|código fuente|ˈkɔditʃe sorˈdʒente|L|tec|4|Il codice sorgente su repository.|El código fuente en el repositorio.
 repository|repositorio|riˈpɔzitri|S|tec|5|Il repository Git del progetto.|El repositorio Git del proyecto.|g=m;p=repository;n=Anglicismo
 commit|commit|koˈmit|S|tec|5|Un commit al giorno tenne lontano il bug.|Un commit al día mantenía lejos el bug.|g=m;n=Anglicismo
 linguaggio di programmazione|lenguaje de programación|linˈɡwaddʒo di progra mmaˈtsjone|L|tec|4|Il linguaggio di programmazione Rust.|El lenguaje de programación Rust.

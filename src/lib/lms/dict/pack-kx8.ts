@@ -21,7 +21,7 @@ inoltrare|encauzar (reenviar)|inolˈtrare|V|ist|5|Inoltra la richiesta all'uffic
 estendere|extender|estenˈdɛre|V|ast|4|Estende il contratto di sei mesi.|Extiende el contrato seis meses.|n=Io estendo; participio esteso
 prorogare|prorrogar|proroɡare|V|ist|5|Il parlamento proroga lo stato d'emergenza.|El parlamento prorroga el estado de emergencia.|r=for
 revocare|revocar|revoˈkare|V|ist|5|Revocano la licenza al ristorante.|Revocan la licencia al restaurante.|r=for
-abrogare|abrogar|abroɡare|V|ist|5|Abrogare la norma del 1997.|Abrogar la norma de 1997.|r=tec
+abrogare|abrogar|abroɡare|V|ist|5|Il parlamento abroga la norma del 1997.|El parlamento abroga la norma de 1997.|r=tec
 impugnare|impugnar|impuɲɲare|V|ist|5|Impugna il licenziamento davanti al giudice.|Impugna el despido ante el juez.|n=Anche "empuñar": impugnare la penna;r=tec
 difendere|defender|difenˈdɛre|V|ast|3|Difende i diritti dei lavoratori.|Defiende los derechos de los trabajadores.|n=Io difendo; participio difeso
 testimoniare|testificar|testimoˈnjare|V|ist|5|Testimonia contro il suo ex capo.|Testifica contra su ex jefe.

@@ -18,7 +18,7 @@ condire|aliñar (aderezar)|konˈdire|V|ali|3|Condiamo l'insalata col limone.|Ali
 impastare|amasar|impaˈstare|V|ali|3|Impasto la farina col lievito.|Amaso la harina con levadura.
 lievito|levadura|ljeˈvito|S|ali|3|Il lievito fresco per la pizza.|La levadura fresca para la pizza.|g=m;p=lieviti
 crema|crema|ˈkrema|S|ali|2|Una crema al cioccolato densa.|Una crema de chocolate densa.|g=f;p=creme
-sugo exists|salsa|ˈsuɡɡo|S|ali|2|Il sugo della nonna è il migliore.|La salsa de la nonna es la mejor.
+sugo|salsa|ˈsuɡɡo|S|ali|2|Il sugo della nonna è il migliore.|La salsa de la nonna es la mejor.|p=sughi
 pesto|pesto|ˈpɛsto|S|ali|3|Il pesto alla genovese.|El pesto a la genovesa.|g=m
 tortellino|tortelini|tortelˈlino|S|ali|4|I tortellini in brodo.|Los tortelini en caldo.|g=m;p=tortellini
 risotto|risotto|riˈzɔtto|S|ali|3|Il risotto alla milanese.|El risotto a la milanesa.|g=m;p=risotti
@@ -27,7 +27,7 @@ lasagne|lasaña|laˈzaɲɲe|S|ali|2|Le lasagne al forno della domenica.|La lasa�
 carpaccio|carpaccio|karˈpattʃo|S|ali|4|Il carpaccio di manzo col rucola.|El carpaccio de res con rúcula.|g=m
 bruschetta|bruschetta|brusˈketta|S|ali|3|Una bruschetta coi pomodorini.|Una bruschetta con tomatitos.|g=f;p=bruschette
 digestivo|digestivo|didgesˈtivo|S|ris|4|Un digestivo dopo cena.|Un digestivo después de cenar.|g=m;p=digestivi
-porzione exists|porción|porˈtsjone|S|ris|2|Una porzione di tiramisù.|Una porción de tiramisú.|g=f
+porzione|porción|porˈtsjone|S|ris|2|Una porzione di tiramisù.|Una porción de tiramisú.|g=f
 tiramisù|tiramisú|tiramiˈsu|S|ali|3|Il tiramisù fatto in casa è imbattibile.|El tiramisú casero es imbatible.|g=m;n=Invariable
 
 # ══ casa: manutenzione e giardinaggio ══
@@ -41,7 +41,7 @@ imbiancare|pintar (blanquear)|imbjanˈkare|V|cas|4|Imbianchiamo il salotto domen
 montare|instalar / batir|monˈtare|V|cas|2|Montiamo la mensola da soli.|Instalamos la repuesta nosotros mismos.|n=Montare le uova = batir los huevos
 smontare|desmontar|zmonˈtare|V|tec|3|Smonto il rack per pulirlo.|Desmonto el estante para limpiarlo.|a=montare
 avvitare|enroscar|avviˈtare|V|tec|3|Avvita la vite nel muro.|Enrosca el tornillo en la pared.
-segaɾe|serrar|seˈɡare|V|tec|4|Sego l'asse a metà.|Serro la tabla a la mitad.
+segare|serrar|seˈɡare|V|tec|4|Sego l'asse a metà.|Serro la tabla a la mitad.
 forare|perforar|foˈrare|V|tec|4|Foriamo il muro per il quadro.|Perforamos la pared para el cuadro.
 piantare|plantar / clavar|pjanˈtare|V|nat|3|Pianto un chiodo nel muro.|Clavo un clavo en la pared.|c=piantare un albero
 annaffiare|regar|annafˈfjare|V|nat|2|Annaffio i pomodori la sera.|Riego los tomates en la tarde.
@@ -51,9 +51,9 @@ vaso da fiori|maceta|ˈvazo da fˈfjori|L|nat|3|Un vaso da fiori di terracotta.|
 prato|césped (prado)|ˈprato|S|nat|2|Il prato all'inglese del giardino.|El césped inglés del jardín.|g=m;p=prati
 siepe|seto|ˈsjɛpe|S|nat|4|Una siepe di bosso intorno alla villa.|Un seto de boj alrededor de la villa.|g=f;p=siepi
 terrazza|azotea|terˈrattsa|S|cas|3|Una terrazza con vista sui tetti.|Una azotea con vista a los techos.|g=f;p=terrazze
-cantina exists|bodega|kanˈtina|S|cas|2|Il vino riposa in cantina.|El vino reposa en la bodega.
-soffitta exists|ático|sofˈfitta|S|cas|3|Le valigie vecchie in soffitta.|Las maletas viejas en el ático.|g=f
-lavanderia exists|lavandería|lavanˈderia|S|cas|2|Porto le tende in lavanderia.|Llevo las cortinas a la lavandería.|g=f
+cantina|bodega|kanˈtina|S|cas|2|Il vino riposa in cantina.|El vino reposa en la bodega.
+soffitta|ático|sofˈfitta|S|cas|3|Le valigie vecchie in soffitta.|Las maletas viejas en el ático.|g=f
+lavanderia|lavandería|lavanˈderia|S|cas|2|Porto le tende in lavanderia.|Llevo las cortinas a la lavandería.|g=f
 canovaccio|paño de cocina|kanoˈvattʃo|S|cas|4|Asciuga col canovaccio pulito.|Seca con el paño de cocina limpio.|g=m;p=canovacci
 detersivo|detergente|deterˈsivo|S|cas|2|Il detersivo per i piatti.|El detergente para los platos.|g=m;p=detersivi
 ammoniaca|amoniaco|ammoˈnjaka|S|cas|5|Pulisco il vetro con l'ammoniaca.|Limpio el vidrio con amoniaco.|g=f
@@ -117,10 +117,10 @@ decina|decena|deˈtʃina|S|sci|4|Una decina di persone in fila.|Una decena de pe
 centinaio|centenar|tʃentinaˈjo|S|sci|4|Centinaia di fan allo stadio.|Cientos de fanáticos en el estadio.|g=m;p=centinaia
 migliaio|millar|miʎˈʎaio|S|sci|4|Migliaia di Stelle in cielo.|Miles de estrellas en el cielo.|g=m;p=migliaia
 miliardo|mil millones|miliˈardo|N|tmp|3|Un miliardo di euro di danni.|Mil millones de euros de daños.|g=m;p=miliardi;n=¡Ojo! Un miliardo = mil millones, no "un billón"
-cifra exists|cifra|ˈtʃifra|S|fin|2|Una cifra a sei zeri.|Una cifra de seis ceros.|g=f
+cifra|cifra|ˈtʃifra|S|fin|2|Una cifra a sei zeri.|Una cifra de seis ceros.|g=f
 
 # ══ traffico e guida ══
-patente exists|licencia de conducir|paˈtɛnte|S|tra|2|Ho preso la patente a diciotto anni.|Saqué la licencia a los dieciocho.
+patente|licencia de conducir|paˈtɛnte|S|tra|2|Ho preso la patente a diciotto anni.|Saqué la licencia a los dieciocho.|g=f
 guidatore|conductor|ɡwidaˈtore|S|tra|3|Un guidatore prudente in città.|Un conductor prudente en la ciudad.|g=m;p=guidatori
 semaforo|semáforo|semaˈforo|S|cit|2|Fermati al semaforo rosso.|Detente en el semáforo rojo.|g=m;p=semafori
 incrocio|cruce|inkruˈtʃo|S|cit|3|Gira a destra all'incrocio.|Gira a la derecha en el cruce.|g=m;p=incroci
@@ -128,31 +128,31 @@ rotonda|redoma (rotonda)|roˈtonda|S|cit|3|Alla rotonda prendi la seconda.|En la
 striscia pedonale|paso de cebra|ˈstriʃʃa pedoˈnale|L|cit|4|Attraversa sulla striscia pedonale.|Cruza por el paso de cebra.
 senso unico|sentido único|ˈsɛnzo ˈuːniko|L|cit|4|Attenzione, senso unico.|Cuidado, sentido único.
 divieto di sosta|prohibido estacionar|diˈvjɛːto di ˈsɔsta|L|cit|4|C'è divieto di sosta qui sabato.|Hay prohibido estacionar aquí el sábado.
-multa exists|multa|ˈmulta|S|fin|3|Mi hanno fatto una multa per eccesso di velocità.|Me pusieron una multa por exceso de velocidad.|g=f;p=multe
+multa|multa|ˈmulta|S|fin|3|Mi hanno fatto una multa per eccesso di velocità.|Me pusieron una multa por exceso de velocidad.|g=f;p=multe
 incidente|accidente|intʃiˈdɛnte|S|tra|3|Un incidente leggero in tangenziale.|Un accidente leve en la vía expresa.|g=m;p=incidenti
 tamponamento|choque (alcance)|tamponamenˈto|S|tra|5|Un tamponamento a catena sull'autostrada.|Un choque en cadena en la autopista.|g=m
-vergogna exists|vergüenza|verˈɡoɲɲa|S|emo|2|Arrossì dalla vergogna.|Se puso roja de la vergüenza.|g=f
+vergogna|vergüenza|verˈɡoɲɲa|S|emo|2|Arrossì dalla vergogna.|Se puso roja de la vergüenza.|g=f
 
 # ══ qualita della persona ══
-puntuale exists|puntual|puntuˈale|A|lav|2|Il treno è puntualissimo oggi.|El tren es puntualísimo hoy.|a=in ritardo
-educato exists|educado|eduˈkato|A|rel|2|Che bambino educato!|¡Qué niño tan educado!
+puntuale|puntual|puntuˈale|A|lav|2|Il treno è puntualissimo oggi.|El tren es puntualísimo hoy.|a=in ritardo
+educato|educado|eduˈkato|A|rel|2|Che bambino educato!|¡Qué niño tan educado!
 umile|humilde|ˈumile|A|emo|3|Resta umile nonostante il successo.|Sigue humilde a pesar del éxito.|a=superbo
 superbo|arrogante (soberbio)|suˈpɛrbo|A|emo|4|Un campione mai superbo col pubblico.|Un campeón nunca arrogante con el público.|a=umile;n=¡Falso amigo parcial! superbo = arrogante; "soberbio" magnífico = magnifico
-generoso exists|generoso|dʒeneˈrɔzo|A|emo|2|Un ospite generoso e premuroso.|Un anfitrión generoso y atento.
+generoso|generoso|dʒeneˈrɔzo|A|emo|2|Un ospite generoso e premuroso.|Un anfitrión generoso y atento.
 altruista|altruista|altruˈista|A|emo|4|Un gesto altruista senza secondi fini.|Un gesto altruista sin segundas intenciones.|n=Invariable
-egoista exists|egoísta|eɡoˈista|A|emo|2|Non essere egoista, condividi!|No seas egoísta, ¡comparte!
+egoista|egoísta|eɡoˈista|A|emo|2|Non essere egoista, condividi!|No seas egoísta, ¡comparte!
 vanitoso|vanidoso|vaniˈtozo|A|emo|4|Un attore vanitoso e capriccioso.|Un actor vanidoso y caprichoso.
 capriccioso|caprichoso|kapritˈtʃɔzo|A|emo|4|Un bambino capriccioso a tavola.|Un niño caprichoso en la mesa.
-esigente exists|exigente|eziˈdʒɛnte|A|emo|3|Un capo esigente ma giusto.|Un jefe exigente pero justo.
+esigente|exigente|eziˈdʒɛnte|A|emo|3|Un capo esigente ma giusto.|Un jefe exigente pero justo.
 perfezionista|perfeccionista|perfettsjoˈnista|S|emo|4|Un perfezionista controlla ogni dettaglio.|Un perfeccionista controla cada detalle.|g=m;n=Invariable
 competitivo|competitivo|kompetiˈtivo|A|spt|3|Uno spirito competitivo sano.|Un espíritu competitivo sano.
 curioso|curioso|kuˈrjɔzo|A|emo|2|Un bambino curioso fa mille domande.|Un niño curioso hace mil preguntas.|n=Curioso también = raro: un fatto curioso
 furbo|vivo (astuto)|ˈfurbo|A|emo|3|Il più furbo della classe si copia tutto.|El más vivo de la clase copia todo.|r=inf
-onesto exists|honrado|oˈnɛsto|A|emo|2|Un commerciante onesto pesa giusto.|Un comerciante honrado pesa justo.
+onesto|honrado|oˈnɛsto|A|emo|2|Un commerciante onesto pesa giusto.|Un comerciante honrado pesa justo.
 sensibile|sensible / sensible|senˈsibile|A|emo|3|È sensibile al destino degli animali.|Es sensible al destino de los animales.|ff=1;n=¡Falso amigo! sensibile = sensible/flexible a emociones; ES "sensible" = ragionevole
-testardo exists|terco|teˈstardo|A|emo|3|Testardo come un mulo!|¡Terco como una mula!
-entusiasta exists|entusiasta|entuziˈasta|A|emo|2|Un pubblico entusiasta applaude.|Un público entusiasta aplaude.|n=Invariable
-timido exists|tímido|ˈtimido|A|emo|2|Il ragazzino timido arrossisce.|El chico tímido se sonroja.
+testardo|terco|teˈstardo|A|emo|3|Testardo come un mulo!|¡Terco como una mula!
+entusiasta|entusiasta|entuziˈasta|A|emo|2|Un pubblico entusiasta applaude.|Un público entusiasta aplaude.|n=Invariable
+timido|tímido|ˈtimido|A|emo|2|Il ragazzino timido arrossisce.|El chico tímido se sonroja.
 introverso|introvertido|introvɛrso|A|emo|4|Preferisce lavorare da solo: è introverso.|Prefiere trabajar solo: es introvertido.|a=estroverso
 estroverso|extrovertido|estroˈvɛrso|A|emo|4|Il presentatore è estroverso e spiritoso.|El presentador es extrovertido y chistoso.
 spiritoso|chistoso (ingenioso)|spiriˈtɔso|A|emo|3|Un collega spiritoso rende tutto leggero.|Un colega chistoso hace todo liviano.

@@ -15,7 +15,7 @@ efebico|efébico|efeˈbiko|A|let|5|La bellezza efebica delle statue ellenistiche
 androgino|andrógino|anˈdrodʒino|A|let|5|Un fascino androgino e ieratico.|Un encanto andrógino e hierático.|r=let
 ieratico|hierático|ieraˈtiko|A|let|5|Il gesto ieratico dell'angelo.|El gesto hierático del ángel.|r=let
 iemale|invernal|jeˈmaːle|A|let|5|Il sonno iemale della natura.|El sueño invernal de la naturaleza.|r=let
-vernilе|primaveral|verˈniːle|A|let|5|Il risveglio vernile dei prati.|El despertar primaveral de los prados.|r=let
+vernile|primaveral|verˈniːle|A|let|5|Il risveglio vernile dei prati.|El despertar primaveral de los prados.|r=let
 crepuscolare|crepuscular|krepuskuˈlaːre|A|let|4|L'atmosfera crepuscolare dei poeti del secondo Novecento.|La atmósfera crepuscular de los poetas del segundo Novecientos.|r=let
 suffuso|sufuso|sufˈfuːzo|A|let|5|Un velo di malinconia suffuso sul volto.|Un velo de melancolía sufuso sobre el rostro.|r=let
 melanconico|melancólico|melanˈkɔːniko|A|let|4|Il tono melanconico dell'elegia.|El tono melancólico de la elegía.

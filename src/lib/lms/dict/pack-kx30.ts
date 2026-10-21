@@ -67,7 +67,7 @@ tumore|tumor|tuˈmoːre|S|sla|3|Il tumore al pancreas resta tremendo.|El tumor d
 oncologo|oncólogo|onˈkɔloɡo|S|sla|4|L'oncologo spiega il protocollo.|El oncólogo explica el protocolo.|g=m;p=oncologi
 oncologia|oncología|onkoloˈdʒia|S|sla|4|L'oncologia di precisione.|La oncología de precisión.|g=f
 radioterapia|radioterapia|rajoteraˈpia|S|sla|4|La radioterapia post-operatoria.|La radioterapia postoperatoria.|g=f
-palliazione → no; cure palliative|cuidados paliativos|ˈkure palljaˈtive|L|sla|4|Il reparto di cure palliative.|La unidad de cuidados paliativos.
+cure palliative|cuidados paliativos|ˈkure palljaˈtive|L|sla|4|Il reparto di cure palliative.|La unidad de cuidados paliativos.
 analisi del sangue|análisis de sangre|anaˈlizi del ˈsaŋɡwe|L|sla|3|Le analisi del sangue sono nella norma.|Los análisis de sangre están normales.
 emocromo|hemograma|emoˈkromo|S|sla|5|L'emocromo con formula leucocitaria.|El hemograma con fórmula leucocitaria.|g=m;p=emocromi;r=tec
 radiografia|radiografía|rajoɡraˈfia|S|sla|3|La radiografia del torace.|La radiografía de tórax.|g=f

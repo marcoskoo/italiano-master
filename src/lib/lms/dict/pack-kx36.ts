@@ -16,7 +16,7 @@ servizio fotografico|reportaje fotográfico|serˈvitsio fotoɡraˈfiko|L|att|4|I
 fotoreporter|fotógrafo de prensa|fotoreˈpɔrter|S|pro|5|Il fotoreporter in zona di guerra.|El fotógrafo de prensa en zona de guerra.|g=m;p=fotoreporter
 fotografo di scena|fotógrafo de rodaje|foˈtoɡrafo di ˈʃʃena|L|cin|5|Il fotografo di scena sul set.|El fotógrafo de rodaje en el plató.
 colore (giornalistico)|color (periodístico)|koˈlore dʒornaliˈstiko|L|att|5|Il colore locale nel pezzo.|El color local en la crónica.
-pezzo di fondo|artículo de fondo|ˈpɛttsо di ˈfondo|L|att|5|Il pezzo di fondo del direttore.|El artículo de fondo del director.
+pezzo di fondo|artículo de fondo|ˈpɛttso di ˈfondo|L|att|5|Il pezzo di fondo del direttore.|El artículo de fondo del director.
 articolo di fondo|editorial (artículo)|artiˈkolo di ˈfondo|L|att|4|L'articolo di fondo apre la pagina politica.|El artículo de fondo abre la página política.
 cronista giudiziaria|cronista judicial|kroˈnista dʒuditˈtsjarja|L|att|5|La cronista giudiziaria segue la maxi-truffa.|La cronista judicial sigue la megaestafa.
 corrispondenza|corresponsalía|korrisponˈdentsa|S|att|4|La corrispondenza da Parigi.|La corresponsalía desde París.|g=f;p=corrispondenze
@@ -27,7 +27,7 @@ senza firma|sin firma|ˈsenza ˈfirma|L|att|5|Le notizie senza firma sono di age
 agenzia di stampa|agencia de prensa|aˈdʒentsa di ˈstampa|L|att|4|La notizia è arrivata dalle agenzie di stampa.|La noticia ha llegado de las agencias de prensa.
 agenzia (stampa)|agencia|aˈdʒentsa|S|att|3|L'agenzia Ansa ha diffuso il comunicato.|La agencia Ansa ha difundido el comunicado.|g=f;p=agenzie
 comunicato stampa|comunicado de prensa|komuniˈkato ˈstampa|L|att|4|Il comunicato stampa del Quirinale.|El comunicado de prensa del Quirinal.
-nota di transenna|nota urgente de última hora|ˈnоta di transenˈna|L|att|5|Una nota di transenna interrompe i programmi.|Una nota urgente interrumpe los programas.
+nota di transenna|nota urgente de última hora|ˈnota di transenˈna|L|att|5|Una nota di transenna interrompe i programmi.|Una nota urgente interrumpe los programas.
 ultima ora|última hora|ˈultima ˈɔːra|L|att|3|Le notizie di ultima ora sul terremoto.|Las noticias de última hora sobre el terremoto.
 notizia flash|noticia flash|noˈtitsia flaʃ|L|att|4|Un flash interrompe la partita.|Un flash interrumpe el partido.
 diretta|directo|diˈretta|S|att|3|La diretta streaming del consiglio.|El directo streaming del consejo.|g=f;p=dirette

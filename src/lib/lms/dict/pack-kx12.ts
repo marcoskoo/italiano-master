@@ -15,7 +15,7 @@ maschera|máscara|maskera|S|sve|3|Una maschera di carnevale veneziana.|Una másc
 carro allegorico|carroza alegórica|karro alleɡoriko|L|sve|5|Il carro allegorico di Viareggio.|La carroza alegórica de Viareggio.
 coriandoli|serpentinas (confeti)|korjandoli|S|sve|5|I coriandoli lanciati in aria.|Los confeti lanzados al aire.|g=m;n=Siempre plural
 stella di natale|flor de pascua|stella di natale|L|nat|4|Una stella di natale sul tavolo.|Una flor de pascua en la mesa.
-abeto|abeto|abeto|S|nat|4|L'abeto decorato del salone.|El abeto decorado del salón.|g=m;p=abetti
+abete|abeto|aˈbete|S|nat|4|L'abete decorato del salone.|El abeto decorado del salón.|g=m;p=abetti
 addobbi|adornos|adˈdɔbbi|S|att|4|Gli addobbi natalizi dell'albero.|Los adornos navideños del árbol.|g=m;n=Siempre plural
 pacchetto regalo|paquete de regalo|pakketto regaˈlo|L|att|4|Un pacchetto regalo con il nastro rosso.|Un paquete de regalo con cinta roja.
 biglietto d'auguri|tarjeta de felicitación|biʎʎetto dauɡuri|L|att|3|Un biglietto d'auguri per il matrimonio.|Una tarjeta por el matrimonio.

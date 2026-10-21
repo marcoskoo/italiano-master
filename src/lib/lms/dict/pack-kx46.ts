@@ -35,10 +35,10 @@ ora di buco|hora libre|hɔːra di buˈko|L|stu|5|La prof è malata: ora di buco.
 # ══ università ══
 iscriversi all'università|matricularse en la universidad|iskriˈversi alluniversiˈta|E|stu|3|Mi iscrivo all'università a settembre.|Me matriculo en la universidad en septiembre.
 facoltà di lettere|facultad de letras|faˈkɔlta di letˈtre|L|stu|4|La facoltà di lettere in piazza Dante.|La facultad de letras en plaza Dante.
-laurea triennale|grado (tres años)|lаurea trienˈnaːle|L|stu|4|La laurea triennale in economia.|El grado de tres años en economía.
-laurea magistrale|máster (laurea)|lаurea madʒiˈstrale|L|stu|4|La laurea magistrale in editoria.|El máster en edición.
-laurea con lode|matrícula de honor|lаurea kon ˈloːde|L|stu|4|Si è laureata con lode a 22 anni.|Se ha graduado con matrícula a los 22.
-tesi di laurea|tesis de grado|ˈteːzi di ˈlаurea|L|stu|3|La tesi di laurea sulla prosa di Gadda.|La tesis de grado sobre la prosa de Gadda.
+laurea triennale|grado (tres años)|laurea trienˈnaːle|L|stu|4|La laurea triennale in economia.|El grado de tres años en economía.
+laurea magistrale|máster (laurea)|laurea madʒiˈstrale|L|stu|4|La laurea magistrale in editoria.|El máster en edición.
+laurea con lode|matrícula de honor|laurea kon ˈloːde|L|stu|4|Si è laureata con lode a 22 anni.|Se ha graduado con matrícula a los 22.
+tesi di laurea|tesis de grado|ˈteːzi di ˈlaurea|L|stu|3|La tesi di laurea sulla prosa di Gadda.|La tesis de grado sobre la prosa de Gadda.
 relazione finale|informe final|relatˈtsjone finaˈle|L|stu|4|La relazione finale del tirocinio.|El informe final de las prácticas.
 studente fuori sede|estudiante fuera de sede|stuˈdente ˈfwori ˈsɛde|L|stu|4|Uno studente fuori sede di Catania.|Un estudiante fuera de sede de Catania.
 studente pendolare|estudiante pendiente|stuˈdente pendoˈlare|L|stu|4|Studenti pendolari dal Veneto ogni mattina.|Estudiantes pendulares del Véneto cada mañana.
@@ -65,7 +65,7 @@ anno accademico|año académico|anˈno attʃaˈdɛːmiko|L|stu|3|L'anno accademi
 sessione d'esame|convocatoria de exámenes|sesˈsjone deˈzame|L|stu|3|La sessione d'esame di gennaio piena.|La convocatoria de enero llena.
 sessione straordinaria|convocatoria extraordinaria|sesˈsjone straordin aˈrja|L|stu|5|La sessione straordinaria a settembre.|La convocatoria extraordinaria en septiembre.
 preparare un esame|preparar un examen|prepaˈrare un eˈzame|E|stu|3|Prepariamo l'esame di filosofia del diritto juntos.|Preparamos juntos el examen de filosofía del derecho.
-studiare all'ultimo minuto|estudiar a última hora|stuˈdjarе allˈultimo miˈnuto|E|stu|4|Ha studiato all'ultimo minuto e è andata bene.|Ha estudiado a última hora y ha ido bien.
+studiare all'ultimo minuto|estudiar a última hora|stuˈdjare allˈultimo miˈnuto|E|stu|4|Ha studiato all'ultimo minuto e è andata bene.|Ha estudiado a última hora y ha ido bien.
 notte in bianco|noche en blanco|nɔt te in ˈbjanko|L|emo|4|Ho fatto una notte in bianco prima dell'esame.|He hecho una noche en blanco antes del examen.
 sudare sette camicie|sudar la gota gorda|suˈdare seːte kamiˈtʃe|E|cnn|4|Ho sudato sette camicie per passare fisica.|He sudado la gota gorda por pasar física.
 studiare a memoria|estudiar de memoria|stuˈdjaˌre a meˈmoria|E|stu|3|Studia a memoria le tabelline tutte quante.|Estudia de memoria las tablas.
@@ -76,7 +76,7 @@ fare un ripasso|dar un repaso|fare un ripasˈso|E|stu|4|Facciamo un ripasso velo
 schemino|esquema|skeˈmiːno|S|stu|5|Uno schemino su mezzo foglio per l'orale.|Un esquema en media hoja para el oral.|g=m;p=schemini;r=col
 prendere appunti|tomar apuntes|ˈprɛndere apˈpunti|E|stu|3|Prendo appunti sul quaderno a quadretti.|Tomo apuntes en el cuaderno cuadriculado.
 quaderno a quadretti|cuaderno cuadriculado|kwaˈderno a kwadretˈti|L|stu|4|Un quaderno a quadretti per la matematica.|Un cuaderno cuadriculado para matemáticas.
-fotocopiare gli appunti|fotocopiar los apuntes|fotokoˈpjarе ɡʎʎi apˈpunti|E|stu|4|Fotocopia gli appunti della lezione mancata.|Fotocopia los apuntes de la clase perdida.
+fotocopiare gli appunti|fotocopiar los apuntes|fotokoˈpjare ɡʎʎi apˈpunti|E|stu|4|Fotocopia gli appunti della lezione mancata.|Fotocopia los apuntes de la clase perdida.
 fare lo studente|ser estudiante|fare lo stuˈdente|E|stu|4|Faccio lo studente lavoratore di notte.|Soy estudiante y trabajador nocturno.
 studente lavoratore|estudiante trabajador|stuˈdente lavoraˈtore|L|stu|4|Uno studente lavoratore al call center.|Un estudiante trabajador en el call center.
 `, "B1", "k-x46");

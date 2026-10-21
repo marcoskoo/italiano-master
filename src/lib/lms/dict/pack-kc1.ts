@@ -111,7 +111,7 @@ favorevole|favorable|favoˈrevole|A|ast|3|Le previsioni sono favorevoli.|Los pro
 sfavorevole|desfavorable|sfavoreˈvole|A|ast|4|Un verdetto sfavorevole alla società.|Un veredicto desfavorable para la empresa.
 scaltro|astuto|ˈskaltro|A|emo|4|Uno scaltro negoziatore fiorentino.|Un astuto negociador florentino.
 acuto|agudo|aˈkuto|A|sci|4|Un'osservazione acuta e puntuale.|Una observación aguda y puntual.|n=Acuto anche = intenso: dolore acuto
-sottile ka2b|sutil|sotˈtile|A|ast|3|Una distinzione sottile ma cruciale.|Una distinción sutil pero crucial.
+sottile|sutil|sotˈtile|A|ast|3|Una distinzione sottile ma cruciale.|Una distinción sutil pero crucial.
 sbrigativo|apresurado|zbriˈɡativo|A|emo|5|Una risposta sbrigativa e scortese.|Una respuesta apresurada y descortés.
 meticoloso|meticuloso|metikoˈlozo|A|lav|4|Un restauro meticoloso di cinque anni.|Una restauración meticulosa de cinco años.
 

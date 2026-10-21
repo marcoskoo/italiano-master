@@ -22,7 +22,7 @@ parco eolico|parque eólico|ˈparko ˈɛːoliko|L|nat|4|Il parco eolico offshore
 offshore|en alta mar|ˈɔfʃɔr|E|tec|5|Le piattaforme offshore.|Las plataformas offshore.|n=Anglicismo
 idroelettrico|hidroeléctrico|idroeletˈtriko|A|tec|4|Le centrali idroelettriche alpine.|Las centrales hidroeléctricas alpinas.
  centrale nucleare|central nuclear|tʃenˈtrale nuˈkljaːre|L|tec|4|La centrale nucleare di Garigliano.|La central nuclear de Garigliano.
-fusion → no; fusione nucleare|fusión nuclear|fuˈzjone nuˈkljaːre|L|sci|5|La fusione nucleare fredda? Mai dimostrata.|¿La fusión nuclear fría? Nunca demostrada.
+fusione nucleare|fusión nuclear|fuˈzjone nuˈkljaːre|L|sci|5|La fusione nucleare fredda? Mai dimostrata.|¿La fusión nuclear fría? Nunca demostrada.
 biocarburante|biocombustible|bjokarbuˈrante|S|nat|5|Il biocarburante dall'olio esausto.|El biocombustible del aceite usado.|g=m;p=biocarburanti
 biomassa|biomasa|bioˈmassa|S|sci|5|La centrale a biomassa.|La central de biomasa.|g=f;p=biomasse
 geotermico|geotérmico|dʒeotermiko|A|sci|5|Le fonti geotermiche di Larderello.|Las fuentes geotérmicas de Larderello.

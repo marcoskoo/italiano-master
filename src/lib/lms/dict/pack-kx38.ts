@@ -7,7 +7,7 @@ export const PACK_KX38: VocabWord[] = parsePack(`
 # ══ arte ══
 affrescatura|frescado|affreʃˈʃaːtura|S|art|5|L'affrescatura della volta a pennello.|El frescado de la bóveda a pincel.|g=f;p=affrescature
 sinopia|sinopia|siˈnɔːpja|S|art|5|La sinopia sotto l'affresco staccato.|La sinopia bajo el fresco desprendido.|g=f;p=sinopie
-tempiera|pintura a la tempera|temˈpjɛːra|S|art|5|La tempiera su tavola.|La témpera sobre tabla.|g=f
+tempera|pintura a la tempera|ˈtɛmpera|S|art|5|La tempera su tavola.|La témpera sobre tabla.|g=f;p=tempere
 encausto|encáustica|enˈkausto|S|art|5|L'encausto dei ritratti del Fayum.|El encáustico de los retratos de El Fayum.|g=m
 altorilievo|altorrelieve|altoriliˈjeːvo|S|art|5|L'altorilievo dell'Ara Pacis.|El altorrelieve del Ara Pacis.|g=m;p=altorilievi
 bassorilievo|bajorrelieve|bassoriliˈjeːvo|S|art|5|Il bassorilievo sulla stele funeraria.|El bajorrelieve sobre la estela funeraria.|g=m;p=bassorilievi
@@ -21,7 +21,7 @@ chiaroscuro|claroscuro|kjaˈroskuro|S|art|4|Il chiaroscuro caravaggesco.|El clar
 sfumato|esfumado|sfuˈmaːto|S|art|4|Lo sfumato leonardesco della Gioconda.|El esfumado leonardesco de la Gioconda.|g=m;p=sfumati
 prospettiva aerea|perspectiva aérea|prospetˈtiːva aˈɛːrea|L|art|5|La prospettiva aerea della Vergine delle rocce.|La perspectiva aérea de la Virgen de las rocas.
 pentimento|arrepentimiento|penˈtimento|S|art|5|Il pentimento rivela un primo abbozzo.|El arrepentimiento revela un primer esbozo.|g=m;p=pentimenti
-abbozzo|esbozo|abˈbɔttsо|S|art|4|L'abbozzo a carboncino.|El esbozo a carboncillo.|g=m;p=abbozzi
+abbozzo|esbozo|abˈbɔttso|S|art|4|L'abbozzo a carboncino.|El esbozo a carboncillo.|g=m;p=abbozzi
 carboncino|carboncillo|karbonˈtʃiːno|S|art|4|Il ritratto a carboncino.|El retrato a carboncillo.|g=m;p=carboncini
 disegno preparatorio|dibujo preparatorio|diˈzeɲɲo preparaˈtorjo|L|art|5|Il disegno preparatorio per la pala d'altare.|El dibujo preparatorio para la tabla de altar.
 cartone (arte)|cartón (dibujo)|karˈtoːne|S|art|5|Il cartone di Raffaello agli Uffizi.|El cartón de Rafael en los Uffizi.|g=m;p=cartoni

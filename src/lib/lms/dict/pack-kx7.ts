@@ -112,6 +112,6 @@ spina|enchufe|spina|S|tec|4|La spina del caricatore storta.|El enchufe del carga
 cavo|cable|kavo|S|tec|3|Un cavo di ricarica troppo corto.|Un cable de carga muy corto.|g=m;p=cavi
 torcia|linterna|tortʃa|S|tec|4|Una torcia tascabile nel cassetto.|Una linterna de bolsillo en el cajón.|g=f;p=torce
 lampadina|ampolleta|lampadina|S|tec|4|La lampadina del salotto fulminata.|La ampolleta de la sala fundida.|g=f;p=lampadine;c=lampadina a led
-plafoniera|cielorraso… lámpara de techo|plafoniɛra|S|cas|5|La plafoniera della cucina moderna.|La lámpara de techo de la cocina moderna.|g=f;p=plafoniere
+plafoniera|lámpara de techo (empotrada)|plafoniɛra|S|cas|5|La plafoniera della cucina moderna.|La lámpara de techo de la cocina moderna.|g=f;p=plafoniere
 abat-jour|velador|abadʒur|S|cas|5|Un abat-jour sul comodino.|Una velador sobre la mesita de noche.|g=m;n=Invariable
 `, "A2", "k-x7");

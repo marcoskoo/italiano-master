@@ -8,7 +8,7 @@ export const PACK_KX24: VocabWord[] = parsePack(`
 misconoscere|desconocer/rehusar reconocimiento|miskonoˈʃʃere|V|cnn|5|Un genio misconosciuto dalla critica.|Un genio desconocido por la crítica.|r=let
 disconoscere|desconocer (negar)|diskonoˈʃʃere|V|cnn|5|Ha disconosciuto il figlio davanti al notaio.|Ha negado reconocer al hijo ante el notario.|r=for;c=disconoscere un debito
 inibire|inhibir|iniˈbire|V|cnn|5|La paura inibisce ogni reazione.|El miedo inhibe toda reacción.|r=for
-squilibrire|desequilibrar|skwilibrare|V|emo|5|La notizia ha squilibrato il già fragile equilibrio.|La noticia ha desequilibrado el ya frágil equilibrio.|r=for
+squilibrare|desequilibrar|skwiliˈbrare|V|emo|5|La notizia ha squilibrato il già fragile equilibrio.|La noticia ha desequilibrado el ya frágil equilibrio.|r=for
 declinare|declinar|dekliˈnare|V|cnn|4|L'offerta declina l'invito con rammarico.|La oferta declina la invitación con pesar.|r=for;c=declinare un invito
 eccellere|descollar|ettʃelˈlere|V|cnn|5|Eccelle nelle materie umanistiche.|Descolla en las materias humanísticas.|r=for;n=Assoluto: eccellere in qualcosa
 primeggiare|descollar/sobresalir|primeddʒare|V|cnn|5|Ha sempre primeggiato senza sforzo.|Siempre ha sobresalido sin esfuerzo.|r=for
@@ -39,7 +39,7 @@ rincuorare|reconfortar|rinkwoˈrare|V|emo|5|Le parole del medico l'hanno rincuor
 affliggere|afligir|affliɡˈɡere|V|emo|5|Lo affligge il pensiero dell'errore.|Le aflige el pensamiento del error.|r=let
 crucciarsi|afligirse|krutˈtʃarsi|V|emo|5|Si crucia per un nonnulla.|Se aflige por una nadería.|r=let
 tribolare|penar|triboˈlare|V|emo|5|Ha tribolato anni per sbarcare il lunario.|Ha penado años para llegar a fin de mes.|r=col
-arraffare|garronear → no; arrebatar|arrafˈfare|V|cmu|5|Ha arraffato tutto e se n'è andato.|Ha arrebatado todo y se ha ido.|r=col
+arraffare|arrebatar|arrafˈfare|V|cmu|5|Ha arraffato tutto e se n'è andato.|Ha arrebatado todo y se ha ido.|r=col
 scialacquare|dilapidar|ʃʃalakˈkware|V|fin|5|Ha scialacquato l'eredità in un anno.|Ha dilapidado la herencia en un año.|r=let;c=scialacquare il patrimonio
 dilapidare|dilapidar|dilipiˈdare|V|fin|5|Dilapidò il patrimonio di famiglia.|Dilapidó el patrimonio familiar.|r=for
 stremarsi|quedar exhausto|streˈmarsi|V|emo|5|Si stremò nello sforzo di capire.|Quedó exhausto en el esfuerzo de entender.

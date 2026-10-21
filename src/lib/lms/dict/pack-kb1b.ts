@@ -122,7 +122,7 @@ prendersi cura di|cuidar a|ˈprendersi ˈkura di|L|sla|2|Mi prendo cura dei nonn
 assistenza|asistencia|assistɛntsa|S|sla|2|L'assistenza sanitaria pubblica.|La asistencia sanitaria pública.|g=f;c=assistenza clienti
 infermiera|enfermera|inferˈmjɛra|S|pro|2|L'infermiera cambia la medicazione.|La enfermera cambia el apósito.|g=f;p=infermiere
 medicazione|apósito (curación)|medikatˈtsjone|S|sla|4|Cambio la medicazione ogni sera.|Cambio el apósito cada noche.|g=f;p=medicazioni
-pronto soccorso exists|emergencia|pronto soˈkɔrso|S|sla|2|L'hanno portato al pronto soccorso.|Lo llevaron a la emergencia.
+pronto soccorso|emergencia|pronto soˈkɔrso|S|sla|2|L'hanno portato al pronto soccorso.|Lo llevaron a la emergencia.|p=pronto soccorso
 dolere|doler|ˈdɔlere|V|sla|3|Mi duole la testa da ieri.|Me duele la cabeza desde ayer.|n=Letterario/clinico: mi duole; en conversación: mi fa male
 soffrire|sufrir|sofˈfire|V|emo|2|Soffro di emicrania.|Sufro de migraña.|c=soffrire di
 
@@ -142,7 +142,7 @@ ripassare|repasar|ripasˈsare|V|stu|3|Ripasso i verbi irregolari.|Repaso los ver
 sottolineare|subrayar|sottoliˈneare|V|stu|2|Sottolineo le parole nuove.|Subrayo las palabras nuevas.|n=Figurado: il problema sottolinea…
 consegnare|entregar|konseɲˈɲare|V|lav|1|Consegno la relazione lunedì.|Entrego el informe el lunes.|c=consegna a domicilio
 ritirarsi|retirarse|ritiˈrarsi|V|lav|3|Mio padre si ritira a sessantacinque anni.|Mi padre se retira a los sesenta y cinco.
-partecipare a exists|participar en|partetʃiˈpare|V|rel|1|Partecipo a un concorso di poesia.|Participo en un concurso de poesía.
+partecipare a|participar en|partetʃiˈpare|V|rel|1|Partecipo a un concorso di poesia.|Participo en un concurso de poesía.
 spettacolo|espectáculo|spettaˈkolo|S|sve|2|Uno spettacolo teatrale esaurito.|Un espectáculo teatral agotado.|g=m;p=spettacoli;c=andare a teatro
 sfilata|desfile|sfiˈlata|S|sve|4|La sfilata di moda a Milano.|El desfile de moda en Milán.|g=f;p=sfilate
 esaurito|agotado|esauˈrito|A|cmp|3|Il biglietti sono esauriti da giorni.|Las entradas están agotadas desde hace días.|n=Agotado (persona) = stanco morto
@@ -166,7 +166,7 @@ opposto|opuesto|opˈpɔsto|S|ast|3|Il mio opposto: lui timido, io no.|Mi opuesto
 colpa|culpa|ˈkolpa|S|emo|2|Non è colpa tua, davvero.|No es tu culpa, de verdad.|g=f;c=dare la colpa a
 merito|mérito|ˈmɛrito|S|ast|3|Il merito è tutto della squadra.|El mérito es todo del equipo.|g=m;c=meritare attenzione
 intenzione|intención|intenˈtsjone|S|ast|3|Non ho intenzione di cambiare.|No tengo intención de cambiar.|g=f;p=intenzioni;c=con l'intenzione di
-programma TV exists|programa|proˈɡramma|S|cmu|1|Il mio programma preferito del sabato.|Mi programa preferido del sábado.
+programma TV|programa|proˈɡramma|S|cmu|1|Il mio programma preferito del sabato.|Mi programa preferido del sábado.
 promessa|promesa|proˈmɛssa|S|rel|2|Manterrò la promessa, vedrai.|Mantendré la promesa, verás.|g=f;p=promesse;c=promessa di matrimonio
 invito|invitación|inˈvito|S|rel|1|Un invito a cena elegante.|Una invitación a cenar elegante.|g=m;p=inviti
 ordine|orden|ˈɔrdine|S|ast|2|Mettere ordine nella stanza.|Poner orden en la habitación.|g=m;p=ordini;c=in ordine

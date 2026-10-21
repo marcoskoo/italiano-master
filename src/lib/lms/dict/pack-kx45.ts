@@ -56,7 +56,7 @@ imbranato|torpe|imbraˈnaːto|A|col|4|In cucina è imbranato totale.|En la cocin
 imbranata|pataleta (torpeza)|imbraˈnaːta|S|col|5|Che imbranata quella volta al ristorante.|Qué torpeza aquella vez en el restaurante.|g=f;r=col
 sfigato|gafado|sfiˈɡaːto|S|col|4|Uno sfigato che perde sempre il treno.|Un gafado que siempre pierde el tren.|g=m;p=sfigati;r=col
 sfiga|mala suerte|ˈsfiːɡa|S|col|4|Che sfiga col parcheggio!|¡Qué mala suerte con el aparcamiento!|g=f;r=col
-kul atˈtʃiːno|rastro (de vaso)|kul atˈtʃiːno|S|cas|5|Il culaccino del bicchiere sul tavolo.|El rastro del vaso sobre la mesa.|g=m;p=culaccini;r=col
+culaccino|rastro (de vaso)|kulatˈtʃiːno|S|cas|5|Il culaccino del bicchiere sul tavolo.|El rastro del vaso sobre la mesa.|g=m;p=culaccini;r=col
 tombola|tombola|tomˈbɔːla|S|sve|4|La tombola di Natale col premio della pensione.|La tómbola de Navidad con el premio de la jubilación.|g=f
 smorfia (napoletana)|smorfia (guía napoletana)|smorˈfia|S|sve|5|La smorfia per interpretare i sogni.|La smorfia para interpretar los sueños.|g=f
 cabala|cábala|kaˈbaːla|S|sve|5|La cabala del lotto di Napoli.|La cábala del lotto de Nápoles.|g=f;p=cabale

@@ -91,7 +91,7 @@ seconda generazione|segunda generación|seˈkonda dʒeneraˈtsjone|L|ast|4|I fig
 nuovi italiani|nuevos italianos|nuˈɔvi itaˈljani|L|ast|4|I nuovi italiani del campionato juniores.|Los nuevos italianos del campeonato junior.
 integrazione riuscita|integración lograda|integrafˈtsjone riusˈʃʃiːta|L|ast|5|Una storia di integrazione riuscita col pallone.|Una historia de integración lograda con el balón.
 modello di integrazione|modelo de integración|moˈdɛl lo di integrafˈtsjone|L|ast|5|Il modello di integrazione canadese.|El modelo de integración canadiense.
-tolleranza zero|tolerancia cero|tollеranˈtsa ˈdzеro|L|ist|4|La tolleranza zero sui reati di strada.|La tolerancia cero con los delitos callejeros.
+tolleranza zero|tolerancia cero|tolleranˈtsa ˈdzero|L|ist|4|La tolleranza zero sui reati di strada.|La tolerancia cero con los delitos callejeros.
 mano ferma|mano firme|ˈmano ˈfɛrma|L|ist|5|Il prefetto promette mano ferma.|El prefecto promete mano firme.
 polso fermo|pulso firme|ˈpɔlso ˈfɛrmo|L|ist|5|Il sindaco mostra polso fermo sull'abusivismo.|El alcalde muestra pulso firme con el urbanismo ilegal.
 `, "C1", "k-x51");

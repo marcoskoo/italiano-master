@@ -451,7 +451,7 @@ export const GRAMMAR_FULL_B: GrammarTopic[] = [
       { it: "Dopo aver finito, andiamo a casa.", es: "Después de terminar, vamos a casa." },
       { it: "Dopo essere uscita, ha chiuso a chiave.", es: "Después de salir, cerró con llave." },
       { it: "Senza averlo mai visto prima.", es: "Sin haberlo visto nunca antes." },
-      { it: "Al sentirе la tua voce, mi sono calmato.", es: "Al oír tu voz, me calmé." },
+      { it: "Al sentire la tua voce, mi sono calmato.", es: "Al oír tu voz, me calmé." },
     ],
     problems: [
       {

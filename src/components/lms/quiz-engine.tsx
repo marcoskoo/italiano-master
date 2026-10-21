@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Eraser, Lightbulb, RotateCcw, Trophy, X } from "lucide-react";
-import type { Exercise } from "@/lib/lms/types";
+import type { Exercise, LangCode } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { useUi } from "@/lib/lms/ui";
 import { speak } from "@/lib/lms/tts";
@@ -20,12 +20,13 @@ export interface QuizEngineProps {
   onFinish?: (score: number, total: number) => void;
   xpPerCorrect?: number;
   skill?: "ascolto" | "lettura" | "scrittura" | "parlato" | "pronuncia" | "grammatica" | "vocabolario";
+  lang?: LangCode; /* v9.33 · voz TTS de los dictados en la lengua de estudio */
 }
 
 const norm = (s: string) =>
   s.toLowerCase().trim().replace(/[.,!?;:]/g, "").replace(/[\u2018\u2019\u201B]/g, "'").replace(/\s+/g, " ");
 
-export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish, xpPerCorrect = 10, skill }: QuizEngineProps) {
+export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish, xpPerCorrect = 10, skill, lang = "it" }: QuizEngineProps) {
   const addXp = useLms((s) => s.addXp);
   const recordError = useLms((s) => s.recordError);
   const recordCorrect = useLms((s) => s.recordCorrect);
@@ -272,7 +273,7 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
               )}
               {ex.type === "dictation" && (
                 <div className="flex items-center gap-3 rounded-2xl bg-crema-scura p-4 dark:bg-inchiostro/10">
-                  <AudioButton text={ex.text} size="lg" label={u.quiz.listenAgain(audioRate)} variant="full" />
+                  <AudioButton text={ex.text} size="lg" label={u.quiz.listenAgain(audioRate)} variant="full" lang={lang} />
                   <span className="text-xs text-muted-it">{u.quiz.writeExactly}</span>
                 </div>
               )}

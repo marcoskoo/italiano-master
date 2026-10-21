@@ -196,7 +196,7 @@ export const PT_B2: CbUnit[] = [
     },
     pronunciation: {
       focus: "El imperfeito do conjuntivo: -sse /sɨ/ y la sílaba tónica anterior",
-      tip: "Las desinencias -sse, -sses, -ssemos, -ssem se pronuncian [sɨ]: «falasse» /fɐˈlasɨ/, «fizéssemos» /fɨˈzɛsɨmuʃ/. La fuerza cae en la vocal anterior a -ss-: fizÉ-ssе-mos. Trampa: el hispanohablante tiende a decir «fize-SSÉ-mos», desplazando el acento; ensaya marcando la sílaba roja: eu FI-zê-sse, nós fi-ZÉ-sse-mos.",
+      tip: "Las desinencias -sse, -sses, -ssemos, -ssem se pronuncian [sɨ]: «falasse» /fɐˈlasɨ/, «fizéssemos» /fɨˈzɛsɨmuʃ/. La fuerza cae en la vocal anterior a -ss-: fizÉ-sse-mos. Trampa: el hispanohablante tiende a decir «fize-SSÉ-mos», desplazando el acento; ensaya marcando la sílaba roja: eu FI-zê-sse, nós fi-ZÉ-sse-mos.",
       pairs: [
         { a: "falasse /fɐˈlasɨ/", b: "falasse! (imperativo) /fɐˈlaʃɨ‿ˈsɨ/", note: "conjuntivo vs imperativo reforzado" },
         { a: "fizéssemos /fɨˈzɛsɨmuʃ/", b: "fizemos /fiˈzem uʃ/", note: "conjuntivo -ss- vs pretérito -s-" },

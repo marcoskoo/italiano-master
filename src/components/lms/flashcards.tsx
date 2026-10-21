@@ -3,7 +3,8 @@
 import { useMemo, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw, Volume2 } from "lucide-react";
-import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
+import { dictByIdFor } from "@/lib/lms/dict/active";
+import type { LangCode } from "@/lib/lms/types";
 import { CATEGORY_IMG } from "@/lib/lms/types";
 import { ThemeImg } from "./theme-img";
 import { newCard, review, dueCards } from "@/lib/lms/srs";
@@ -24,7 +25,7 @@ const GRADES = [
 /* Umbral de gesto: deslizamiento horizontal dominante (≥48px, 1.5× el eje vertical) */
 const SWIPE_MIN = 48;
 
-export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExit?: () => void }) {
+export function FlashcardSession({ cardIds, onExit, lang = "it" }: { cardIds: string[]; onExit?: () => void; lang?: LangCode }) {
   const srs = useLms((s) => s.srs);
   const upsertSrs = useLms((s) => s.upsertSrs);
   const addXp = useLms((s) => s.addXp);
@@ -36,7 +37,9 @@ export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExi
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const currentId = queue[0];
-  const word = currentId ? VOCAB_BY_ID[currentId] : undefined;
+  /* v9.33 · índice de la lengua activa (it → VOCAB_BY_ID histórico) para que
+     las tarjetas EN/PT/FR/DE del Dizionario resuelvan y suenen con su voz */
+  const word = currentId ? dictByIdFor(lang)[currentId] : undefined;
 
   const grade = (g: number) => {
     if (!currentId) return;
@@ -112,7 +115,7 @@ export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExi
         <motion.button
           key={currentId + String(flipped)}
           onClick={() => {
-            if (!flipped) { setFlipped(true); speak(word.it, { rate: audioRate }); }
+            if (!flipped) { setFlipped(true); speak(word.it, { rate: audioRate, lang }); }
           }}
           initial={{ rotateY: flipped ? -90 : 90, opacity: 0 }}
           animate={{ rotateY: 0, opacity: 1 }}
@@ -179,7 +182,7 @@ export function FlashcardSession({ cardIds, onExit }: { cardIds: string[]; onExi
       </AnimatePresence>
 
       <div className="mt-4 flex justify-center">
-        <AudioButton text={word.it} variant="full" label="Ripeti l'audio" />
+        <AudioButton text={word.it} variant="full" label={lang === "it" ? "Ripeti l'audio" : "Escuchar de nuevo"} lang={lang} />
       </div>
     </div>
   );

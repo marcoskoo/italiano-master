@@ -8,7 +8,7 @@ export const PACK_KX29: VocabWord[] = parsePack(`
 pretore|pretor|preˈtore|S|ist|5|Il pretore convocò le parti.|El pretor convocó a las partes.|g=m;p=pretori
 giudice istruttore|juez instructor|ˈdʒuditʃe istrutˈtore|L|ist|5|Il giudice istruttore ha riaperto le indagini.|El juez instructor ha reabierto la investigación.
 giudice di pace|juez de paz|ˈdʒuditʃe di ˈpatʃe|L|ist|4|La causa è finita davanti al giudice di pace.|La causa ha acabado ante el juez de paz.
-giudice tutelare|juez tutelar|ˈdʒuditʃe tutеˈlare|L|ist|5|Il giudice tutelare nomina l'amministratore di sostegno.|El juez tutelar nombra al administrador de apoyo.
+giudice tutelare|juez tutelar|ˈdʒuditʃe tuteˈlare|L|ist|5|Il giudice tutelare nomina l'amministratore di sostegno.|El juez tutelar nombra al administrador de apoyo.
 procuratore|fiscal|prokuraˈtore|S|ist|3|Il procuratore capo ha indetto una conferenza.|El fiscal jefe ha convocado una rueda de prensa.|g=m;p=procuratori
 pm|fiscal (abbr.)|piˈɛmme|S|ist|4|Il pm ha chiesto 20 anni.|El fiscal ha pedido 20 años.|g=m;n=Abreviación de "pubblico ministero"
 pubblico ministero|ministerio público|ˈpubbliko minisˈtero|L|ist|4|Il pubblico ministero esercita l'azione penale.|El ministerio público ejerce la acción penal.
@@ -21,10 +21,10 @@ reo|reo|ˈrɛːo|S|ist|4|Il reo confesso ha patteggiato.|El reo confeso ha negoc
 reo confesso|reo confeso|ˈrɛːo konˈfesso|L|ist|5|Il reo confesso ha indicato i complici.|El reo confeso ha señalado a los cómplices.
 registro delle notizie di reato|registro de causas|ˈredʒistro delle ˈnotitsie di ˈreato|L|ist|5|L'iscrizione nel registro delle notizie di reato.|La inscripción en el registro de causas.
 in flagranza|en flagrancia|in flaɡranˈtsa|E|ist|5|È stato arrestato in flagranza.|Ha sido detenido en flagrancia.|r=for
-custodia cautelare|prisión preventiva|kustˈtodja kautеˈlare|L|ist|4|Il gip ha disposto la custodia cautelare.|El juez ha dispuesto la prisión preventiva.
+custodia cautelare|prisión preventiva|kustˈtodja kauteˈlare|L|ist|4|Il gip ha disposto la custodia cautelare.|El juez ha dispuesto la prisión preventiva.
 detenuto|detenido|deteˈnuto|S|ist|3|I detenuti hanno protestato per le condizioni.|Los detenidos han protestado por las condiciones.|g=m;p=detenuti
 libertà provvisoria|libertad provisional|liberˈta provviˈzorja|L|ist|4|Ha ottenuto la libertà provvisoria.|Ha obtenido la libertad provisional.
-misure cautelari|medidas cautelares|ˈmisure kautеˈlari|L|ist|4|Il giudice ha applicato le misure cautelari.|El juez ha aplicado las medidas cautelares.
+misure cautelari|medidas cautelares|ˈmisure kauteˈlari|L|ist|4|Il giudice ha applicato le misure cautelari.|El juez ha aplicado las medidas cautelares.
 obbligo di firma|obligación de firmar|obˈbliɡo di ˈfirma|L|ist|4|Gli è stato imposto l'obbligo di firma.|Le ha sido impuesta la obligación de firmar.
 arresti domiciliari|arresto domiciliario|arˈrɛsti domiˈtʃiljari|L|ist|3|Sotto arresti domiciliari da sei mesi.|Bajo arresto domiciliario desde hace seis meses.
 ergastolo|cadena perpetua|erɡaˈstolo|S|ist|4|Condannato all'ergastolo per omicidio.|Condenado a cadena perpetua por homicidio.|g=m
@@ -34,10 +34,9 @@ ammenda|multa|amˈmenda|S|ist|3|Ammenda di 5 mila euro per i motoscafi.|Multa de
 sanzione amministrativa|sanción administrativa|sanˈtsjone amminiˈstrativa|L|ist|3|Una sanzione amministrativa da 300 euro.|Una sanción administrativa de 300 euros.
 confisca|decomiso|konˈfiska|S|ist|4|La confisca dei beni del boss.|El decomiso de los bienes del jefe.|g=f;p=confische
 sequestro preventivo|embargo preventivo|seˈkwestro prevenˈtivo|L|ist|4|Il sequestro preventivo degli immobili.|El embargo preventivo de los inmuebles.
-reiato → no; reato|delito|reˈato|S|ist|3|Il reato di diffamazione è procedibile a querela.|El delito de difamación es perseguible a instancia de parte.|g=m;p=reati
-reato|delito|reˈato|S|ist|3|Il reato di diffamazione a mezzo stampa.|El delito de difamación a través de prensa.|g=m;p=reati
+reato|delito|reˈato|S|ist|3|Il reato di diffamazione è procedibile a querela.|El delito de difamación es perseguible a instancia de parte.|g=m;p=reati
 reato continuato|delito continuado|reˈato kontinuaˈto|L|ist|5|Il concorso di reati è stato rivalutato come reato continuato.|El concurso de delitos ha sido recalificado como delito continuado.
-bustarella|soborno|bustаˈrɛlla|S|ist|4|Ha accettato una bustarella da 10 mila euro.|Ha aceptado un soborno de 10 mil euros.|g=f;p=bustarelle;r=col
+bustarella|soborno|bustaˈrɛlla|S|ist|4|Ha accettato una bustarella da 10 mila euro.|Ha aceptado un soborno de 10 mil euros.|g=f;p=bustarelle;r=col
 tangente|comisión (soborno)|tanˈdʒente|S|ist|4|Le tangenti sugli appalti pubblici.|Las comisiones en los contratos públicos.|g=f;p=tangenti
 mazzetta|mordida|mazˈzetta|S|ist|4|La mazzetta al funzionario per l'appalto.|La mordida al funcionario por el contrato.|g=f;p=mazzette;r=col
 appalto|contratación pública|apˈpalto|S|ist|4|L'appalto truccato per l'autostrada.|La contratación amañada para la autopista.|g=m;p=appalti

@@ -75,7 +75,7 @@ vescica (ustione)|ampolla|veʃˈʃika|S|cor|5|La vescica sulla pelle ustionata.|
 distorsione alla caviglia|esguince de tobillo|distorˈsjone alla ˈkantʃiʎʎa|L|cor|4|Una distorsione alla caviglia a calcetto.|Un esguince de tobillo en el fútbol sala.
 stiramento all'inguine|distensión en la ingle|stiraˈmento allinɡwiːne|L|cor|5|Uno stiramento all'inguine lo ferma.|Una distensión en la ingle lo detiene.
 intorpidito|entumecido|intorpiˈdiːto|A|cor|5|Il braccio intorpidito dal sonno.|El brazo entumecido del sueño.
-puntura de zanzara → no; puntura di zanzara|picadura de mosquito|punˈtuːra di dzanˈzaːra|L|cor|4|Tre punture di zanzara sulla caviglia.|Tres picaduras de mosquito en el tobillo.
+puntura di zanzara|picadura de mosquito|punˈtuːra di dzanˈzaːra|L|cor|4|Tre punture di zanzara sulla caviglia.|Tres picaduras de mosquito en el tobillo.
 mal di mare|mareo (mar)|mal di ˈmaːre|L|tra|4|Soffre il mal di mare in traghetto.|Sufre el mareo en el ferry.
 mal d'auto|mareo (coche)|mal dˈauto|L|tra|5|Il mal d'auto dei bambini sul sedile posteriore.|El mareo de los niños en el asiento trasero.
 mal d'aria|mal de altura|mal dˈaːrja|L|vig|5|Il mal d'aria in funivia al Cervino.|El mal de altura en el teleférico del Cervino.

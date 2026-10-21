@@ -25,14 +25,14 @@ facciamola semplice|simplifiquemos|fattʃamoˈla ˈsɛmplye|E|cmu|5|Facciamola s
 diciamolo pure|digámoslo claro|ditʃjamolo ˈpure|E|cmu|4|Diciamolo pure: ha fatto benissimo.|Digámoslo claro: lo ha hecho muy bien.
 non a caso|no por casualidad|non a ˈkaːzo|E|cnn|4|Non a caso il titolo cita Dante.|No por casualidad el título cita a Dante.
 proprio così|justo así|proˈprjo koˈsiː|E|cmu|3|«Hai capito?» — «Proprio così.»|«¿Has entendido?» — «Justo así.»
-esattamente|exactamente|ezatˈtamentе|E|cmu|3|Esattamente ciò che pensavo.|Exactamente lo que pensaba.
+esattamente|exactamente|ezatˈtamente|E|cmu|3|Esattamente ciò che pensavo.|Exactamente lo que pensaba.
 per meglio dire|por mejor decir|per meˈʎʎo diˈre|E|cnn|5|Un genio, per meglio dire un visionario.|Un genio, por mejor decir un visionario.|r=for
 se vogliamo|si quieres|se voˈʎʎamo|E|cmu|4|Un errore, se vogliamo, piccolo.|Un error, si quieres, pequeño.
 volendo|si se quiere|voˈlendo|E|cmu|4|Volendo, si può rifare domani.|Si se quiere, se puede rehacer mañana.
 in fondo|al fin y al cabo|in ˈfondo|E|cnn|3|In fondo, è solo un film.|Al fin y al cabo, es solo una película.
 in definitiva|en definitiva|in definiˈtiva|E|cnn|4|In definitiva, poco cambia.|En definitiva, poco cambia.
 dopo tutto|después de todo|dopo ˈtutto|E|cnn|3|Dopo tutto, ci siamo divertiti.|Después de todo, nos hemos divertido.
-a monte (di)|aguas arriba (de)|a ˈmontе|E|cnn|4|Il problema va risolto a monte.|El problema hay que resolverlo aguas arriba.
+a monte (di)|aguas arriba (de)|a ˈmonte|E|cnn|4|Il problema va risolto a monte.|El problema hay que resolverlo aguas arriba.
 a valle (di)|aguas abajo (de)|a ˈval e|E|cnn|4|Gli effetti si vedono a valle.|Los efectos se ven aguas abajo.
 per esteso|por extenso|per eˈsteso|E|cnn|4|Cita il passo per esteso.|Cita el pasaje por extenso.|r=for
 in sintesi|en síntesis|in sinˈtezi|E|cnn|3|In sintesi: i dati non bastano.|En síntesis: los datos no bastan.|r=for
@@ -57,7 +57,7 @@ cavare sangue da una pietra|sacar sangre de una piedra|kaˈvare ˈsaŋɡwe da un
 fare di un sassolino una montagna|hacer de una pulga un elefante|fare di un sassoˈlino una montaˈɲɲa|E|cnn|5|Fai di un sassolino una montagna.|Haces de una pulga un elefante.
 gettare olio sul fuoco|echar aceite al fuego|dʒetˈtare ˈɔljo sul ˈfwɔːko|E|cnn|4|Le sue parole gettano olio sul fuoco.|Sus palabras echan aceite al fuego.
 gettare benzina sul fuoco|echar gasolina al fuego|dʒetˈtare benˈtsina sul ˈfwɔːko|E|cnn|4|Il leader getta benzina sul fuoco.|El líder echa gasolina al fuego.
-spegnere l'incendio|apagar el incendio|speɲˈɲɛre linkwiˈndʒо → IPA fix|E|cnn|4|Il premier spegne l'incendio politico.|El premier apaga el incendio político.
+spegnere l'incendio|apagar el incendio|speɲˈɲɛre linˈtʃɛndjo|E|cnn|4|Il premier spegne l'incendio politico.|El premier apaga el incendio político.
 fuoco di paglia|fuego de paja|ˈfwɔːko di paˈʎʎa|L|cnn|4|La protesta fu fuoco di paglia.|La protesta fue fuego de paja.
 paglia|paja|paˈʎʎa|S|nat|4|Un filo di paglia tra i denti.|Un hilo de paja entre los dientes.|g=f;p=paglie
 cercare un ago in un pagliaio|buscar una aguja en un pajar|ˈtʃerkare un ˈaːɡo in un paʎʎaˈjo|E|cnn|4|Cerchi un ago in un pagliaio.|Buscas una aguja en un pajar.

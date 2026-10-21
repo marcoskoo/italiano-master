@@ -386,6 +386,7 @@ const STAGES = [
 ] as const;
 
 function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void }) {
+  const ulang = langOfIdSafe(lessonId); /* v9.33 · voz TTS de dictados en la lengua del curso */
   const navigate = useLms((s) => s.navigate);
   const completedLessons = useLms((s) => s.completedLessons);
   const markLessonComplete = useLms((s) => s.markLessonComplete);
@@ -622,6 +623,7 @@ function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void
                 kind="lección"
                 label={`Lección: ${lesson.title}`}
                 skill="grammatica"
+                lang={ulang}
               />
             )}
           </div>
@@ -690,6 +692,7 @@ function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void
                     skill="grammatica"
                     xpPerCorrect={15}
                     onFinish={handleEvalFinish}
+                    lang={ulang}
                   />
                 ) : (
                   <div className="rounded-3xl border border-soft bg-surface p-6 text-center">

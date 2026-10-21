@@ -22,7 +22,7 @@ carta d'imbarco|tarjeta de embarque|ˈkarta dimˈbarko|L|tra|3|La carta d'imbarc
 porta d'imbarco|puerta de embarque|ˈpɔrta dimˈbarko|L|tra|4|La porta d'imbarco 12 chiusa.|La puerta de embarque 12 cerrada.
 imbarcarsi|embarcarse|imˈbarkarsi|V|tra|3|Ci imbarchiamo alle tredici.|Nos embarcamos a las trece.
 stiva (bagagli)|bodega (equipaje)|stiːva|S|tra|4|La valigia grande va in stiva.|La maleta grande va a la bodega.|g=f;p=stive
-bagaglio smarrito|equipaje perdido|baˈɡaʎʎо zmarˈrito|L|tra|4|Un bagaglio smarrito a Heathrow.|Un equipaje perdido en Heathrow.
+bagaglio smarrito|equipaje perdido|baˈɡaʎʎo zmarˈrito|L|tra|4|Un bagaglio smarrito a Heathrow.|Un equipaje perdido en Heathrow.
 ritiro bagagli|recogida de equipajes|riˈtiːro baˈɡaʎʎi|L|tra|4|Il ritiro bagagli al nastro 3.|La recogida de equipajes en la cinta 3.
 nastro portabagagli|cinta de equipajes|ˈnastro portabaˈɡaʎʎi|L|tra|4|La valigia sul nastro portabagagli.|La maleta en la cinta de equipajes.
 controlli di sicurezza|controles de seguridad|konˈtroli di sikkuˈrettsa|L|tra|3|I controlli di sicurezza all'ingresso.|Los controles de seguridad a la entrada.
@@ -51,7 +51,7 @@ biglietto di andata|billete de ida|bilˈjɛtto di anˈdaːta|L|tra|4|Un bigliett
 orario dei treni|horario de trenes|oˈrarjo dei ˈtreːni|L|tra|3|Controlla l'orario dei treni online.|Consulta el horario de trenes online.
 treno regionale|tren regional|ˈtreːno redʒoˈnale|L|tra|4|Il treno regionale che ferma ovunque.|El tren regional que para en todas partes.
 fermata (treno)|parada|ferˈmaːta|S|tra|3|La prossima fermata è Roma Tuscolana.|La próxima parada es Roma Tuscolana.|g=f;p=fermate
-capolinea|final de línea|kapoliˈnеа|S|tra|4|Il capolinea del bus a piazza Mancini.|El final de línea del bus en piazza Mancini.|g=m;p=capolinea
+capolinea|final de línea|kapoliˈnea|S|tra|4|Il capolinea del bus a piazza Mancini.|El final de línea del bus en piazza Mancini.|g=m;p=capolinea
 biglietto urbano|billete urbano|bilˈjɛtto urˈbano|L|tra|4|Un biglietto urbano da 100 minuti.|Un billete urbano de 100 minutos.
 abbonamento mensile|abono mensual|abbonamento menˈswale|L|tra|3|L'abbonamento mensile dei trasporti.|El abono mensual de transportes.
 convalidare il biglietto|validar el billete|konvaliˈdare il bilˈjɛtto|E|tra|3|Convalida il biglietto sulla macchinetta gialla.|Valida el billete en la máquina amarilla.
@@ -83,7 +83,7 @@ etilometro|etilómetro|etiloˈmɛtro|S|tra|4|Soffia nell'etilometro, per cortesi
 gonfiare le gomme|inflar las ruedas|ɡonˈfjare le ˈɡɔmme|E|tra|4|Gonfia le gomme alla stazione di servizio.|Infla las ruedas en la gasolinera.
 gomma a terra|rueda pinchada|ˈɡɔmma a terˈra|L|tra|4|La gomma a terra sull'A1.|La rueda pinchada en la A1.
 crepa (vetro)|grieta|ˈkrepa|S|tec|4|Una crepa sul parabrezza del camion.|Una grieta en el parabrisas del camión.|g=f;p=crepe
-carrozzeria (auto)|chapa y pintura|karrozˈzеria|S|tra|4|La carrozzeria dopo il tamponamento.|La chapa y pintura tras el golpe.|g=f;p=carrozzerie
+carrozzeria (auto)|chapa y pintura|karrozˈzeria|S|tra|4|La carrozzeria dopo il tamponamento.|La chapa y pintura tras el golpe.|g=f;p=carrozzerie
 meccanico (auto)|mecánico|mekˈkaniko|S|pro|3|Il meccanico dell'officina sotto casa.|El mecánico del taller bajo casa.|g=m;p=meccanici
 tagliando (auto)|revisión programada|taʎˈʎando|S|tra|4|Il tagliando dei 100 mila chilometri.|La revisión programada de los 100 mil kilómetros.|g=m;p=tagliandi
 candele (auto)|bujías|ˈkandele|S|tec|5|Le candele da sostituire.|Las bujías que sustituir.|g=f

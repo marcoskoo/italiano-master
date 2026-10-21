@@ -76,7 +76,7 @@ fare un torto|hacer un agravio|fare un ˈtɔrto|E|rel|4|Gli hai fatto un torto e
 fare un favore personale|hacer un favor personal|fare un favoˈre persoˈnale|E|rel|4|Un favore personale, non di lavoro.|Un favor personal, no de trabajo.
 chiedere un favore|pedir un favor|ˈkjeːdere un favoˈre|E|rel|3|Ti chiedo un favore grosso.|Te pido un favor grande.
 ricambiare il favore|devolver el favor|rikamˈbjaːre il favoˈre|E|rel|4|Un giorno ricambio il favore.|Un día devuelvo el favor.
-fare la cortesia|hacer la cortesía|fare la korˌtesia → IPA fix|E|rel|4|Mi fai la cortesia di ascoltare?|¿Me haces la cortesía de escuchar?
+fare la cortesia|hacer la cortesía|fare la korteˈsia|E|rel|4|Mi fai la cortesia di ascoltare?|¿Me haces la cortesía de escuchar?
 avere la cortesia di|tener la cortesía de|aveˈre la kortesia di|E|cnn|5|Abbia la cortesia di accomodarsi.|Tenga la cortesía de acomodarse.
 fare gli onori di casa|hacer los honores|fare ɡʎʎi ˈɔnori di ˈkaːza|E|rel|4|Il sindaco fa gli onori di casa.|El alcalde hace los honores.
 essere all'altezza|estar a la altura|ˈɛssere allalˈtetsa|E|cnn|3|Il team è all'altezza del compito.|El equipo está a la altura de la tarea.
