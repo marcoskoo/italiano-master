@@ -1589,3 +1589,20 @@ Work Log:
 
 Stage Summary:
 - v9.36 «Reglas + ejemplos en las unidades Cambridge»: las 288 unidades comunicativas de EN/PT/FR/DE siguen ahora el estándar completo de v9.35 — explicar (regla) → reglas de construcción en tabla (288 tavole nuevas con nota contrastiva ES) → 7 ejemplos con audio y hover (2.016 frases) → práctica inmediata → drills de transformación generados de las tablas (600 transform + 312 errores = 912 ítems nuevos). FR/DE estrenan drills (antes vacíos) en los 6 niveles. Coste 0 €.
+
+---
+Task ID: 1 (v9.37)
+Agent: main (Super Z)
+Task: Petición del usuario: la pantalla que se muestra al cargar la web decía "Italiano Master"; en su lugar mostrar el loro y las banderas de los países de los idiomas.
+
+Work Log:
+- Localizado el residual en src/app/page.tsx:216-230 (boot screen pre-hidratación, renderizada en el HTML SSR): wordmark "Italiano Master" (el sed de rebrand v9.31 lo pasó por alto porque el nombre estaba partido por un <span> itálico) + "caricamento…" en italiano.
+- Barrido de residuos con formas divididas (rg "italiano.?master|Italiano\s*<span|italianomaster"): hallados 2 más — printables.tsx:70 h1 "Italiano <span>Master</span>" de las fichas imprimibles + footer con dominio viejo italianomaster.app; sw.js:92 título push "Italiano Master". README.md además enlazaba al repo pre-rename (marcoskoo/italiano-master).
+- Rediseño del boot screen: loro (mascota hello.webp, pose de saludo, tarjeta redondeada [1.75rem] igual que el tratamiento de marca, 128→144px responsive) + fila de las 5 banderas de los países de las lenguas (🇮🇹🇺🇸🇵🇹🇫🇷🇩🇪, mapeada desde LANG_LIST[].countryFlag — siempre sincronizada con el registro de lenguas, con title={L.country} para hover) + wordmark correcto "Políglota Master" (font-display, Master itálico verde-scuro, espejo del header) + "cargando…" en español (la interfaz es española) + barra de progreso pulsante existente. El loro ya estaba en el PRECACHE del SW → carga instantánea incluso offline.
+- Fixes acompañantes: printables.tsx (h1 "Políglota Master" + footer poliglota-master.vercel.app), sw.js (título push "Políglota Master" + VERSION im-v9-36-0 → im-v9-37-0), README.md (4 URLs al repo renombrado). Identificadores internos (storage key italiano-master-v1, cache SW, blob path, scrypt salts) se conservan según decisión v9.32.
+- QA: eslint 0 errores en tocados; tsc 83 líneas = baseline exacto verificado con git stash test (el +1 vs 82 llegó de commits paralelos posteriores a v9.36, 0 en archivos tocados); build OK 15/15.
+- E2E dev (standalone :3457): HTML SSR contiene loro + 5 banderas con títulos + wordmark + "cargando…" y cero residuos; captura del boot screen persistente bloqueando solo chunks *.js con agent-browser network route (lección: en Next 16 los CSS viven bajo /_next/static/chunks/*.css, un bloqueo "**/chunks/**" tumba también los estilos — primer intento capturó la página sin CSS, falso negativo del VLM); QA VLM desktop 1440 y móvil 390: loro completo, 5/5 banderas en orden, centrado perfecto, sin solapamientos, 9/10 ambas; regresión de hidratación (boot → app OK, 0 errores consola); ficha imprimible generada vía iframe capturada con eval asíncrono: h1 "Políglota Master" + footer con dominio correcto.
+- Deploy: commit a654016 + push → producción viva en ~40 s. Prod verificada: HTML SSR con loro + 5 banderas + wordmark, residual "Italiano <span"/"caricamento" NINGUNO, sw.js im-v9-37-0 con push title "Políglota Master", captura visual + veredicto VLM OK. Capturas: upload/v937-boot-desktop.png, v937-boot-mobile.png, v937-prod-boot.png.
+
+Stage Summary:
+- v9.37: la pantalla de arranque de la web ya no dice "Italiano Master" — ahora muestra il pappagallo saludando, las banderas de los 5 países de las lenguas (🇮🇹🇺🇸🇵🇹🇫🇷🇩🇪 desde LANG_LIST), el wordmark correcto "Políglota Master" y "cargando…" en español. Rebrand completado además en fichas imprimibles (h1 + dominio), título de push del SW y README (repo renombrado). Con esto no queda ningún "Italiano Master" visible al usuario en toda la app. Coste 0 €. Desplegado y verificado en producción.
