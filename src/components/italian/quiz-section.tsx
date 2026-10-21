@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Flame, Lightbulb, RotateCcw, Trophy, X } from "lucide-react";
+import { Mascot } from "../lms/mascot";
 
 /* ── Questions ────────────────────────────────────────────────────── */
 interface Question {
@@ -329,6 +330,8 @@ export function QuizSection() {
                 </div>
               </div>
               <h3 className="mt-4 font-display text-3xl italic text-inchiostro">{message}</h3>
+              {/* v9.34 · Pappagallo celebra el resultado del quiz lampo */}
+              <Mascot pose={pct >= 63 ? "party" : "study"} className="mt-3 h-20 w-20" />
               <p className="mt-2 text-sm text-stone-500">
                 Miglior serie · best streak: <span className="font-bold text-inchiostro">{bestStreak}</span>
               </p>

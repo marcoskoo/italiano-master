@@ -54,7 +54,7 @@ export function ExamsView() {
         </button>
         <p className="mb-4 rounded-2xl border border-oro/30 bg-oro-tenue p-4 text-sm text-oro-scuro dark:text-oro">
           🏁 <strong>Esame di livello {examLevel}</strong>: 12 preguntas. Necesitas <strong>80%</strong> (10/12) para
-          obtener el certificado. Buonafortuna — <em>in bocca al lupo!</em>
+          obtener tu attestato de finalización. Buonafortuna — <em>in bocca al lupo!</em>
         </p>
         <QuizEngine
           exercises={examExercises}
@@ -65,7 +65,7 @@ export function ExamsView() {
           skill="grammatica"
           onFinish={(score, total) => {
             if (score / Math.max(1, total) >= 0.8) {
-              addCertificate({ id: `cert-${examLevel}`, level: examLevel, date: new Date().toISOString(), score: Math.round((score / total) * 100), label: `Certificato di completamento · Livello ${examLevel}` });
+              addCertificate({ id: `cert-${examLevel}`, level: examLevel, date: new Date().toISOString(), score: Math.round((score / total) * 100), label: `Attestato di completamento · Corso livello ${examLevel} (QCER)` });
               addXp(200);
             }
           }}
@@ -110,7 +110,7 @@ export function ExamsView() {
                   <ScrollText className="h-5 w-5" aria-hidden="true" />
                 </span>
                 {locked ? null : certified ? (
-                  <span className="flex items-center gap-1 rounded-full bg-oro px-2.5 py-1 text-[10px] font-bold text-white">🏆 certificato</span>
+                  <span className="flex items-center gap-1 rounded-full bg-oro px-2.5 py-1 text-[10px] font-bold text-white">🏆 attestato</span>
                 ) : (
                   <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold text-muted-it dark:bg-inchiostro/15">{done}/{total} lezioni</span>
                 )}
@@ -125,13 +125,13 @@ export function ExamsView() {
 
       <div className="rounded-3xl border border-soft bg-surface p-6">
         <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-          <GraduationCap className="h-5 w-5 text-verde" aria-hidden="true" /> Come funziona la certificazione
+          <GraduationCap className="h-5 w-5 text-verde" aria-hidden="true" /> Come funzionano gli attestati
         </h2>
         <ol className="mt-4 grid gap-3 sm:grid-cols-3">
           {[
             ["1 · Estudia", "Completa las lecciones del nivel en Cursos."],
             ["2 · Examínate", "Supera el examen de nivel con 80% o más."],
-            ["3 · Certifica", "Descarga tu certificado con tu nombre y puntuación."],
+            ["3 · Descarga", "Recibe tu attestato con tu nombre y puntuación."],
           ].map(([t, d]) => (
             <li key={t} className="rounded-2xl bg-crema-scura p-4 dark:bg-inchiostro/10">
               <p className="font-bold">{t}</p>
@@ -140,8 +140,12 @@ export function ExamsView() {
           ))}
         </ol>
         <p className="mt-4 text-xs leading-relaxed text-muted-it">
-          Nota: los certificados de esta plataforma son motivacionales y no sustituyen las certificaciones
-          oficiales (CILS, CELI, PLIDA, Cert.it). Te preparan, eso sí, de maravilla para ellas.
+          <strong>Nota legale:</strong> los attestati de Políglota Master son <strong>constancias de finalización</strong> del
+          curso interno y de su examen — un reconocimiento motivacional de tu esfuerzo. <strong>No son certificaciones
+          lingüísticas oficiales</strong> ni títulos reconocidos por Estados, universidades o empleadores: para eso existen
+          CILS, CELI, PLIDA y Cert.it (exámenes oficiales con acreditación), a los que este curso te prepara de maravilla.
+          Los niveles A1–C2 se citan como referencia descriptiva del contenido según el Quadro Comune Europeo di
+          Riferimento (QCER), no como título otorgado. Más detalles en <em>Información legal</em>.
         </p>
       </div>
     </div>
@@ -155,7 +159,7 @@ function verificationCode(cert: { id: string; level: string; date: string }): st
   const s = `${cert.id}|${cert.level}|${cert.date}`;
   for (let i = 0; i < s.length; i++) h = ((h * 31) + s.charCodeAt(i)) >>> 0;
   const part = (n: number) => n.toString(36).toUpperCase().padStart(4, "0").slice(0, 4);
-  return `ITM-${part(h & 0xffff)}-${part((h >> 16) & 0xffff)}`;
+  return `PM-${part(h & 0xffff)}-${part((h >> 16) & 0xffff)}`;
 }
 
 export function CertificatesView() {
@@ -187,54 +191,63 @@ export function CertificatesView() {
     ctx.textAlign = "center";
     ctx.fillStyle = "#26221e";
     ctx.font = "600 54px Georgia, serif";
-    ctx.fillText(verified ? "ITALIANO MASTER · PLATINUM" : "ITALIANO MASTER", 800, 220);
+    ctx.fillText(verified ? "POLÍGLOTA MASTER · PLATINUM" : "POLÍGLOTA MASTER", 800, 220);
     ctx.font = "italic 34px Georgia, serif";
     ctx.fillStyle = "#0a5c38";
-    ctx.fillText("La tua strada da A1 a C2", 800, 272);
+    ctx.fillText("Il tuo percorso da A1 a C2", 800, 272);
 
     ctx.fillStyle = "#26221e";
     ctx.font = "30px Georgia, serif";
-    ctx.fillText("si certifica che", 800, 380);
+    ctx.fillText("attesta che", 800, 380);
     ctx.font = "bold 76px Georgia, serif";
     ctx.fillText(userName, 800, 470);
     ctx.font = "30px Georgia, serif";
-    ctx.fillText("ha completato con successo il livello", 800, 550);
+    ctx.fillText("ha completato con successo il corso di livello", 800, 550);
     ctx.font = "bold 150px Georgia, serif";
     ctx.fillStyle = "#128a54";
     ctx.fillText(cert.level, 800, 730);
     ctx.fillStyle = "#26221e";
     ctx.font = "28px Georgia, serif";
     ctx.fillText(`punteggio: ${cert.score}% · ${new Date(cert.date).toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" })}`, 800, 800);
+    ctx.font = "22px Georgia, serif";
+    ctx.fillStyle = "#6b6459";
+    ctx.fillText("Corso interno di Políglota Master · livello di riferimento QCER", 800, 840);
 
     if (verified) {
       // cita un poco más arriba
       ctx.font = "italic 26px Georgia, serif";
       ctx.fillStyle = "#6b6459";
-      ctx.fillText("“Impara l'italiano come si impara una canzone”", 800, 872);
-      // banda verificada
+      ctx.fillText("“Impara l'italiano come si impara una canzone”", 800, 892);
+      // banda con codice di verifica interna (v9.34: wording legal)
       const grd = ctx.createLinearGradient(300, 0, 1300, 0);
       grd.addColorStop(0, "#c9862b"); grd.addColorStop(0.5, "#f0c558"); grd.addColorStop(1, "#c9862b");
       ctx.fillStyle = grd;
-      ctx.fillRect(320, 902, 960, 46);
+      ctx.fillRect(320, 918, 960, 42);
       ctx.fillStyle = "#26221e";
-      ctx.font = "bold 24px Georgia, serif";
-      ctx.fillText("✔ CERTIFICATO VERIFICATO · ITALIANO MASTER PLATINUM", 800, 934);
+      ctx.font = "bold 22px Georgia, serif";
+      ctx.fillText("ATTESTATO DI COMPLETAMENTO · CODICE DI VERIFICA INTERNA", 800, 947);
       ctx.fillStyle = "#9c6512";
       ctx.font = "21px monospace";
-      ctx.fillText(`Codice di verifica: ${code}`, 800, 986);
+      ctx.fillText(`Codice interno: ${code}`, 800, 994);
       ctx.fillStyle = "#6b6459";
       ctx.font = "22px Georgia, serif";
-      ctx.fillText("Marco · Tutor IA · Políglota Master LMS", 800, 1030);
+      ctx.fillText("Políglota Master · LMS gratuito", 800, 1030);
     } else {
       ctx.font = "italic 26px Georgia, serif";
       ctx.fillStyle = "#6b6459";
       ctx.fillText("“Impara l'italiano come si impara una canzone”", 800, 900);
       ctx.font = "22px Georgia, serif";
-      ctx.fillText("Marco · Tutor IA · Políglota Master LMS", 800, 970);
+      ctx.fillText("Políglota Master · LMS gratuito", 800, 950);
     }
 
+    // v9.34 · disclaimer legal impreso en el propio attestato (ambas variantes)
+    ctx.fillStyle = "#8a8274";
+    ctx.font = "20px Georgia, serif";
+    ctx.fillText("Attestato di completamento del corso interno — non costituisce certificazione linguistica ufficiale", 800, 1064);
+    ctx.fillText("(per titoli validi a fini pubblici: CILS, CELI, PLIDA, Cert.it e altri esami accreditati)", 800, 1094);
+
     const link = document.createElement("a");
-    link.download = `certificato-italiano-${cert.level}${verified ? "-verificato" : ""}.png`;
+    link.download = `attestato-italiano-${cert.level}${verified ? "-verificato" : ""}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
@@ -258,10 +271,11 @@ export function CertificatesView() {
 
   return (
       <div className="mx-auto max-w-lg rounded-3xl border border-soft bg-surface p-8 text-center">
-        <p className="text-5xl" aria-hidden="true">🏆</p>
-        <h2 className="mt-4 font-display text-2xl font-semibold">Nessun certificato ancora</h2>
+        {/* v9.34 · Pappagallo con pose study en el estado vacío */}
+        <img src="/mascot/study.webp" alt="" aria-hidden="true" loading="lazy" className="mx-auto h-24 w-24 rounded-full border-2 border-soft bg-crema object-cover shadow-sm" />
+        <h2 className="mt-4 font-display text-2xl font-semibold">Nessun attestato ancora</h2>
         <p className="mt-2.5 text-sm leading-relaxed text-muted-it">
-          Supera un examen de nivel (80% o más) y tu certificado aparecerá aquí, listo para
+          Supera un examen de nivel (80% o más) y tu attestato de finalización aparecerá aquí, listo para
           descargar en PNG con tu nombre y puntuación.
         </p>
         <button onClick={() => navigate("esami")} className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03]">
@@ -286,20 +300,20 @@ export function CertificatesView() {
             <div className="relative bg-gradient-to-br from-crema to-crema-scura p-8 text-center">
               <div className="absolute inset-x-6 top-0 h-1.5 bg-gradient-to-r from-verde via-white to-rosso" aria-hidden="true" />
               <p className="mt-3 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted-it">Políglota Master · LMS{verified ? " · PLATINUM" : ""}</p>
-              <p className="mt-4 text-sm text-muted-it">si certifica che</p>
+              <p className="mt-4 text-sm text-muted-it">attesta che</p>
               <p className="font-display text-3xl font-semibold">{userName}</p>
-              <p className="mt-1.5 text-sm text-muted-it">ha completato il livello</p>
+              <p className="mt-1.5 text-sm text-muted-it">ha completato il corso di livello</p>
               <p className="font-display text-6xl font-bold text-verde-scuro dark:text-verde">{cert.level}</p>
               <p className="mt-2 text-sm font-bold text-oro-scuro dark:text-oro">🏆 {cert.score}% · {new Date(cert.date).toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" })}</p>
               {verified && (
                 <p className="mt-3 inline-flex items-center gap-1.5 rounded-full plan-gold-bg px-4 py-1.5 text-[10px] font-bold text-white shadow">
-                  <ShieldCheck className="h-3 w-3" aria-hidden="true" /> VERIFICATO · {verificationCode(cert)}
+                  <ShieldCheck className="h-3 w-3" aria-hidden="true" /> VERIFICA INTERNA · {verificationCode(cert)}
                 </p>
               )}
             </div>
             <div className="flex items-center justify-between gap-3 p-4">
               <span className="flex items-center gap-2 text-xs font-bold text-muted-it">
-                <Award className="h-4 w-4 text-oro" aria-hidden="true" /> {verified ? "Certificato verificato PLATINUM" : "Certificato di completamento"}
+                <Award className="h-4 w-4 text-oro" aria-hidden="true" /> {verified ? "Attestato PLATINUM · verifica interna" : "Attestato di completamento"}
               </span>
               <button
                 onClick={() => download(cert)}
@@ -486,7 +500,7 @@ export function SettingsView() {
     const state = useLms.getState();
     const srsWords = Object.keys(state.srs).map((id) => VOCAB_BY_ID[id]).filter(Boolean);
     const data = {
-      pack: "ITALIANO MASTER · PLATINUM Offline Pack",
+      pack: "POLÍGLOTA MASTER · PLATINUM Offline Pack",
       version: 1,
       exportedAt: new Date().toISOString(),
       user: { name: state.userName, level: state.level, xp: state.xp, plan: state.plan.toUpperCase() },

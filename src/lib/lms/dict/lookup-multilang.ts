@@ -7,7 +7,7 @@ import { lookupWordFr } from "./lookup-fr";
 import { lookupWordDe } from "./lookup-de";
 
 /* ═══ Despacho de lookup por lengua de estudio (v9.17→v9.24) ══════
-   `it` usa el lematizador italiano original (8.022 lemas).
+   `it` usa el lematizador italiano original (8.031 lemas).
    `en` el americano; `pt` el portugués europeo; `fr` el francés
    (v9.23, con elisiones y contracciones) y `de` el alemán (v9.24,
    con artículos despojados y declinación de caso).                    */

@@ -9,6 +9,7 @@ import { weakTopics, TOPIC_LABELS } from "@/lib/lms/adaptive";
 import { exercisesByTopic } from "@/lib/lms/exercises";
 import { QuizEngine } from "../quiz-engine";
 import { FlashcardSession } from "../flashcards";
+import { Mascot } from "../mascot";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Repaso inteligente ────────────────────────────────────── */
@@ -85,13 +86,17 @@ export function ReviewView() {
       {/* sesión de repaso */}
       <section className="rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue to-surface p-6 dark:from-verde-tenue/30">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 className="font-display text-2xl font-semibold">Sessione di ripasso</h2>
-            <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-muted-it">
-              {due.length > 0
-                ? `Tienes ${due.length} tarjetas vencidas. El algoritmo SM-2 ha decidido que hoy es el día perfecto para repasarlas.`
-                : "Nessuna carta dovuta: ¡bien hecho! Añade palabras desde Vocabulario o Diccionario."}
-            </p>
+          <div className="flex items-center gap-4">
+            {/* v9.34 · Pappagallo estudia contigo */}
+            {due.length === 0 && <Mascot pose="study" className="hidden h-16 w-16 shrink-0 sm:block" />}
+            <div>
+              <h2 className="font-display text-2xl font-semibold">Sessione di ripasso</h2>
+              <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-muted-it">
+                {due.length > 0
+                  ? `Tienes ${due.length} tarjetas vencidas. El algoritmo SM-2 ha decidido que hoy es el día perfecto para repasarlas.`
+                  : "Nessuna carta dovuta: ¡bien hecho! Añade palabras desde Vocabulario o Diccionario."}
+              </p>
+            </div>
           </div>
           <button
             onClick={() => setMode("flashcards")}

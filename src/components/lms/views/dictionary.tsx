@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowLeft, ArrowRight, BookA, Gauge, Info, Link2, Search, Sparkles, Star, Waves } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Gauge, Info, Link2, Search, Sparkles, Star, Waves } from "lucide-react";
 import {
   CEFR_VOCAB_TARGETS, searchDictionary,
 } from "@/lib/lms/dict/dictionary";
@@ -14,6 +14,7 @@ import { useLms } from "@/lib/lms/store";
 import { newCard } from "@/lib/lms/srs";
 import { AudioButton } from "../audio-button";
 import { FlashcardSession } from "../flashcards";
+import { Mascot } from "../mascot";
 import { useUi } from "@/lib/lms/ui";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +30,7 @@ const ALL_TYPES = ["sostantivo", "verbo", "aggettivo", "avverbio", "espressione"
 const PAGE = 60;
 
 /* v9.17→v9.24 · diccionario por lengua vía despacho central
-   (dict/active.ts): it → DICTIONARY/VOCAB (8.022 lemas); en → EN_DICT;
+   (dict/active.ts): it → DICTIONARY/VOCAB (8.031 lemas); en → EN_DICT;
    pt → PT_DICT; fr → FR_DICT (v9.23); de → DE_DICT (v9.24). Sin
    ternarios locales: una sola fuente para todas las vistas.     */
 
@@ -468,7 +469,8 @@ export function DictionaryView() {
       <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
         {results.length === 0 && (
           <div className="col-span-full rounded-3xl border border-soft bg-surface p-8 text-center">
-            <BookA className="mx-auto h-8 w-8 text-muted-it" aria-hidden="true" />
+            {/* v9.34 · Pappagallo busca contigo en el estado vacío */}
+            <Mascot pose="study" className="mx-auto h-20 w-20" />
             <p className="mt-3 font-display text-xl font-semibold">{u.dizionario.empty}</p>
             <p className="mt-1.5 text-sm text-muted-it">
               {u.dizionario.emptyHint(localStats.total)}

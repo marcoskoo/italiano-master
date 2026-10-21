@@ -7,7 +7,7 @@
    · /api/* → solo red (nunca se cachea el backend)
    · Web Push (v9.0): recordatorios diarios vía VAPID          */
 
-const VERSION = "im-v9-33-0";
+const VERSION = "im-v9-34-0";
 const CACHE = `italiano-master-${VERSION}`;
 
 const PRECACHE = [
@@ -20,6 +20,8 @@ const PRECACHE = [
   "/icon-512.png",
   "/icon-dark-192.png",
   "/mascot/study.webp",
+  "/mascot/hello.webp",
+  "/mascot/party.webp",
 ];
 
 self.addEventListener("install", (event) => {

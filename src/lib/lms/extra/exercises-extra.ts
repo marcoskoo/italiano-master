@@ -218,4 +218,15 @@ export const EXERCISES_EXTRA: Exercise[] = [
     options: ["sia", "sò", "sono", "fui"], answer: 0, explain: "che io sia, che tu sia, che lui sia…" },
   { id: "ex-verb-006", type: "fill", level: "B1", topic: "passato", prompt: "“dire”, imperfetto loro: ___",
     sentence: "Ieri i bambini ___ sempre la stessa cosa. (dire, loro)", accepted: ["dicevano"], explain: "imperfetto: dicevano (io dicevo, tu dicevi…)." },
+
+  /* ═══ v9.34 · Países, gentilicios y profesiones (u-a1-1b · kit de identidad MCER) ═══ */
+  { id: "ex-a1-052", type: "mc", level: "A1", topic: "vocabolario", prompt: "¿Cómo se dice «Soy peruana»?",
+    options: ["Sono peruviana.", "Sono Perù.", "Vengo peruviana.", "Sono di peruviana."], answer: 0, explain: "El gentilizio es un adjetivo que concuerda: peruviano/peruviana. Perù es el país, no la nacionalidad." },
+  { id: "ex-a1-053", type: "translate", level: "A1", topic: "domande", prompt: "Traduce al italiano: «¿De dónde eres?»", to: "it", source: "¿De dónde eres?",
+    accepted: ["di dove sei", "di dove sei tu", "tu di dove sei"], explain: "Informal: Di dove sei? · Formal: Di dov'è (Lei)? · Responder: Sono di + ciudad." },
+  { id: "ex-a1-054", type: "mc", level: "A1", topic: "vocabolario", prompt: "Completa: «Mia sorella è ___ (nacionalidad: inglesa)»",
+    options: ["inglese", "inghilterra", "inglesa", "inglesi"], answer: 0, explain: "inglese es invariable en género (m. y f.); Inghilterra es el país." },
+  { id: "ex-a1-055", type: "mc", level: "A1", topic: "vocabolario", prompt: "«Che lavoro fai?» — ¿Qué respuesta es correcta?",
+    options: ["Sono insegnante.", "Sono l'insegnante.", "Sono insegnamento.", "Faccio insegnante."], answer: 0, explain: "Con essere las profesiones van SIN artículo: Sono medico / Sono insegnante. (Con fare sí llevan artículo: Faccio l'insegnante.)" },
+  { id: "ex-a1-056", type: "dictation", level: "A1", topic: "ascolto", prompt: "Escucha y escribe lo que oyes.", text: "Sono di Lima, in Perù.", es: "Soy de Lima, en Perú." },
 ];

@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Eraser, Lightbulb, RotateCcw, Trophy, X } from "lucide-react";
+import { Check, Eraser, Lightbulb, RotateCcw, X } from "lucide-react";
 import type { Exercise, LangCode } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { useUi } from "@/lib/lms/ui";
 import { speak } from "@/lib/lms/tts";
 import { AudioButton, VoiceHint } from "./audio-button";
+import { Mascot } from "./mascot";
 import { cn } from "@/lib/utils";
 
 /* ── Motor de ejercicios con feedback de pulso de color ──────────── */
@@ -119,9 +120,8 @@ export function QuizEngine({ exercises, title, kind = "prueba", label, onFinish,
         className="mx-auto max-w-lg rounded-3xl border border-soft bg-surface p-8 text-center shadow-sm"
         aria-live="polite"
       >
-        <div className={cn("mx-auto flex h-20 w-20 items-center justify-center rounded-full", passed ? "bg-verde-tenue" : "bg-rosso-tenue")}>
-          <Trophy className={cn("h-9 w-9", passed ? "text-verde" : "text-rosso")} aria-hidden="true" />
-        </div>
+        {/* v9.34 · Pappagallo celebra (o anima a repetir) al terminar */}
+        <Mascot pose={passed ? "party" : "study"} className="mx-auto h-24 w-24" />
         <h3 className="mt-4 font-display text-2xl font-semibold">{passed ? u.quiz.great : u.quiz.almost}</h3>
         <p className="mt-2 text-muted-it">
           {u.quiz.scoreLine(score, exercises.length, pct)}

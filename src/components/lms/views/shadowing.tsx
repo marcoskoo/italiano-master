@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useLms } from "@/lib/lms/store";
 import { AudioButton } from "../audio-button";
+import { Mascot } from "../mascot";
 import { cn } from "@/lib/utils";
 import {
   SHADOW_PHRASES, ORAL_TASKS, scoreSpeech, shadowVerdict, type ShadowScore,
@@ -383,6 +384,8 @@ function FrasiTab({ canRecognize, recognitionCtor, addXp, trackQuest, defaultLev
                   )}
                 >
                   <p className="font-display text-4xl font-bold">{score.score}%</p>
+                  {/* v9.34 · Pappagallo reacciona a tu pronunciación */}
+                  <Mascot pose={verdict.tone === "rosso" ? "study" : "party"} className="mx-auto mt-2 h-16 w-16" />
                   <p className="mt-1 text-sm font-bold">{verdict.label}</p>
                   <p className="mt-1 text-xs text-muted-it">{verdict.msg}</p>
                   <p className="mt-2 truncate rounded-lg bg-white/60 px-3 py-1.5 font-mono text-[11px] text-muted-it dark:bg-black/20" title={score.heard}>

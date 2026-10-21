@@ -12,7 +12,7 @@ import type { ViewId } from "@/lib/lms/types";
 import { cn } from "@/lib/utils";
 
 /* ── Ricerca globale (v8.0) · paleta Ctrl+K / ⌘K ────────────────────
-   Busca en tiempo real: secciones de la app, 8.022 lemas del diccionario
+   Busca en tiempo real: secciones de la app, 8.031 lemas del diccionario
    y temas de gramática. 100% local: sin red, sin índices externos.     */
 
 interface Hit {

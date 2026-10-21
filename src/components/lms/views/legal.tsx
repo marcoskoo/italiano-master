@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Scale, ShieldCheck, Cookie, FileText, Accessibility, Trash2, Download, CheckCircle2,
-  AlertTriangle, Eye, Clock, Lock, Globe2, UserCheck,
+  AlertTriangle, Eye, Clock, Lock, Globe2, UserCheck, Award,
 } from "lucide-react";
 import { useLms } from "@/lib/lms/store";
 import { getSessionToken } from "@/lib/lms/remote";
@@ -17,9 +17,9 @@ import { cn } from "@/lib/utils";
    local) y analítica anónima OPT-IN (telemetría desactivable desde
    aquí y desde el Panel Admin).                                        */
 
-const TOS_VERSION = "2026-10-19.1";
+const TOS_VERSION = "2026-10-22.1";
 
-type TabId = "centro" | "privacidad" | "terminos" | "cookies" | "seguridad" | "accesibilidad";
+type TabId = "centro" | "privacidad" | "terminos" | "cookies" | "seguridad" | "accesibilidad" | "certificados";
 const TABS: { id: TabId; label: string; icon: typeof Scale }[] = [
   { id: "centro", label: "Centro de privacidad", icon: Scale },
   { id: "privacidad", label: "Política de privacidad", icon: FileText },
@@ -27,6 +27,7 @@ const TABS: { id: TabId; label: string; icon: typeof Scale }[] = [
   { id: "cookies", label: "Cookies", icon: Cookie },
   { id: "seguridad", label: "Seguridad", icon: ShieldCheck },
   { id: "accesibilidad", label: "Accesibilidad", icon: Accessibility },
+  { id: "certificados", label: "Certificados y titulación", icon: Award },
 ];
 
 function Doc({ title, updated, children }: { title: string; updated: string; children: React.ReactNode }) {
@@ -458,6 +459,65 @@ export function LegalView() {
           <p>
             Si encuentras una barrera, repórtala por el canal de soporte: la corregimos en el siguiente ciclo. La
             accesibilidad se audita en cada versión mayor.
+          </p>
+        </Doc>
+      )}
+
+      {/* ═══ CERTIFICADOS Y TITULACIÓN (v9.34) ═══ */}
+      {tab === "certificados" && (
+        <Doc title="Certificados y titulación · Qué son y qué no son" updated={TOS_VERSION}>
+          <h3>1 · Qué emite esta plataforma</h3>
+          <p>
+            Al superar el examen interno de un nivel (80% o más), la plataforma emite un <strong>attestato di
+            completamento</strong>: una <strong>constancia de finalización</strong> en formato PNG que documenta que la
+            persona usuaria completó el curso de ese nivel y aprobó su examen interno, con la puntuación obtenida y la
+            fecha. Es un reconocimiento motivacional del trabajo realizado, emitido electrónicamente y descargable
+            desde la sección <em>Attestati</em>.
+          </p>
+          <h3>2 · Qué NO son</h3>
+          <ul>
+            <li><strong>No son certificaciones lingüísticas oficiales:</strong> no están emitidas ni acreditadas por ningún Estado, ministerio, universidad o entidad certificadora reconocida.</li>
+            <li><strong>No son títulos académicos:</strong> no otorgan créditos, ni puntos en oposiciones/concursos, ni equivalencias con estudios oficiales de idiomas (p. ej. Escuelas Oficiales de Idiomas).</li>
+            <li><strong>No sirven como requisito formal:</strong> no son válidos para visados, admisiones universitarias, homologaciones ni ningún procedimiento que exija un certificado oficial de competencia lingüística.</li>
+            <li><strong>No verifican identidad:</strong> el nombre que figura en el attestato es el que la persona usuaria escribió en su perfil; la plataforma no realiza verificación de identidad ni supervisión del examen.</li>
+          </ul>
+          <h3>3 · Uso del MCER/QCER</h3>
+          <p>
+            Los niveles A1–C2 se emplean como <strong>referencia descriptiva del contenido</strong> del curso, siguiendo
+            el Marco Común Europeo de Referencia para las lenguas (Consejo de Europa, 2001 · Volumen complementario,
+            2020). El MCER es un marco descriptivo público, no un título: <strong>nadie puede "certificar" un nivel
+            MCER</strong> sin un examen oficial acreditado. Los attestati citan el nivel del curso, no declaran una
+            competencia certificada.
+          </p>
+          <h3>4 · El código de los attestati PLATINUM</h3>
+          <p>
+            Los attestati del plan PLATINUM incluyen un código alfanumérico. Es un código de <strong>verificación
+            interna</strong> (un resumen criptográfico de los datos del attestato generado en tu dispositivo), útil para
+            distinguir una descarga original de una editada. <strong>No</strong> es un sello de un tercero ni un
+            registro público: ninguna entidad externa valida ese código.
+          </p>
+          <h3>5 · Si necesitas un certificado oficial</h3>
+          <p>
+            Para un título con validez oficial, preséntate a un examen acreditado. Referencias por idioma:
+          </p>
+          <ul>
+            <li><strong>Italiano:</strong> CILS (Università per Stranieri di Siena), CELI (Università per Stranieri di Perugia), PLIDA (Società Dante Alighieri), CERT.IT (Università Roma Tre).</li>
+            <li><strong>Español:</strong> DELE y SIELE (Instituto Cervantes).</li>
+            <li><strong>Francés:</strong> DELF y DALF (France Éducation international).</li>
+            <li><strong>Alemán:</strong> Goethe-Zertifikat (Goethe-Institut), TestDaF, telc Deutsch.</li>
+            <li><strong>Portugués:</strong> CAPLE (Universidade de Lisboa): CIPLE, DEPLE, DIPLE…</li>
+            <li><strong>Inglés:</strong> Cambridge English (B2 First, C1 Advanced…), IELTS, TOEFL, Duolingo English Test.</li>
+          </ul>
+          <p>
+            Los cursos de Políglota Master están diseñados como preparación de esos exámenes: el módulo
+            <em> Preparazione CILS</em> reproduce estructura, estrategias y simulacros cronometrados del CILS.
+          </p>
+          <h3>6 · Uso honesto en tu CV</h3>
+          <p>
+            Puedes mencionar tus attestati en un currículum o perfil profesional como evidencia de estudio y
+            constancia, indicando siempre su naturaleza: <em>"certificado de finalización de curso online"</em>. No lo
+            presentes como certificación oficial de nivel: atribuirle una validez que no tiene podría perjudicarte
+            ante un seleccionador y, en algunos países, configurar una declaración engañosa.
           </p>
         </Doc>
       )}

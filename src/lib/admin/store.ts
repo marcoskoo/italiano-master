@@ -99,22 +99,36 @@ export function randomDemoPasswordHash(): string {
        repo público (en forma legacy SHA-256 o ya migrada a scrypt): se
    impone scrypt(ADMIN_PASSWORD). Tras ello, el marcador garantiza que
    NUNCA más se toca el hash desde aquí — los cambios de contraseña
-   posteriores se hacen solo desde el Panel Admin.                    */
+   posteriores se hacen solo desde el Panel Admin.
+
+   v9.34 · Recuperación V2: el marcador original ya estaba puesto y el
+   valor de ADMIN_PASSWORD cambió después (la contraseña real quedó
+   desconocida para el propietario). Se repite la MISMA rotación one-time
+   bajo un marcador NUEVO: si el hash actual no coincide con la env, se
+   impone scrypt(ADMIN_PASSWORD) y se marca adminPwRecoveredV2. El
+   propietario recibe la credencial y, a partir de ahí, la contraseña
+   solo se cambia desde el Panel Admin.                             */
 const KEY_ADMIN_PW_ROTATED = "adminPwRotated";
+const KEY_ADMIN_PW_RECOVERED_V2 = "adminPwRecoveredV2"; // v9.34
 export function rotateLeakedAdminPassword(d: StoreData): boolean {
   const envPw = process.env.ADMIN_PASSWORD;
   if (!envPw || envPw.length < 8) return false;
   const idx = d.users.findIndex((u) => u.role === "admin");
   if (idx === -1) return false;
-  if (d.settings.some((s) => s.key === KEY_ADMIN_PW_ROTATED)) return false; // ya gestionada
+  // v2 (v9.34): one-time de nuevo — el marcador nuevo gobierna; si ya
+  // está puesto, el hash se considera gestionado y no se vuelve a tocar.
+  if (d.settings.some((s) => s.key === KEY_ADMIN_PW_RECOVERED_V2)) return false;
   const matches = verifyPassword(d.users[idx].passwordHash, d.users[idx].username, envPw).ok;
   if (!matches) {
-    // el hash guardado NO es el de ADMIN_PASSWORD → era el password filtrado
-    // (legacy o scrypt): se rota.
+    // el hash guardado NO es el de ADMIN_PASSWORD → rotación (v2):
+    // se impone scrypt(ADMIN_PASSWORD).
     d.users[idx].passwordHash = scryptHash(envPw);
   }
-  d.settings.push({ key: KEY_ADMIN_PW_ROTATED, value: new Date().toISOString() });
-  return true; // hay que persistir (hash y/o marcador)
+  if (!d.settings.some((s) => s.key === KEY_ADMIN_PW_ROTATED)) {
+    d.settings.push({ key: KEY_ADMIN_PW_ROTATED, value: new Date().toISOString() });
+  }
+  d.settings.push({ key: KEY_ADMIN_PW_RECOVERED_V2, value: new Date().toISOString() });
+  return true; // hay que persistir (hash y/o marcadores)
 }
 
 /* ── semilla para despliegues nuevos ────────────────────────────────── */

@@ -10,6 +10,7 @@ import { ACHIEVEMENTS, ACHIEVEMENT_CATS, achievementState } from "@/lib/lms/ques
 import type { AchievementCat } from "@/lib/lms/quests";
 import { weakTopics, topicStats } from "@/lib/lms/adaptive";
 import { COURSES, totalLessons } from "@/lib/lms/courses";
+import { Mascot } from "../mascot";
 import { PLANS, planLimits } from "@/lib/lms/plans";
 import { useUi } from "@/lib/lms/ui";
 import { LockedFeatureCard } from "../plan-badge";
@@ -256,9 +257,13 @@ export function ProgressView() {
 
       {/* logros (v6.0 · con progreso por categoría) */}
       <section className="rounded-3xl border border-soft bg-surface p-6">
-        <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-          <Award className="h-5 w-5 text-terracotta" aria-hidden="true" /> {u.progress.achTitle(achUnlocked, ACHIEVEMENTS.length)}
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
+            <Award className="h-5 w-5 text-terracotta" aria-hidden="true" /> {u.progress.achTitle(achUnlocked, ACHIEVEMENTS.length)}
+          </h2>
+          {/* v9.34 · Pappagallo celebra los logros */}
+          <Mascot pose="hello" className="h-14 w-14" />
+        </div>
         <p className="mt-1 text-sm text-muted-it">{u.progress.achIntro}</p>
         <div className="mt-5 space-y-6">
           {(Object.keys(ACHIEVEMENT_CATS) as AchievementCat[]).map((cat) => {

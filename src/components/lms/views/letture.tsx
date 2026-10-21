@@ -18,6 +18,7 @@ import { LETTURE, LETTURE_CATS, LETTURE_BY_ID, LETTURE_IMG, letturaExercises, ty
 import type { CefrLevel } from "@/lib/lms/types";
 import { QuizEngine } from "../quiz-engine";
 import { VoiceHint } from "../audio-button";
+import { Mascot } from "../mascot";
 import { HoverWords } from "../hover-words";
 import { MindCollection } from "../mind-library";
 
@@ -292,7 +293,9 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
         />
         {result && (
           <div className="mt-5 rounded-2xl border border-verde/40 bg-verde-tenue p-5 text-center">
-            <p className="font-display text-lg font-bold">
+            {/* v9.34 · Pappagallo celebra la lectura completada */}
+            <Mascot pose="party" className="mx-auto h-16 w-16" />
+            <p className="mt-2 font-display text-lg font-bold">
               {result.score}/{result.total} · Lettura completata! {result.coins > 0 ? <>+{result.coins} <Coins className="inline h-4 w-4 text-oro" aria-hidden="true" /></> : null}
             </p>
             <p className="mt-1 text-sm text-muted-it">Rileggi il testo o continua con le idee per discutere qui sotto.</p>
