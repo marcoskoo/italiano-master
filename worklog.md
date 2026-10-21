@@ -1464,3 +1464,19 @@ Work Log:
 
 Stage Summary:
 - v9.29: las 90 noticias del Radiogiornale (5 lenguas) tienen ahora su ilustración de cabecera propia — en la tarjeta de la biblioteca y como hero del Reader, imitando la foto de cabecera de cada artículo de VOA Learning English. 90 WebP vectoriales-editoriales generadas con IA (1008×576, 51 KB prom., 4,45 MB total), sin texto dentro de la imagen, con fallback elegante por categoría si un archivo no carga. Coste 0 €, sin assets externos.
+
+---
+Task ID: 1 (v9.30)
+Agent: main (Super Z)
+Task: Petición del usuario: reemplazar las ilustraciones vectoriales de las noticias por imágenes realistas.
+
+Work Log:
+- Reescritos los 90 prompts a escenas FOTOGRAFIABLES (scripts/news-prompts.json): eliminadas las metáforas irreales del estilo vectorial (billete-puente, reloj en el cielo, mapa de dialectos…) y sustituidas por escenas de fotoperiodismo directo (vasos de espresso humeantes en mármol, fado a la luz de velas, cohete al amanecer con espectadores, glaciar con investigadores, Holstentor reflejado…). Sufijo de estilo: «professional photojournalism, photorealistic, natural lighting, candid documentary style, no text, no words, no readable signs».
+- scripts/ se había limpiado entre sesiones (gitignored): recreados gen_news_images.py (v3, throttle ≥15s, 3 workers, backoff 45/90/150s, reanudable) y compress_news.py (q78 para fotos). Rollback de las vectoriales disponible en git (0c9cefd).
+- Generación: 90/90 PNG 1344×768 realistas en 7 chunks síncronos (~30 min), 0 fallos. Compresión → public/news/*.webp 1008×576 q78: 6,76 MB total (77 KB prom.).
+- QA VLM muestra 5 (espresso IT, cohete EN, fado PT, bistrot FR, glaciar DE): las 5 «Realistic photo», 0 texto legible/gibberish, subjects fieles a la noticia.
+- Sin cambios de código en notizie.tsx (las rutas /news/{id}.webp son idénticas); sw.js im-v9-29-0 → im-v9-30-0 (el bump purga la runtime cache del SW con las imágenes vectoriales antiguas).
+- Verificación: npm run build OK (15/15). E2E agent-browser (dev :3000): IT biblioteca fotos nuevas 1008×576 cargadas (9/18 lazy-visible), reader C2-02 hero ✓ + captura; EN: 18/18 en-news, 9 cargadas; reader EN cohete ✓ + captura; móvil 390px scrollW=390 sin overflow. Capturas: upload/v930-{it-reader,en-reader}.png.
+
+Stage Summary:
+- v9.30: las 90 noticias del Radiogiornale usan ahora imágenes REALISTAS (fotoperiodismo IA) en lugar de ilustraciones vectoriales — mismo look de agencia de noticias de VOA Learning English. 90 WebP 1008×576 (77 KB prom., 6,76 MB), sin texto en imagen, mismos nombres de archivo (cero cambios de código) y SW bump para purgar caché. Coste 0 €.
