@@ -1,15 +1,18 @@
 "use client";
 
-/* ── Notizie · Radiogiornale per studenti (v9.25) ─────────────────────
+/* ── Notizie · Radiogiornale per studenti (v9.25 → v9.28) ───────────
    El método VOA Learning English (learningenglish.voanews.com) aplicado
-   al italiano, con texto y audio:
+   a la lengua de estudio, con texto y audio:
    1 · palabras clave ANTES de leer («Words in This Story»)
    2 · audio TTS a velocidad reducida, como VOA Special English
    3 · transcripción siempre visible + traducción ES conmutable
    4 · lectura sincronizada FRASE por frase con resaltado y auto-scroll
    5 · clic en cualquier frase para repetirla (sentence-level replay)
    6 · modo «solo audio»: escuchar antes de leer, como en la radio
-   7 · quiz de comprensión + debate con el Tutor IA                  */
+   7 · quiz de comprensión + debate con el Tutor IA
+   v9.28 · TODO el cromo de la vista sale del diccionario ui.news
+   (it/en/pt/fr/de): antes estaba hardcodeado en italiano y la sección
+   salía en italiano aunque la lengua de estudio fuera otra.        */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
@@ -19,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLms } from "@/lib/lms/store";
+import { useUi } from "@/lib/lms/ui";
 import { speak, stopSpeaking, onVoices, voicesFor, defaultVoiceFor, prettyVoiceName } from "@/lib/lms/tts";
 import { VoiceHint } from "../audio-button";
 import { HoverWords } from "../hover-words";
@@ -39,6 +43,13 @@ function startRate(level: CefrLevel): number {
   return NEWS_RATES.reduce((best, r) => (Math.abs(r.value - target) < Math.abs(best - target) ? r.value : best), NEWS_RATES[0].value);
 }
 
+/** «§…§» delimita el segmento que se renderiza en negrita (ui.news.methodIntro). */
+function rich(text: string) {
+  const p = text.split("§");
+  if (p.length !== 3) return text;
+  return <>{p[0]}<b>{p[1]}</b>{p[2]}</>;
+}
+
 export function NotizieView() {
   const [cat, setCat] = useState<NewsCat | "tutte">("tutte");
   const [level, setLevel] = useState<CefrLevel | "tutti">("tutti");
@@ -46,6 +57,8 @@ export function NotizieView() {
 
   const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
   const readingsRead = useLms((s) => s.readingsRead);
+  const u = useUi();
+  const langName = LANGS[activeLang].nativeName;
 
   /* v9.26 · paquete de noticias de la lengua activa (it/en/pt/fr/de) */
   const pool = NEWS_BY_LANG[activeLang] ?? NEWS_BY_LANG.it;
@@ -67,23 +80,19 @@ export function NotizieView() {
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-surface text-2xl shadow-sm">📻</span>
           <div className="min-w-0 flex-1">
             <h2 className="font-display text-lg font-bold leading-snug">
-              Radiogiornale per studenti · il metodo VOA
+              {u.news.methodTitle}
               <span className="ml-2 rounded-full bg-azzurro px-2 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wide text-white">A1–C2</span>
               <span className="ml-1.5 rounded-full border border-azzurro/30 bg-azzurro/10 px-2 py-0.5 align-middle text-[10px] font-bold text-azzurro-scuro dark:text-azzurro">
-                {LANGS[activeLang].flag} {LANGS[activeLang].name}
+                {LANGS[activeLang].flag} {langName}
               </span>
             </h2>
             <p className="mt-1 text-sm leading-relaxed text-muted-it">
-              Noticias adaptadas a tu nivel de <b>{LANGS[activeLang].name.toLowerCase()}</b>, como hace <b>Voice of America</b> para el inglés: texto y audio siempre juntos, velocidad a medida y comprensión al final.
+              {rich(u.news.methodIntro(langName))}
             </p>
           </div>
         </div>
         <ol className="mt-4 grid gap-3 sm:grid-cols-3">
-          {[
-            { n: 1, t: "Las palabras antes del texto", d: `«Words in This Story»: las palabras clave con audio, antes de leer. En ${LANGS[activeLang].name.toLowerCase()} y con traducción al español.` },
-            { n: 2, t: "Escucha a velocidad reducida", d: "Audio frase por frase como en la radio: reduce la velocidad (como VOA Special English) o escucha en modo «solo audio»." },
-            { n: 3, t: "Lee, sigue y responde", d: "Transcripción siempre visible con resaltado sincronizado; clic en una frase para repetirla. Quiz final." },
-          ].map((s) => (
+          {u.news.steps.map((st, i) => ({ n: i + 1, t: st.t, d: st.d(langName) })).map((s) => (
             <li key={s.n} className="rounded-2xl border border-soft bg-surface p-4">
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-it">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-azzurro text-white">{s.n}</span>
@@ -97,7 +106,7 @@ export function NotizieView() {
 
       {/* filtros */}
       <div className="flex flex-wrap gap-2">
-        <FilterChip active={cat === "tutte"} onClick={() => setCat("tutte")}>Tutte</FilterChip>
+        <FilterChip active={cat === "tutte"} onClick={() => setCat("tutte")}>{u.news.all}</FilterChip>
         {(Object.keys(NEWS_CATS) as NewsCat[]).map((c) => (
           <FilterChip key={c} active={cat === c} onClick={() => setCat(c)}>
             {NEWS_CATS[c].emoji} {newsCatLabel(c, activeLang)}
@@ -107,14 +116,14 @@ export function NotizieView() {
       <div className="flex flex-wrap gap-2">
         {LEVELS.map((l) => (
           <FilterChip key={l} active={level === l} onClick={() => setLevel(l)} small>
-            {l === "tutti" ? "MCER" : l}
+            {l === "tutti" ? u.news.cefr : l}
           </FilterChip>
         ))}
       </div>
 
       <p className="text-sm text-muted-it">
         <ListFilter className="mr-1 inline h-4 w-4" aria-hidden="true" />
-        {texts.length} notizie disponibili · audio sincronizzato frase per frase · quiz incluso
+        {u.news.count(texts.length)}
       </p>
 
       {/* tarjetas */}
@@ -135,13 +144,13 @@ export function NotizieView() {
               )}
             >
               {done && (
-                <span className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-verde text-white shadow-md" title="Completata">
+                <span className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-verde text-white shadow-md" title={u.news.completed}>
                   <Check className="h-4 w-4" aria-hidden="true" />
                 </span>
               )}
               <div className="p-5">
                 <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-it">
-                  {t.place} · edizione {t.level}
+                  {u.news.edition(t.place, t.level)}
                 </p>
                 <div className="mt-2.5 flex items-center justify-between gap-2">
                   <span className={cn("rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase", NEWS_CATS[t.cat].chip)}>
@@ -154,10 +163,10 @@ export function NotizieView() {
                 <p className="mt-3 font-display text-lg font-semibold leading-snug">{t.title}</p>
                 <p className="mt-1 text-sm italic text-muted-it">{t.titleEs}</p>
                 <p className="mt-2.5 text-xs text-muted-it">
-                  ~{w} parole · {t.minutes} min · {t.questions.length} domande
+                  {u.news.cardMeta(w, t.minutes, t.questions.length)}
                 </p>
                 <p className="mt-3 flex items-center gap-1.5 text-xs font-bold text-azzurro-scuro dark:text-azzurro">
-                  <Headphones className="h-3.5 w-3.5" aria-hidden="true" /> Ascolta con testo · {NEWS_RATES.length} velocità
+                  <Headphones className="h-3.5 w-3.5" aria-hidden="true" /> {u.news.listenCta(NEWS_RATES.length)}
                 </p>
               </div>
             </motion.button>
@@ -191,6 +200,7 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
   const trackQuest = useLms((s) => s.trackQuest);
   const markReadingDone = useLms((s) => s.markReadingDone);
   const navigate = useLms((s) => s.navigate);
+  const loc = useUi().news; /* v9.28 · cromo del reader en la lengua de estudio */
 
   const [rate, setRate] = useState(() => startRate(news.level));
   const [subs, setSubs] = useState(settingsSubs);
@@ -225,11 +235,12 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
   useEffect(() => () => { cancelRef.current?.(); stopSpeaking(); }, []);
 
   const voice = voiceIdx >= 0 && voices[voiceIdx] ? voices[voiceIdx] : null;
+  const defVoice = defaultVoiceFor(lang);
   const voiceLabel = voice
     ? prettyVoiceName(voice, lang)
     : voiceIdx === -1
-      ? prettyVoiceName(defaultVoiceFor(lang) ?? null, lang)
-      : "voce di sistema";
+      ? (defVoice ? prettyVoiceName(defVoice, lang) : loc.systemVoice)
+      : loc.systemVoice;
 
   const stopAll = useCallback(() => {
     cancelRef.current?.();
@@ -293,13 +304,13 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
     return (
       <div>
         <button onClick={() => setQuizOpen(false)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Torna alla notizia
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {loc.backToNews}
         </button>
         <QuizEngine
           exercises={newsExercises(news)}
-          title={`Comprensione · ${news.title}`}
+          title={loc.quizTitle(news.title)}
           kind="prueba"
-          label={`Notizia: ${news.title}`}
+          label={loc.quizLabel(news.title)}
           skill="lettura"
           xpPerCorrect={12}
           onFinish={onFinishQuiz}
@@ -307,11 +318,11 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
         {result && (
           <div className="mt-5 rounded-2xl border border-verde/40 bg-verde-tenue p-5 text-center">
             <p className="font-display text-lg font-bold">
-              {result.score}/{result.total} · Notizia completata! {result.coins > 0 ? <>+{result.coins} <Coins className="inline h-4 w-4 text-oro" aria-hidden="true" /></> : null}
+              {loc.quizDone(result.score, result.total)} {result.coins > 0 ? <>+{result.coins} <Coins className="inline h-4 w-4 text-oro" aria-hidden="true" /></> : null}
             </p>
-            <p className="mt-1 text-sm text-muted-it">Riascolta la notizia o continua con le idee per discutere qui sotto.</p>
+            <p className="mt-1 text-sm text-muted-it">{loc.quizDoneSub}</p>
             <button onClick={() => setQuizOpen(false)} className="mt-3 rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white">
-              Torna alla notizia
+              {loc.backToNews}
             </button>
           </div>
         )}
@@ -327,14 +338,14 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
   return (
     <div>
       <button onClick={() => { stopAll(); onBack(); }} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-azzurro">
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Tutte le notizie
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {loc.backToAll}
       </button>
 
       <article className="overflow-hidden rounded-3xl border border-soft bg-surface">
         <div className="p-5 sm:p-8">
           {/* cabecera estilo noticia */}
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-it">
-            📻 Radiogiornale per studenti · {news.place} · edizione {news.level}
+            {loc.dateline(news.place, news.level)}
           </p>
           <div className="mt-2.5 flex items-center justify-between gap-2">
             <span className={cn("rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase", catInfo.chip)}>
@@ -356,16 +367,16 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
           {/* palabras clave ANTES del texto (método VOA: Words in This Story) */}
           <div className="mt-5 rounded-2xl border border-oro/35 bg-oro-tenue/60 p-5 dark:bg-oro-tenue/20">
             <p className="text-xs font-bold uppercase tracking-widest text-oro-scuro dark:text-oro">
-              Parole per questa notizia
+              {loc.wordsTitle}
             </p>
-            <p className="mt-1 text-xs text-muted-it">Leggile e ascoltale prima del testo: come «Words in This Story» di VOA, ti preparano alla lettura.</p>
+            <p className="mt-1 text-xs text-muted-it">{loc.wordsIntro}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {news.words.map((w, i) => (
                 <button
                   key={i}
                   onClick={() => { trackQuest("listen"); speak(w.it, { lang, rate }); }}
                   className="group inline-flex items-center gap-1.5 rounded-full border border-oro/40 bg-surface px-3 py-1.5 text-xs font-semibold transition-all hover:border-oro hover:scale-105"
-                  title="Ascolta la pronuncia"
+                  title={loc.wordTip}
                 >
                   <Volume2 className="h-3 w-3 text-oro-scuro opacity-70 group-hover:opacity-100 dark:text-oro" aria-hidden="true" />
                   <span className="font-display italic">{w.it}</span>
@@ -380,28 +391,28 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
             <div className="flex flex-wrap items-center gap-2">
               {!playing ? (
                 <button onClick={() => playFrom(0)} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-azzurro px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-azzurro/25 transition-all hover:scale-105">
-                  <Play className="h-4 w-4" aria-hidden="true" /> Ascolta tutto
+                  <Play className="h-4 w-4" aria-hidden="true" /> {loc.playAll}
                 </button>
               ) : (
                 <button onClick={stopAll} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-rosso px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:scale-105">
-                  <Square className="h-4 w-4" aria-hidden="true" /> Ferma
+                  <Square className="h-4 w-4" aria-hidden="true" /> {loc.stop}
                 </button>
               )}
               <div className="flex items-center">
-                <button onClick={() => step(-1)} aria-label="Frase precedente" className="inline-flex h-11 w-9 items-center justify-center rounded-l-xl border-2 border-r-0 border-soft transition-colors hover:border-azzurro/50 hover:text-azzurro">
+                <button onClick={() => step(-1)} aria-label={loc.prevSentence} className="inline-flex h-11 w-9 items-center justify-center rounded-l-xl border-2 border-r-0 border-soft transition-colors hover:border-azzurro/50 hover:text-azzurro">
                   <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                 </button>
-                <button onClick={() => step(1)} aria-label="Frase successiva" className="inline-flex h-11 w-9 items-center justify-center rounded-r-xl border-2 border-soft transition-colors hover:border-azzurro/50 hover:text-azzurro">
+                <button onClick={() => step(1)} aria-label={loc.nextSentence} className="inline-flex h-11 w-9 items-center justify-center rounded-r-xl border-2 border-soft transition-colors hover:border-azzurro/50 hover:text-azzurro">
                   <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
-              <div className="flex items-center gap-1" role="group" aria-label="Velocità audio (metodo VOA)">
-                {NEWS_RATES.map((r) => (
+              <div className="flex items-center gap-1" role="group" aria-label={loc.speedsAria}>
+                {NEWS_RATES.map((r, ri) => (
                   <button
                     key={r.value}
                     onClick={() => setRate(r.value)}
                     aria-pressed={rate === r.value}
-                    title={r.label}
+                    title={loc.rates[ri] ?? r.label}
                     className={cn(
                       "rounded-lg border-2 px-2.5 py-1.5 text-xs font-bold transition-all",
                       rate === r.value ? "border-azzurro bg-azzurro/10 text-azzurro-scuro dark:text-azzurro" : "border-soft"
@@ -413,10 +424,10 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
               </div>
               <button
                 onClick={() => setVoiceIdx((v) => { const nv = v + 1; return nv >= voices.length ? -1 : nv; })}
-                title="Cambia voce del locutor"
+                title={loc.voiceChange}
                 className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-soft px-3 py-2 text-xs font-bold transition-all hover:border-azzurro/50"
               >
-                <Mic2 className="h-3.5 w-3.5 text-azzurro-scuro dark:text-azzurro" aria-hidden="true" /> Voce: {voiceLabel}
+                <Mic2 className="h-3.5 w-3.5 text-azzurro-scuro dark:text-azzurro" aria-hidden="true" /> {loc.voicePrefix} {voiceLabel}
               </button>
               <button
                 onClick={() => setMode(mode === "lettura" ? "ascolto" : "lettura")}
@@ -425,17 +436,21 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
                   "inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-bold transition-all",
                   mode === "ascolto" ? "border-azzurro bg-azzurro text-white shadow-md shadow-azzurro/25" : "border-soft hover:border-azzurro/50"
                 )}
-                title="Ascolta senza leggere, come alla radio (prima l'orecchio, poi gli occhi)"
+                title={loc.soloAudioTip}
               >
-                <Ear className="h-3.5 w-3.5" aria-hidden="true" /> Solo audio
+                <Ear className="h-3.5 w-3.5" aria-hidden="true" /> {loc.soloAudio}
               </button>
               <label className="ml-auto flex cursor-pointer items-center gap-2 text-xs font-semibold text-muted-it">
                 <input type="checkbox" checked={subs} onChange={(e) => setSubs(e.target.checked)} className="h-4 w-4 accent-[var(--azzurro)]" />
-                Traduzione ES
+                {loc.subsEs}
               </label>
             </div>
             <p className="mt-2 px-1 font-mono text-[10px] uppercase tracking-wider text-muted-it">
-              VOA style: {NEWS_RATES.find((r) => r.value === rate)?.label ?? `${rate}×`} · {flat.length} frasi · trascrizione {mode === "ascolto" ? "nascosta" : "visible"}
+              {loc.playerStatus(
+                loc.rates[NEWS_RATES.findIndex((r) => r.value === rate)] ?? NEWS_RATES.find((r) => r.value === rate)?.label ?? `${rate}×`,
+                flat.length,
+                mode === "ascolto"
+              )}
             </p>
           </div>
 
@@ -445,19 +460,19 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
               <Radio className={cn("mx-auto h-10 w-10 text-azzurro-scuro dark:text-azzurro", playing && "animate-pulse")} aria-hidden="true" />
               <p className="mt-3 font-display text-lg font-bold">
                 {playing
-                  ? <>Ascolto in corso · frase {(activeIdx ?? 0) + 1} di {flat.length}</>
+                  ? <>{loc.listening((activeIdx ?? 0) + 1, flat.length)}</>
                   : linePlaying !== null
-                    ? <>Frase {linePlaying + 1} di {flat.length}</>
-                    : <>Solo audio: prima l&apos;orecchio</>}
+                    ? <>{loc.sentenceOf(linePlaying + 1, flat.length)}</>
+                    : <>{loc.soloIntro}</>}
               </p>
               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-it">
-                La trascrizione resta nascosta, como en la radio de VOA: ascolta la noticia entera, luego vuelve a «Solo audio» para leer y seguir el texto frase por frase.
+                {loc.soloDesc}
               </p>
               <div className="mx-auto mt-4 h-2 w-full max-w-sm overflow-hidden rounded-full bg-inchiostro/10 dark:bg-inchiostro/20" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
                 <div className="h-full rounded-full bg-azzurro transition-all duration-500" style={{ width: `${progress}%` }} />
               </div>
               <button onClick={() => setMode("lettura")} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-azzurro px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-azzurro/25 transition-all hover:scale-105">
-                <BookOpen className="h-4 w-4" aria-hidden="true" /> Rivela il testo
+                <BookOpen className="h-4 w-4" aria-hidden="true" /> {loc.revealText}
               </button>
             </div>
           ) : (
@@ -475,7 +490,7 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
                           tabIndex={0}
                           onClick={() => toggleSentence(fi)}
                           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSentence(fi); } }}
-                          aria-label={`Ascoltare la frase ${fi + 1}`}
+                          aria-label={loc.sentenceAria(fi + 1)}
                           className={cn(
                             "cursor-pointer rounded-sm transition-colors",
                             active
@@ -493,7 +508,7 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
               ))}
               <p className="pt-1 text-center text-xs text-muted-it">
                 <Ear className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
-                Clic su una frase per ascoltarla · durante la lettura continua la frase attiva resta evidenziata
+                {loc.sentenceHint}
               </p>
             </div>
           )}
@@ -503,11 +518,11 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
             onClick={() => { stopAll(); setQuizOpen(true); }}
             className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-azzurro px-6 py-3 font-bold text-white shadow-lg shadow-azzurro/25 transition-all hover:scale-[1.01]"
           >
-            <BookOpen className="h-4 w-4" aria-hidden="true" /> Rispondi alle domande ({news.questions.length}) · +12 XP per risposta
+            <BookOpen className="h-4 w-4" aria-hidden="true" /> {loc.answerCta(news.questions.length)}
           </button>
 
           <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-wider text-muted-it">
-            Notizia adattata al livello {news.level} · contenuto originale a scopo didattico · metodo ispirato a VOA Learning English
+            {loc.footerNote(news.level)}
           </p>
         </div>
       </article>
@@ -515,10 +530,10 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
       {/* debate */}
       <section className="mt-6 rounded-3xl border border-oro/30 bg-oro-tenue/50 p-6 dark:bg-oro-tenue/20">
         <h3 className="flex items-center gap-2 font-display text-xl font-semibold">
-          <Lightbulb className="h-5 w-5 text-oro-scuro dark:text-oro" aria-hidden="true" /> Idee per discutere
+          <Lightbulb className="h-5 w-5 text-oro-scuro dark:text-oro" aria-hidden="true" /> {loc.discussTitle}
         </h3>
         <p className="mt-1.5 text-sm text-muted-it">
-          Usa estas preguntas para pensar, escribir o hablar. Cada idea puede abrirse directamente en el Tutor IA.
+          {loc.discussIntro}
         </p>
         <div className="mt-4 space-y-2.5">
           {news.discuss.map((d, i) => (
@@ -536,7 +551,7 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
                 })}
                 className="mt-2.5 ml-8.5 inline-flex min-h-9 items-center gap-1.5 rounded-xl border-2 border-azzurro/30 bg-azzurro/10 px-3.5 py-1.5 text-xs font-bold text-azzurro-scuro transition-all hover:scale-105 dark:text-azzurro"
               >
-                <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" /> Discutine con il Tutor IA
+                <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" /> {loc.discussCta}
               </button>
             </div>
           ))}

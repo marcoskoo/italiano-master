@@ -609,6 +609,61 @@ export interface UiWeeklyStrings {
   };
 }
 
+/* ═══ v9.28 · Radiogiornale (vista Notizie) en la lengua de estudio ══
+   La vista notizie.tsx consume este bloque para TODO su cromo (tarjeta
+   del método VOA, filtros, tarjetas, reproductor, quiz, debate).
+   Convenciones: en methodIntro «§…§» delimita el segmento que se renderiza
+   en negrita (el nombre de la lengua de estudio); rates es paralelo a
+   NEWS_RATES (4 velocidades). .it migra a italiano los textos
+   explicativos que estaban en español (inmersión total, criterio v9.27). */
+export interface UiNewsStrings {
+  methodTitle: string;
+  methodIntro: (lang: string) => string;
+  steps: { t: string; d: (lang: string) => string }[];
+  all: string;
+  cefr: string;
+  count: (n: number) => string;
+  completed: string;
+  edition: (place: string, level: string) => string;
+  cardMeta: (w: number, min: number, q: number) => string;
+  listenCta: (n: number) => string;
+  backToAll: string;
+  backToNews: string;
+  dateline: (place: string, level: string) => string;
+  wordsTitle: string;
+  wordsIntro: string;
+  wordTip: string;
+  playAll: string;
+  stop: string;
+  prevSentence: string;
+  nextSentence: string;
+  speedsAria: string;
+  voiceChange: string;
+  voicePrefix: string;
+  systemVoice: string;
+  soloAudio: string;
+  soloAudioTip: string;
+  subsEs: string;
+  playerStatus: (rate: string, n: number, hidden: boolean) => string;
+  listening: (cur: number, total: number) => string;
+  sentenceOf: (n: number, total: number) => string;
+  soloIntro: string;
+  soloDesc: string;
+  revealText: string;
+  sentenceAria: (n: number) => string;
+  sentenceHint: string;
+  quizTitle: (t: string) => string;
+  quizLabel: (t: string) => string;
+  quizDone: (score: number, total: number) => string;
+  quizDoneSub: string;
+  answerCta: (n: number) => string;
+  footerNote: (level: string) => string;
+  discussTitle: string;
+  discussIntro: string;
+  discussCta: string;
+  rates: string[];
+}
+
 export interface UiStrings {
   common: UiCommonStrings;
   nav: UiNavStrings;
@@ -619,6 +674,8 @@ export interface UiStrings {
   home: UiHomeStrings;
   /** v9.27 · plan de estudio semanal (sección premium del Home) */
   weekly: UiWeeklyStrings;
+  /** v9.28 · vista Notizie · Radiogiornale (método VOA) */
+  news: UiNewsStrings;
   courses: UiCoursesStrings;
   unit: UiUnitStrings;
   quiz: UiQuizStrings;
