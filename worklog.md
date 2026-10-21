@@ -1550,3 +1550,23 @@ Work Log:
 
 Stage Summary:
 - v9.34 desplegada y verificada en producción. Certificados: ahora son legalmente seguros ("attestati di completamento" con disclaimer impreso en el PNG, wording sin claims de certificación oficial ni verificación de terceros, pestaña legal completa con tabla de certificaciones oficiales por idioma). Admin: acceso recuperado vía rotación v2 one-time — usuario Mkoo, contraseña nueva entregada al usuario en el chat (cambiable desde el Panel). Unidad 1: el kit de identidad MCER (nombre+origen+ocupación) ahora tiene su vocabulario completo en las 5 lenguas (26 chunks con audio) + lección clásica + 31 lemas A1 + 5 ejercicios. Mascota: de 3 a 11 ubicaciones. Coste 0 €.
+
+---
+Task ID: 1 (v9.35)
+Agent: main (Super Z)
+Task: Petición del usuario: la sección de gramática debe explicar y dar lista de ejemplos con las reglas de construcción de palabras, reglas gramaticales, etc.
+
+Work Log:
+- Auditoría previa: GRAMMAR = 75 temas (A1 16 · A2 16 · B1 15 · B2 12 · C1 9 · C2 7). Todos tenían explicación (≥2 párrafos) y problemas paso a paso, PERO 30 temas tenían solo 2-3 ejemplos (bloques g-* y gx-*) y 56 no tenían ninguna tabla de reglas (solo el bloque g3-* v3.0 las tenía).
+- Diseño del refuerzo: módulo merge aditivo (no toca explanation/problems/ejercicios) — grammar-rules.ts define GrammarRulePack {moreExamples, tables} + applyGrammarRules(GRAMMAR) llamado en grammar.ts tras los push existentes.
+- Contenido nuevo en 6 packs: g1 (11 temas g-* A1/A2), g2 (11 temas g-* B1-C2), gx (8), g3a (18), g3b (17), g3c (10) = 75/75 temas cubiertos.
+- Reglas de construcción (56 tablas nuevas): terminaciones de plural (-o→-i, -a→-e, -e→-i, -ca→-che, vocal tónica invariable), regla de las iniciales para il/lo/l'/i/gli/le, paradigmas completos (presente con -isc-, imperfetto, futuro con raíces contraídas, condizionale, congiuntivo presente/imperfetto/trapassato, imperativo formal=tu negativo=infinitivo, participio passato -ato/-uto/-ito), matriz completa de preposiciones articuladas, pronomi diretti/indiretti/combinati, elección de auxiliar, concordancia del participio (reglas con lo/la/li/le, ne partitivo, indirectos sin concordancia), los 3 periodi ipotetici, transformaciones del estilo indirecto, usos de ci/ne, los 3 SI, passivo essere/venire/si, congiunzioni temporali/concessive/finali-causali/consecutive, interrogativas indirectas, relative avanzate, infinito passato, verbi fraseologici, sufijos de nominalización (-zione/-mento/-tura/-aggio/-ità/-enza), registro coloquial/burocrático/literario, sintaxis del hablado (dislocazioni, frase scissa). Todas con nota contrastiva IT-ES.
+- +244 ejemplos nuevos (todos con traducción ES y audio TTS automático): cada tema pasa de 2-4 a exactamente 7 ejemplos — total 525 frases en la sección.
+- UI: lista de ejemplos numerada (1.-7.) + contador en la cabecera «Esempi · N frasi con audio»; min-w-0 para truncado seguro en móvil.
+- Verificación de datos: scripts/audit-grammar3.ts → 0 temas con <6 ejemplos, 0 sin tablas, media 7.0 ejemplos y 1.03 tablas por tema.
+- ESLint 0 errores en 9 archivos tocados; tsc 82 líneas = baseline preexistente (skills/, cils, plugins2/3, push/, db — 0 en tocados); build OK 15/15.
+- E2E dev (agent-browser): A1 g-a1-genero abierto → tabla «Regole di costruzione del plurale» + 7 ejemplos numerados; B1 congiuntivo → tabla paradigmática 5 columnas + nota contrastiva + 7 ejemplos; C2 idiomi → tabla 8 filas + 7 ejemplos; g3-c2-letterario → tabla + 7; consola sin errores; móvil 390px scrollW=390 sin overflow (tablas con overflow-x-auto interno). QA VLM del screenshot de la tabla: barra verde, columnas, filas alternadas, nota ámbar 💡, ejemplos con audio, todo legible sin solapamientos. Capturas: upload/v935-grammar-tabla.png, v935-grammar-mobile.png, v935-grammar-c2-open.png.
+- Deploy: commit cb442cb + push → producción SW im-v9-35-0 verificado (~80 s). E2E prod: tema «Género y número del sustantivo» con 1 tabla + 7 ejemplos. Captura: upload/v935-prod-grammar.png.
+
+Stage Summary:
+- v9.35 «Grammatica v4 · Regole ed esempi»: los 75 temas de la sección Gramática ahora siguen la estructura completa explicar → reglas de construcción en tabla → lista de 7 ejemplos con audio y traducción → problemas paso a paso → práctica. 525 frases de ejemplo (+244) y 77 tavole de reglas (+56, todas con nota contrastiva IT-ES). Coste 0 €. Desplegado y verificado en producción.
