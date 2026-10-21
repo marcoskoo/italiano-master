@@ -185,13 +185,14 @@ export function GrammarView() {
                   {/* ejemplos */}
                   <div className="rounded-2xl bg-crema-scura p-5 dark:bg-inchiostro/10">
                     <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-it">
-                      <Volume2 className="h-3.5 w-3.5" aria-hidden="true" /> Esempi
+                      <Volume2 className="h-3.5 w-3.5" aria-hidden="true" /> Esempi · {t.examples.length} frasi con audio
                     </p>
                     <div className="space-y-2.5">
                       {t.examples.map((ex, j) => (
                         <div key={j} className="flex items-center gap-3">
+                          <span className="w-5 shrink-0 text-right font-mono text-xs text-muted-it">{j + 1}.</span>
                           <AudioButton text={ex.it} size="sm" />
-                          <div>
+                          <div className="min-w-0">
                             <p className="font-display text-lg leading-snug">{ex.it}</p>
                             <p className="text-sm text-muted-it">{ex.es}</p>
                           </div>

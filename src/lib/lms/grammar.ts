@@ -632,6 +632,12 @@ import { GRAMMAR_FULL_B } from "./extra/grammar-full-b";
 import { GRAMMAR_FULL_C } from "./extra/grammar-full-c";
 GRAMMAR.push(...GRAMMAR_FULL_A, ...GRAMMAR_FULL_B, ...GRAMMAR_FULL_C);
 
+/* # v9.35 · Regole ed esempi: amplía la lista de ejemplos de cada tema y
+   añade tavole de reglas de construcción (terminaciones, paradigmas,
+   transformaciones) a los 56 temas que no tenían ninguna */
+import { applyGrammarRules } from "./extra/grammar-rules";
+applyGrammarRules(GRAMMAR);
+
 export const GRAMMAR_BY_LEVEL = (level: string) => GRAMMAR.filter((g) => g.level === level);
 
 /* ── v9.4 · Iconos por tema de gramática (claro + oscuro) ─────────── */
