@@ -248,9 +248,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               "flex h-9 w-9 items-center justify-center rounded-xl p-[1.5px] transition-all",
               plan === "platinum" ? "plan-platinum-bg ring-platinum" : "bg-gradient-to-br from-verde via-crema to-rosso"
             )}>
-              <span className="flex h-full w-full items-center justify-center rounded-[10px] bg-crema">
-                <span className="font-display text-lg font-bold italic text-verde-scuro dark:text-verde">P</span>
-              </span>
+              <img src="/icon-192.png" alt="" aria-hidden="true" className="h-full w-full rounded-[10px] object-cover" />
             </span>
             <span className="hidden font-display text-lg font-semibold tracking-tight sm:block">
               {appName.split(" ")[0]} <span className="italic text-verde-scuro dark:text-verde">{appName.split(" ").slice(1).join(" ") || "Master"}</span>

@@ -47,6 +47,6 @@ export default function proxy(request: NextRequest) {
 export const config = {
   /* Todo excepto API y assets estáticos (no necesitan CSP de documento) */
   matcher: [
-    "/((?!api|_next/static|_next/image|images|icons|sw.js|offline.html|manifest.json|italia.svg|icon-192.png|icon-512.png|icon-maskable-192.png|icon-maskable-512.png|favicon.ico).*)",
+    "/((?!api|_next/static|_next/image|images|icons|sw.js|offline.html|manifest.json|logo.svg|icon-96.png|icon-192.png|icon-512.png|icon-maskable-192.png|icon-maskable-512.png|favicon.ico).*)",
   ],
 };

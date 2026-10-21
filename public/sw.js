@@ -1,4 +1,4 @@
-/* ── Italiano Master · Service Worker (v9.0) ────────────────────────
+/* ── Políglota Master · Service Worker (v9.0) ────────────────────────
    Estrategia offline sin servicios de pago:
    · Pre-cache: shell + offline + assets de marca
    · /_next/static/* → cache-first (assets inmutables con hash)
@@ -7,7 +7,7 @@
    · /api/* → solo red (nunca se cachea el backend)
    · Web Push (v9.0): recordatorios diarios vía VAPID          */
 
-const VERSION = "im-v9-31-0";
+const VERSION = "im-v9-32-0";
 const CACHE = `italiano-master-${VERSION}`;
 
 const PRECACHE = [
@@ -15,7 +15,6 @@ const PRECACHE = [
   "/offline.html",
   "/manifest.json",
   "/logo.svg",
-  "/italia.svg",
   "/icon-192.png",
   "/icon-512.png",
 ];
