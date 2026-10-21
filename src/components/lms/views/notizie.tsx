@@ -24,11 +24,12 @@ import { VoiceHint } from "../audio-button";
 import { HoverWords } from "../hover-words";
 import { QuizEngine } from "../quiz-engine";
 import {
-  NEWS, NEWS_BY_ID, NEWS_CATS, NEWS_RATES, DEFAULT_RATE,
-  newsExercises, newsSentences, newsWordCount,
+  NEWS_BY_LANG, NEWS_CATS, NEWS_RATES, DEFAULT_RATE,
+  newsCatLabel, newsExercises, newsSentences, newsWordCount,
   type NewsCat, type NewsItem,
 } from "@/lib/lms/news";
-import type { CefrLevel } from "@/lib/lms/types";
+import { LANGS } from "@/lib/lms/languages";
+import type { CefrLevel, LangCode } from "@/lib/lms/types";
 
 const LEVELS: (CefrLevel | "tutti")[] = ["tutti", "A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -43,19 +44,22 @@ export function NotizieView() {
   const [level, setLevel] = useState<CefrLevel | "tutti">("tutti");
   const [openId, setOpenId] = useState<string | null>(null);
 
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
   const readingsRead = useLms((s) => s.readingsRead);
 
+  /* v9.26 · paquete de noticias de la lengua activa (it/en/pt/fr/de) */
+  const pool = NEWS_BY_LANG[activeLang] ?? NEWS_BY_LANG.it;
   const texts = useMemo(
-    () => NEWS.filter((t) => (cat === "tutte" || t.cat === cat) && (level === "tutti" || t.level === level)),
-    [cat, level]
+    () => pool.filter((t) => (cat === "tutte" || t.cat === cat) && (level === "tutti" || t.level === level)),
+    [pool, cat, level]
   );
-  const text = openId ? NEWS_BY_ID[openId] : null;
+  const text = openId ? pool.find((n) => n.id === openId) ?? null : null;
 
-  if (text) return <Reader key={text.id} news={text} onBack={() => setOpenId(null)} />;
+  if (text) return <Reader key={text.id} news={text} lang={activeLang} onBack={() => setOpenId(null)} />;
 
   return (
     <div className="space-y-6">
-      <VoiceHint lang="it" />
+      <VoiceHint lang={activeLang} />
 
       {/* método VOA */}
       <section className="overflow-hidden rounded-3xl border-2 border-azzurro/30 bg-gradient-to-br from-azzurro/10 via-crema to-verde-tenue/40 p-5 sm:p-6 dark:via-inchiostro/10 dark:to-verde-tenue/10">
@@ -65,17 +69,20 @@ export function NotizieView() {
             <h2 className="font-display text-lg font-bold leading-snug">
               Radiogiornale per studenti · il metodo VOA
               <span className="ml-2 rounded-full bg-azzurro px-2 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wide text-white">A1–C2</span>
+              <span className="ml-1.5 rounded-full border border-azzurro/30 bg-azzurro/10 px-2 py-0.5 align-middle text-[10px] font-bold text-azzurro-scuro dark:text-azzurro">
+                {LANGS[activeLang].flag} {LANGS[activeLang].name}
+              </span>
             </h2>
             <p className="mt-1 text-sm leading-relaxed text-muted-it">
-              Notizie reali adattate al tuo livello, come fa <b>Voice of America</b> per l&apos;inglese: testo e audio siempre juntos, velocidad a medida y comprensión al final.
+              Noticias adaptadas a tu nivel de <b>{LANGS[activeLang].name.toLowerCase()}</b>, como hace <b>Voice of America</b> para el inglés: texto y audio siempre juntos, velocidad a medida y comprensión al final.
             </p>
           </div>
         </div>
         <ol className="mt-4 grid gap-3 sm:grid-cols-3">
           {[
-            { n: 1, t: "Le parole prima del testo", d: "«Parole per questa notizia»: le parole chiave con audio, prima di leggere (come «Words in This Story»)." },
-            { n: 2, t: "Ascolta a velocità ridotta", d: "Audio frase per frase come alla radio: riduci la velocità, oppure ascolta in modalità «solo audio»." },
-            { n: 3, t: "Leggi, segui e rispondi", d: "Transcrizione sempre visible con resaltado sincronizzato; clic su una frase per riascoltarla. Quiz finale." },
+            { n: 1, t: "Las palabras antes del texto", d: `«Words in This Story»: las palabras clave con audio, antes de leer. En ${LANGS[activeLang].name.toLowerCase()} y con traducción al español.` },
+            { n: 2, t: "Escucha a velocidad reducida", d: "Audio frase por frase como en la radio: reduce la velocidad (como VOA Special English) o escucha en modo «solo audio»." },
+            { n: 3, t: "Lee, sigue y responde", d: "Transcripción siempre visible con resaltado sincronizado; clic en una frase para repetirla. Quiz final." },
           ].map((s) => (
             <li key={s.n} className="rounded-2xl border border-soft bg-surface p-4">
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-it">
@@ -93,7 +100,7 @@ export function NotizieView() {
         <FilterChip active={cat === "tutte"} onClick={() => setCat("tutte")}>Tutte</FilterChip>
         {(Object.keys(NEWS_CATS) as NewsCat[]).map((c) => (
           <FilterChip key={c} active={cat === c} onClick={() => setCat(c)}>
-            {NEWS_CATS[c].emoji} {NEWS_CATS[c].label}
+            {NEWS_CATS[c].emoji} {newsCatLabel(c, activeLang)}
           </FilterChip>
         ))}
       </div>
@@ -138,7 +145,7 @@ export function NotizieView() {
                 </p>
                 <div className="mt-2.5 flex items-center justify-between gap-2">
                   <span className={cn("rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase", NEWS_CATS[t.cat].chip)}>
-                    {NEWS_CATS[t.cat].emoji} {NEWS_CATS[t.cat].label}
+                    {NEWS_CATS[t.cat].emoji} {newsCatLabel(t.cat, activeLang)}
                   </span>
                   <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">
                     {t.level}
@@ -179,7 +186,7 @@ function FilterChip({ active, onClick, children, small }: { active: boolean; onC
 
 /* ══════════ READER ════════════════════════════════════════════════ */
 
-function Reader({ news, onBack }: { news: NewsItem; onBack: () => void }) {
+function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack: () => void }) {
   const settingsSubs = useLms((s) => s.settings.showSubtitles);
   const trackQuest = useLms((s) => s.trackQuest);
   const markReadingDone = useLms((s) => s.markReadingDone);
@@ -208,20 +215,20 @@ function Reader({ news, onBack }: { news: NewsItem; onBack: () => void }) {
     return g;
   }, [flat, news]);
 
-  /* pool de voces it (selector de locutor) */
+  /* pool de voces de la lengua de estudio (selector de locutor) */
   useEffect(() => {
-    const upd = () => setVoices(voicesFor("it"));
+    const upd = () => setVoices(voicesFor(lang));
     upd();
     const off = onVoices(upd);
     return () => { off(); };
-  }, []);
+  }, [lang]);
   useEffect(() => () => { cancelRef.current?.(); stopSpeaking(); }, []);
 
   const voice = voiceIdx >= 0 && voices[voiceIdx] ? voices[voiceIdx] : null;
   const voiceLabel = voice
-    ? prettyVoiceName(voice, "it")
+    ? prettyVoiceName(voice, lang)
     : voiceIdx === -1
-      ? prettyVoiceName(defaultVoiceFor("it") ?? null, "it")
+      ? prettyVoiceName(defaultVoiceFor(lang) ?? null, lang)
       : "voce di sistema";
 
   const stopAll = useCallback(() => {
@@ -244,7 +251,7 @@ function Reader({ news, onBack }: { news: NewsItem; onBack: () => void }) {
       setActiveIdx(idx);
       if (mode === "lettura") sentRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "center" });
       speak(flat[idx].text, {
-        rate, voice,
+        lang, rate, voice,
         onEnd: () => setTimeout(next, 300),
       });
     };
@@ -252,7 +259,7 @@ function Reader({ news, onBack }: { news: NewsItem; onBack: () => void }) {
     trackQuest("listen");
     next();
     cancelRef.current = () => { cancelRef.current = null; stopSpeaking(); };
-  }, [flat, rate, voice, mode, trackQuest]);
+  }, [flat, lang, rate, voice, mode, trackQuest]);
 
   /* reproducir una sola frase (replay) */
   const playSentence = useCallback((idx: number) => {
@@ -260,8 +267,8 @@ function Reader({ news, onBack }: { news: NewsItem; onBack: () => void }) {
     setLinePlaying(idx);
     setActiveIdx(idx);
     trackQuest("listen");
-    speak(flat[idx].text, { rate, voice, onEnd: () => { setLinePlaying(null); setActiveIdx(null); } });
-  }, [flat, rate, voice, trackQuest]);
+    speak(flat[idx].text, { lang, rate, voice, onEnd: () => { setLinePlaying(null); setActiveIdx(null); } });
+  }, [flat, lang, rate, voice, trackQuest]);
 
   const toggleSentence = useCallback((fi: number) => {
     if (activeIdx === fi && (playing || linePlaying === fi)) { stopAll(); return; }
@@ -315,6 +322,7 @@ function Reader({ news, onBack }: { news: NewsItem; onBack: () => void }) {
   const progIdx = activeIdx !== null && playing ? activeIdx : linePlaying;
   const progress = progIdx !== null ? ((progIdx + 1) / flat.length) * 100 : 0;
   const catInfo = NEWS_CATS[news.cat];
+  const catLbl = newsCatLabel(news.cat, lang);
 
   return (
     <div>
@@ -330,7 +338,7 @@ function Reader({ news, onBack }: { news: NewsItem; onBack: () => void }) {
           </p>
           <div className="mt-2.5 flex items-center justify-between gap-2">
             <span className={cn("rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase", catInfo.chip)}>
-              {catInfo.emoji} {catInfo.label}
+              {catInfo.emoji} {catLbl}
             </span>
             <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">
               {news.level} · {news.minutes} min
@@ -355,7 +363,7 @@ function Reader({ news, onBack }: { news: NewsItem; onBack: () => void }) {
               {news.words.map((w, i) => (
                 <button
                   key={i}
-                  onClick={() => { trackQuest("listen"); speak(w.it, { rate }); }}
+                  onClick={() => { trackQuest("listen"); speak(w.it, { lang, rate }); }}
                   className="group inline-flex items-center gap-1.5 rounded-full border border-oro/40 bg-surface px-3 py-1.5 text-xs font-semibold transition-all hover:border-oro hover:scale-105"
                   title="Ascolta la pronuncia"
                 >
@@ -521,7 +529,11 @@ function Reader({ news, onBack }: { news: NewsItem; onBack: () => void }) {
               </p>
               <p className="mt-1 pl-8.5 text-sm italic text-muted-it">{d.es}</p>
               <button
-                onClick={() => navigate("tutor", { tutorSeed: `${d.it} (Rispondi in italiano semplice, livello ${news.level}, e correggi i miei errori.)` })}
+                onClick={() => navigate("tutor", {
+                  tutorSeed: lang === "it"
+                    ? `${d.it} (Rispondi in italiano semplice, livello ${news.level}, e correggi i miei errori.)`
+                    : `${d.it} (Responde en ${LANGS[lang].name.toLowerCase()} sencillo, nivel ${news.level}, y corrige mis errores.)`,
+                })}
                 className="mt-2.5 ml-8.5 inline-flex min-h-9 items-center gap-1.5 rounded-xl border-2 border-azzurro/30 bg-azzurro/10 px-3.5 py-1.5 text-xs font-bold text-azzurro-scuro transition-all hover:scale-105 dark:text-azzurro"
               >
                 <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" /> Discutine con il Tutor IA

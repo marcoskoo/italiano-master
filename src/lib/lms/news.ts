@@ -11,10 +11,22 @@
    · modo "solo audio" (escuchar antes de leer, como en la radio)
    · quiz de comprensión al final + debate con el Tutor IA            */
 
-import type { CefrLevel } from "./types";
+import type { CefrLevel, LangCode } from "./types";
 import { NEWS_DATA_A } from "./news-data-a";
 import { NEWS_DATA_B } from "./news-data-b";
 import { NEWS_DATA_C } from "./news-data-c";
+import { EN_NEWS_A } from "./lang/en/news-a";
+import { EN_NEWS_B } from "./lang/en/news-b";
+import { EN_NEWS_C } from "./lang/en/news-c";
+import { PT_NEWS_A } from "./lang/pt/news-a";
+import { PT_NEWS_B } from "./lang/pt/news-b";
+import { PT_NEWS_C } from "./lang/pt/news-c";
+import { FR_NEWS_A } from "./lang/fr/news-a";
+import { FR_NEWS_B } from "./lang/fr/news-b";
+import { FR_NEWS_C } from "./lang/fr/news-c";
+import { DE_NEWS_A } from "./lang/de/news-a";
+import { DE_NEWS_B } from "./lang/de/news-b";
+import { DE_NEWS_C } from "./lang/de/news-c";
 
 export type NewsCat =
   | "scienza" | "tecnologia" | "ambiente" | "salute"
@@ -54,9 +66,53 @@ export const NEWS_CATS: Record<NewsCat, { label: string; emoji: string; desc: st
   societa:    { label: "Società",    emoji: "👥", desc: "Come viviamo, come cambia l'Italia",    chip: "border-viola/30 bg-viola-tenue text-viola-scuro dark:text-viola" },
 };
 
+/* v9.26 · Etiquetas de categoría en la lengua de estudio (estilo VOA:
+   el lector aprende también el vocabulario de la sección del periódico). */
+export const NEWS_CATS_LABEL: Record<LangCode, Record<NewsCat, string>> = {
+  it: {
+    scienza: "Scienza", tecnologia: "Tecnologia", ambiente: "Ambiente", salute: "Salute",
+    cultura: "Cultura", storia: "Storia", economia: "Economia", sport: "Sport", societa: "Società",
+  },
+  en: {
+    scienza: "Science", tecnologia: "Technology", ambiente: "Environment", salute: "Health",
+    cultura: "Culture", storia: "History", economia: "Economy", sport: "Sports", societa: "Society",
+  },
+  pt: {
+    scienza: "Ciência", tecnologia: "Tecnologia", ambiente: "Ambiente", salute: "Saúde",
+    cultura: "Cultura", storia: "História", economia: "Economia", sport: "Desporto", societa: "Sociedade",
+  },
+  fr: {
+    scienza: "Sciences", tecnologia: "Technologie", ambiente: "Environnement", salute: "Santé",
+    cultura: "Culture", storia: "Histoire", economia: "Économie", sport: "Sport", societa: "Société",
+  },
+  de: {
+    scienza: "Wissenschaft", tecnologia: "Technologie", ambiente: "Umwelt", salute: "Gesundheit",
+    cultura: "Kultur", storia: "Geschichte", economia: "Wirtschaft", sport: "Sport", societa: "Gesellschaft",
+  },
+};
+export function newsCatLabel(cat: NewsCat, lang: LangCode): string {
+  return NEWS_CATS_LABEL[lang]?.[cat] ?? NEWS_CATS[cat].label;
+}
+
 export const NEWS: NewsItem[] = [...NEWS_DATA_A, ...NEWS_DATA_B, ...NEWS_DATA_C];
 
+/* ═══ v9.26 · Notizie por lengua de estudio ═════════════════════════
+   La vista consume el paquete de la lengua activa; el italiano conserva
+   NEWS (compat). Campos `.it` = lengua de estudio (como en el resto de
+   contenido multilenguaje), `.es` = traducción de apoyo.               */
+export const NEWS_BY_LANG: Record<LangCode, NewsItem[]> = {
+  it: NEWS,
+  en: [...EN_NEWS_A, ...EN_NEWS_B, ...EN_NEWS_C],
+  pt: [...PT_NEWS_A, ...PT_NEWS_B, ...PT_NEWS_C],
+  fr: [...FR_NEWS_A, ...FR_NEWS_B, ...FR_NEWS_C],
+  de: [...DE_NEWS_A, ...DE_NEWS_B, ...DE_NEWS_C],
+};
+
 export const NEWS_BY_ID: Record<string, NewsItem> = Object.fromEntries(NEWS.map((n) => [n.id, n]));
+/** Índice global (todas las lenguas) por id con prefijo (en-news-…, de-news-…). */
+export const NEWS_ALL_BY_ID: Record<string, NewsItem> = Object.fromEntries(
+  ([...NEWS_BY_LANG.it, ...NEWS_BY_LANG.en, ...NEWS_BY_LANG.pt, ...NEWS_BY_LANG.fr, ...NEWS_BY_LANG.de]).map((n) => [n.id, n])
+);
 
 export function newsByLevel(level: CefrLevel): NewsItem[] {
   return NEWS.filter((n) => n.level === level);
@@ -81,17 +137,23 @@ export function newsWordCount(n: NewsItem): number {
 }
 
 /** Divide un párrafo en frases (para audio y resaltado frase a frase).
-    Maneja puntuación italiana (. ! ? …), cierres de comillas «» y
-    paréntesis; si no hay puntuación final, devuelve el párrafo entero. */
+    Maneja puntuación internacional (. ! ? …), cierres de comillas «»
+    (it/fr), „“ alemanas y “” tipográficas, y paréntesis; si no hay
+    puntuación final, devuelve el párrafo entero. */
 export function splitSentences(p: string): string[] {
   const out: string[] = [];
-  const re = /[^.!?…]+[.!?…]+[»')\]]?/g;
+  const re = /[^.!?…]+[.!?…]+(?:\s?[»')\]“”])?/g;
   let m: RegExpExecArray | null;
+  let end = 0;
   while ((m = re.exec(p)) !== null) {
+    end = re.lastIndex;
     const s = m[0].replace(/\s+/g, " ").trim();
     if (s) out.push(s);
   }
-  const rest = p.slice(re.lastIndex).replace(/\s+/g, " ").trim();
+  /* v9.26 fix: exec() resetea lastIndex a 0 al devolver null; hay que
+     guardar el fin real del último match (bug heredado de v9.25 que
+     duplicaba cada párrafo como "frase" adicional).                    */
+  const rest = p.slice(end).replace(/\s+/g, " ").trim();
   if (rest) out.push(rest);
   return out.length ? out : [p.trim()];
 }
