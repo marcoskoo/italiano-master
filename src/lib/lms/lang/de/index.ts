@@ -5,6 +5,12 @@ import { DE_B1 } from "./courses-b1";
 import { DE_B2 } from "./courses-b2";
 import { DE_C1 } from "./courses-c1";
 import { DE_C2 } from "./courses-c2";
+import { DE_CB_RULES_A1 } from "./cb-rules-a1";
+import { DE_CB_RULES_A2 } from "./cb-rules-a2";
+import { DE_CB_RULES_B1 } from "./cb-rules-b1";
+import { DE_CB_RULES_B2 } from "./cb-rules-b2";
+import { DE_CB_RULES_C1 } from "./cb-rules-c1";
+import { DE_CB_RULES_C2 } from "./cb-rules-c2";
 
 /* ═══ DE · paquete de contenido A1–C2 (Deutsch von Deutschland) ════
    v9.24 · Percorso completo: 6 niveles × 12 unidades comunicativas
@@ -61,3 +67,17 @@ export const DE_COURSES: CbLevel[] = [
     units: DE_C2,
   },
 ];
+
+/* v9.36 · tablas de reglas + ejemplos + drills para las 72 unidades */
+export const DE_CB_RULES = {
+  ...DE_CB_RULES_A1,
+  ...DE_CB_RULES_A2,
+  ...DE_CB_RULES_B1,
+  ...DE_CB_RULES_B2,
+  ...DE_CB_RULES_C1,
+  ...DE_CB_RULES_C2,
+};
+
+/* v9.36 · registro de drills para la lengua (antes vacío) */
+import type { GrammarDrill } from "../../extra/grammar-drills";
+export const DE_DRILLS: Record<string, GrammarDrill> = {};

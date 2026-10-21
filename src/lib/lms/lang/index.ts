@@ -8,10 +8,10 @@ import { CB_CLOZE } from "../extra/readings-cloze";
 import { MIND_LIBRARY, MIND_READINGS } from "../extra/readings-mind";
 import { GRAMMAR_DEEP } from "../extra/grammar-deep";
 import { GRAMMAR_DRILLS } from "../extra/grammar-drills";
-import { EN_COURSES, EN_MIND, EN_CLOZE, EN_DEEP, EN_DRILLS } from "./en";
-import { PT_COURSES, PT_MIND, PT_CLOZE, PT_DEEP, PT_DRILLS } from "./pt";
-import { FR_COURSES } from "./fr";
-import { DE_COURSES } from "./de";
+import { EN_COURSES, EN_MIND, EN_CLOZE, EN_DEEP, EN_DRILLS, EN_CB_RULES } from "./en";
+import { PT_COURSES, PT_MIND, PT_CLOZE, PT_DEEP, PT_DRILLS, PT_CB_RULES } from "./pt";
+import { FR_COURSES, FR_CB_RULES, FR_DRILLS } from "./fr";
+import { DE_COURSES, DE_CB_RULES, DE_DRILLS } from "./de";
 
 /* ═══ v9.17 · Resolutor de contenido por lengua de estudio ════════════
    La interfaz sigue en español; el contenido (unidades, lecturas,
@@ -60,7 +60,7 @@ const FR_CONTENT: LangContent = {
   cloze: {},
   mind: {},
   deep: {},
-  drills: {},
+  drills: FR_DRILLS,
 };
 
 const DE_CONTENT: LangContent = {
@@ -68,7 +68,7 @@ const DE_CONTENT: LangContent = {
   cloze: {},
   mind: {},
   deep: {},
-  drills: {},
+  drills: DE_DRILLS,
 };
 
 const BY_LANG: Partial<Record<LangCode, LangContent>> = {
@@ -78,6 +78,15 @@ const BY_LANG: Partial<Record<LangCode, LangContent>> = {
   fr: FR_CONTENT,
   de: DE_CONTENT,
 };
+
+/* v9.36 · «Reglas + ejemplos» en la gramática incrustada de las unidades
+   Cambridge EN/PT/FR/DE: tablas de construcción + ejemplos (4→7) + drills
+   derivados de las tablas. Merge aditivo al cargar (patrón v9.35). */
+import { applyCbGrammarPacks } from "./cb-rules";
+applyCbGrammarPacks(EN_COURSES, EN_DRILLS, EN_CB_RULES);
+applyCbGrammarPacks(PT_COURSES, PT_DRILLS, PT_CB_RULES);
+applyCbGrammarPacks(FR_COURSES, FR_DRILLS, FR_CB_RULES);
+applyCbGrammarPacks(DE_COURSES, DE_DRILLS, DE_CB_RULES);
 
 export function langContent(lang: LangCode): LangContent | undefined {
   return BY_LANG[lang];

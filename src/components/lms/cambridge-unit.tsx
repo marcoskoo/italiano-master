@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Circle, Ear, Globe2, GraduationCap,
   Languages, Library, Lightbulb, ListChecks, Mic2, PenLine, Sparkles, Target, Trophy,
-  Play, Pause, Volume2, Eye, EyeOff, ExternalLink, PartyPopper,
+  Play, Pause, Volume2, Eye, EyeOff, ExternalLink, PartyPopper, Table2,
 } from "lucide-react";
 import { CB_STEPS, type CbQuizItem, type CbUnit, type CbStepId } from "@/lib/lms/cambridge";
 import { unitById, levelOfUnit, langContent } from "@/lib/lms/lang";
@@ -347,6 +347,40 @@ export function CambridgeUnitView({ unitId, onBack }: { unitId: string; onBack: 
                 <h4 className="font-display font-semibold">{u.unit.theRule}</h4>
                 {unit.grammar.rule.map((r, i) => <p key={i} className="leading-relaxed">{r}</p>)}
               </div>
+              {/* v9.36 · tavole di reglas de construcción (mismo estándar de la vista Grammatica) */}
+              {unit.grammar.tables && unit.grammar.tables.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-display text-lg font-semibold">{u.unit.ruleTables}</h4>
+                  {unit.grammar.tables.map((tb, k) => (
+                    <div key={k} className="overflow-hidden rounded-2xl border-2 border-soft">
+                      <p className="flex items-center gap-2 border-b border-soft bg-verde-tenue px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-verde-scuro dark:text-verde">
+                        <Table2 className="h-3.5 w-3.5" aria-hidden="true" /> {tb.title}
+                      </p>
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[420px] border-collapse text-sm">
+                          <thead>
+                            <tr className="bg-surface">
+                              {tb.headers.map((h, hi) => (
+                                <th key={hi} scope="col" className="whitespace-nowrap px-3 py-2 text-left font-display text-xs font-bold text-muted-it">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {tb.rows.map((row, ri) => (
+                              <tr key={ri} className={cn("border-t border-soft", ri % 2 === 0 ? "bg-surface" : "bg-crema-scura/60 dark:bg-inchiostro/5")}>
+                                {row.map((cell, ci) => (
+                                  <td key={ci} className={cn("px-3 py-2", ci === 0 ? "font-semibold text-inchiostro" : "font-mono text-[13px] text-inchiostro/90")}>{cell}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {tb.note && <p className="border-t border-soft bg-oro-tenue px-4 py-2 text-xs leading-relaxed text-oro-scuro dark:text-oro">💡 {tb.note}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
               {/* v9.15 · spiegazione completa: formación, uso, trampas del español */}
               {deep && (
                 <div className="space-y-3">

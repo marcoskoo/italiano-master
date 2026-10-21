@@ -51,6 +51,7 @@ export interface CbUnit {
     rule: string[];              // la regla, después
     topicId?: string;            // enlace al tema completo en Gramática
     gaps: CbQuizItem[];          // práctica inmediata (huecos)
+    tables?: import("./types").GrammarTable[]; // v9.36 · tavole di reglas de construcción
   };
   pronunciation: {               // 6. Pronuncia (fonética específica)
     focus: string;

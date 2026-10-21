@@ -320,6 +320,7 @@ export const DE: UiStrings = {
     observe: "Beobachte zuerst die Beispiele. Die Regel kommt danach — so lernt man es wirklich.",
     theRule: "Die Regel",
     fullExplain: "📖 Vollständige Erklärung",
+    ruleTables: "📐 Regeln auf einen Blick",
     moreExamples: "💡 Weitere Beispiele",
     putToTest: "Auf die Probe stellen",
     chooseUse: "Wähle den Gebrauch · was passt und warum?",

@@ -268,6 +268,7 @@ export const IT: UiStrings = {
     observe: "Primero observa los ejemplos. La regla vendrá después — así se aprende de verdad.",
     theRule: "La regola",
     fullExplain: "📖 Spiegazione completa",
+    ruleTables: "📐 Le regole in tavola",
     moreExamples: "💡 Altri esempi",
     putToTest: "Metti alla prova",
     chooseUse: "Scegli l'uso · ¿cuál encaja y por qué?",

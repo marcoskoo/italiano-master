@@ -106,7 +106,7 @@ export interface UiUnitStrings {
   goalsTitle: string; candoChip: string; candoNote: (lv: string) => string; compareScale: string;
   listenDialogue: string; tipListen: string;
   chunksNoteA: string; chunksNoteB: string;
-  observe: string; theRule: string; fullExplain: string; moreExamples: string;
+  observe: string; theRule: string; fullExplain: string; moreExamples: string; ruleTables: string;
   putToTest: string; chooseUse: string; extraTransform: string; fixError: string; fullTopic: string;
   kindCtrl: string; kindSemi: string; kindComm: string; kindAuth: string;
   extReading: string; show: string; hide: string; continueReading: string;

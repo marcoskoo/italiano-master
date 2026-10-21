@@ -9,6 +9,12 @@ import { EN_MIND_A1 } from "./mind-a1";
 import { EN_CLOZE_A1 } from "./cloze-a1";
 import { EN_DEEP_A1 } from "./deep-a1";
 import { EN_DRILLS_A1 } from "./drills-a1";
+import { EN_CB_RULES_A1 } from "./cb-rules-a1";
+import { EN_CB_RULES_A2 } from "./cb-rules-a2";
+import { EN_CB_RULES_B1 } from "./cb-rules-b1";
+import { EN_CB_RULES_B2 } from "./cb-rules-b2";
+import { EN_CB_RULES_C1 } from "./cb-rules-c1";
+import { EN_CB_RULES_C2 } from "./cb-rules-c2";
 
 /* ═══ EN · paquete de contenido A1–C2 (inglés americano) ════════════
    v9.22 · Percorso completo: 6 niveles × 12 unidades comunicativas
@@ -67,3 +73,13 @@ export const EN_MIND = EN_MIND_A1;
 export const EN_CLOZE = EN_CLOZE_A1;
 export const EN_DEEP = EN_DEEP_A1;
 export const EN_DRILLS = EN_DRILLS_A1;
+
+/* v9.36 · tablas de reglas + ejemplos + drills para las 72 unidades */
+export const EN_CB_RULES = {
+  ...EN_CB_RULES_A1,
+  ...EN_CB_RULES_A2,
+  ...EN_CB_RULES_B1,
+  ...EN_CB_RULES_B2,
+  ...EN_CB_RULES_C1,
+  ...EN_CB_RULES_C2,
+};

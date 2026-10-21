@@ -318,6 +318,7 @@ export const EN: UiStrings = {
     observe: "First observe the examples. The rule comes after — that's how real learning works.",
     theRule: "The rule",
     fullExplain: "📖 Full explanation",
+    ruleTables: "📐 Rules at a glance",
     moreExamples: "💡 More examples",
     putToTest: "Put it to the test",
     chooseUse: "Choose the use · which one fits and why?",

@@ -9,6 +9,12 @@ import { PT_MIND_A1 } from "./mind-a1";
 import { PT_CLOZE_A1 } from "./cloze-a1";
 import { PT_DEEP_A1 } from "./deep-a1";
 import { PT_DRILLS_A1 } from "./drills-a1";
+import { PT_CB_RULES_A1 } from "./cb-rules-a1";
+import { PT_CB_RULES_A2 } from "./cb-rules-a2";
+import { PT_CB_RULES_B1 } from "./cb-rules-b1";
+import { PT_CB_RULES_B2 } from "./cb-rules-b2";
+import { PT_CB_RULES_C1 } from "./cb-rules-c1";
+import { PT_CB_RULES_C2 } from "./cb-rules-c2";
 
 /* ═══ PT · paquete de contenido A1–C2 (português de Portugal) ══════
    v9.22 · Percorso completo: 6 niveles × 12 unidades comunicativas
@@ -69,3 +75,13 @@ export const PT_MIND = PT_MIND_A1;
 export const PT_CLOZE = PT_CLOZE_A1;
 export const PT_DEEP = PT_DEEP_A1;
 export const PT_DRILLS = PT_DRILLS_A1;
+
+/* v9.36 · tablas de reglas + ejemplos + drills para las 72 unidades */
+export const PT_CB_RULES = {
+  ...PT_CB_RULES_A1,
+  ...PT_CB_RULES_A2,
+  ...PT_CB_RULES_B1,
+  ...PT_CB_RULES_B2,
+  ...PT_CB_RULES_C1,
+  ...PT_CB_RULES_C2,
+};
