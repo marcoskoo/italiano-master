@@ -7,36 +7,21 @@ import type { UiStrings } from "./types";
 import { IT } from "./it";
 import { EN } from "./en";
 import { PT } from "./pt";
-import { FR_CORE, DE_CORE } from "./core";
+import { FR } from "./fr";
+import { DE } from "./de";
 
-/* ═══ v9.18/v9.21 · Resolutor de la interfaz por lengua de estudio ═══
-   uiFor(lang) devuelve el diccionario de la lengua activa: it/en/pt
-   completos; fr/de con fallback por sección al italiano (esqueleto).
-   useUi() es el hook reactivo que usan los componentes.           */
-
-const CORES: Partial<Record<LangCode, Partial<UiStrings>>> = {
-  fr: FR_CORE, de: DE_CORE,
-};
-
-function mergeCore(core: Partial<UiStrings>): UiStrings {
-  const out = { ...IT } as UiStrings & Record<string, unknown>;
-  for (const [k, v] of Object.entries(core)) {
-    if (v && typeof v === "object" && !Array.isArray(v) && typeof out[k as keyof UiStrings] === "object") {
-      // fusión por sección: el core trae secciones completas
-      (out as Record<string, unknown>)[k] = { ...(out[k as keyof UiStrings] as object), ...(v as object) };
-    } else {
-      (out as Record<string, unknown>)[k] = v;
-    }
-  }
-  return out;
-}
+/* ═══ v9.18→v9.24 · Resolutor de la interfaz por lengua de estudio ══
+   uiFor(lang) devuelve el diccionario de la lengua activa: it/en/pt/
+   fr/de completos (v9.23 FR · v9.24 DE). useUi() es el hook reactivo
+   que usan los componentes. El esqueleto core.ts queda como semilla
+   histórica ya sin consumidores.                                           */
 
 const BY_LANG: Record<LangCode, UiStrings> = {
   it: IT,
   en: EN,
   pt: PT,
-  fr: mergeCore(FR_CORE),
-  de: mergeCore(DE_CORE),
+  fr: FR,
+  de: DE,
 };
 
 export function uiFor(lang: LangCode): UiStrings {

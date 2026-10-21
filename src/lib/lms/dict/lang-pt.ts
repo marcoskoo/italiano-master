@@ -93,7 +93,7 @@ livraria|librería|liˈvrɐjɐ|S|stu|3|A livraria abre às dez.|La librería abr
 família|familia|fɐˈmiliɐ|S|fam|5|A minha família é grande.|Mi familia es grande.
 pai|padre|pajʃ|S|fam|5|O meu pai é engenheiro.|Mi padre es ingeniero.
 mãe|madre|mɐ̃j̃|S|fam|5|A minha mãe é professora.|Mi madre es profesora.
-pais|padres|pajʃ|S|fam|5|Os meus pais moram em Lima.|Mis padres viven en Lima.;n=«pais» = padres; «país» (con acento) = nación
+pais|padres|pajʃ|S|fam|5|Os meus pais moram em Lima.|Mis padres viven en Lima.|n=«pais» = padres; «país» (con acento) = nación
 irmão|hermano|iɾˈmɐ̃w̃|S|fam|5|Tenho dois irmãos.|Tengo dos hermanos.
 irmã|hermana|iɾˈmɐ̃|S|fam|5|A minha irmã estuda medicina.|Mi hermana estudia medicina.
 avó|abuelo/a|ɐˈvɔ|S|fam|5|Almoço com os meus avós.|Almuerzo con mis abuelos.
@@ -109,7 +109,7 @@ casar-se|casarse|kɐˈzaɾ-sɨ|V|fam|3|Vão casar em junho.|Se casan en junio.
 filho único|hijo único|ˈfiʎu ˈuniku|L|fam|4|Sou filho único.|Soy hijo único.
 gato|gato|ˈɡatu|S|ani|5|O gato dorme ao sol.|El gato duerme al sol.
 gata|gata|ˈɡatɐ|S|ani|4|A gata chama-se Lua.|La gata se llama Lua.
-cão|perro|kɐ̃w̃|S|ani|4|O cão do vizinho late.|El perro del vecino ladra.;p=cães
+cão|perro|kɐ̃w̃|S|ani|4|O cão do vizinho late.|El perro del vecino ladra.|p=cães
 animal de estimação|mascota|ɐniˈmal dɨ ɨʃtimɐˈsɐ̃w̃|L|ani|3|Têm animais de estimação?|¿Tienen mascotas?
 dia|día|ˈdiɐ|S|tmp|5|Bom dia! Que dia é hoje?|¡Buen día! ¿Qué día es hoy?
 semana|semana|sɨˈmɐnɐ|S|tmp|5|Trabalho de segunda a sexta.|Trabajo de lunes a viernes.
@@ -141,7 +141,7 @@ T2|piso de dos dormitorios|te ˈdojʃ|S|cas|4|O T2 tem varanda.|El T2 tiene balc
 sala|salón|ˈsalɐ|S|cas|5|A sala é grande e luminosa.|El salón es grande y luminoso.
 quarto|dormitorio|ˈkwaɾtu|S|cas|5|O quarto tem vista para o rio.|El dormitorio tiene vistas al río.
 cozinha|cocina|kuˈzĩɲɐ|S|cas|5|A cozinha tem azulejos.|La cocina tiene azulejos.
-casa de banho|cuarto de baño|ˈkazɐ dɨ ˈbɐ̃ɲu|L|cas|5|Onde está a casa de banho?|¿Dónde está el baño?;n=en Brasil es «banheiro»
+casa de banho|cuarto de baño|ˈkazɐ dɨ ˈbɐ̃ɲu|L|cas|5|Onde está a casa de banho?|¿Dónde está el baño?|n=en Brasil es «banheiro»
 corredor|pasillo|kuˈʁeðoɾ|S|cas|4|A casa de banho está no corredor.|El baño está en el pasillo.
 janela|ventana|ʒɨˈnɛlɐ|S|cas|5|Abre a janela, por favor.|Abre la ventana, por favor.
 porta|puerta|ˈpɔɾtɐ|S|cas|5|A porta está aberta.|La puerta está abierta.
@@ -149,11 +149,11 @@ varanda|balcón|vɐˈʁɐ̃dɐ|S|cas|4|Há roupa na varanda.|Hay ropa en el balc
 escada|escalera|ɨʃˈkaðɐ|S|cas|4|A escada é estreita.|La escalera es estrecha.
 elevador|ascensor|elɨvɐˈðoɾ|S|cas|4|O prédio não tem elevador.|El edificio no tiene ascensor.
 andar|piso (altura)|ɐˈdaɾ|S|cas|4|Moro no terceiro andar.|Vivo en el tercer piso.
-prédio|edificio|ˈpɾɛðju|S|cas|4|O prédio é antigo.|El edificio es antiguo.;ff=1; n=«prédio» = edificio, no «predio» rural
+prédio|edificio|ˈpɾɛðju|S|cas|4|O prédio é antigo.|El edificio es antiguo.|ff=1; n=«prédio» = edificio, no «predio» rural
 arrendamento|alquiler|ɐʁẽðɐˈmẽtu|S|cas|3|O arrendamento é caro em Lisboa.|El alquiler es caro en Lisboa.
 renda|alquiler (mensual)|ˈʁẽdɐ|S|cas|4|A renda é de quinhentos euros.|El alquiler es de quinientos euros.
 arrendar|alquilar|ɐʁẽˈdaɾ|V|cas|3|Queremos arrendar um T1.|Queremos alquilar un T1.
-morar|vivir (residir)|muˈɾaɾ|V|cas|5|Moro em Lisboa.|Vivo en Lisboa.;n=«morar» = residir; «viver» = vivir (existir)
+morar|vivir (residir)|muˈɾaɾ|V|cas|5|Moro em Lisboa.|Vivo en Lisboa.|n=«morar» = residir; «viver» = vivir (existir)
 vizinho|vecino|viˈzĩɲu|S|rel|4|O vizinho é muito simpático.|El vecino es muy simpático.
 azulejo|azulejo|ɐzuˈleʒu|S|art|4|A cozinha tem azulejos azuis.|La cocina tiene azulejos azules.
 móvel|mueble|ˈmɔvɛɫ|S|cas|3|Os móveis são novos.|Los muebles son nuevos.
@@ -161,7 +161,7 @@ mesa|mesa|ˈmezɐ|S|cas|5|A mesa está posta.|La mesa está puesta.
 cadeira|silla|kɐˈdejɾɐ|S|cas|5|Senta-te nesta cadeira.|Siéntate en esta silla.
 cama|cama|ˈkɐmɐ|S|cas|5|A cama é confortável.|La cama es cómoda.
 sofá|sofá|suˈfa|S|cas|4|O gato dorme no sofá.|El gato duerme en el sofá.
-pequeno-almoço|desayuno|pɨˈkenu aɫˈmɐjzu|S|ali|5|Tomo o pequeno-almoço às oito.|Desayuno a las ocho.;n=en Brasil es «café da manhã»
+pequeno-almoço|desayuno|pɨˈkenu aɫˈmɐjzu|S|ali|5|Tomo o pequeno-almoço às oito.|Desayuno a las ocho.|n=en Brasil es «café da manhã»
 almoço|almuerzo|ɐɫˈmuʃu|S|ali|5|O almoço é ao meio-dia.|El almuerzo es al mediodía.
 jantar|cena|ʒɐˈnaɾ|S|ali|5|O jantar é às nove.|La cena es a las nueve.
 lanche|merienda|ˈlɐ̃ʃɨ|S|ali|3|As crianças tomam um lanche.|Los niños toman una merienda.
@@ -172,7 +172,7 @@ queijo|queso|ˈkejʒu|S|ali|5|O queijo da serra é famoso.|El queso da serra es 
 ovos|huevos|ˈɔvuʃ|S|ali|5|Queria meia dúzia de ovos.|Quería media docena de huevos.
 fruta|fruta|ˈfɾutɐ|S|ali|5|Como fruta todos os dias.|Como fruta todos los días.
 laranja|naranja|lɐˈʁɐ̃ʒɐ|S|ali|5|Um quilo de laranjas, por favor.|Un kilo de naranjas, por favor.
-maçã|manzana|mɐˈsɐ̃w̃|S|ali|5|A maçã está doce.|La manzana está dulce.;ff=1; n=«massa» = masa/pasta; «maçã» = manzana
+maçã|manzana|mɐˈsɐ̃w̃|S|ali|5|A maçã está doce.|La manzana está dulce.|ff=1; n=«massa» = masa/pasta; «maçã» = manzana
 banana|banana|bɐˈnɐnɐ|S|ali|4|A banana está madura.|El plátano está maduro.
 tomate|tomate|tuˈmatɨ|S|ali|5|Salada de tomate, por favor.|Ensalada de tomate, por favor.
 batata|patata|bɐˈtatɐ|S|ali|5|Batatas fritas para dois.|Patatas fritas para dos.
@@ -202,7 +202,7 @@ tasca|tasca (taberna)|ˈtaʃkɐ|S|ris|4|A tasca da esquina é típica.|La tasca 
 ementa|carta / menú|ɨˈmẽtɐ|S|ris|5|A ementa do dia, por favor.|El menú del día, por favor.
 prato do dia|plato del día|ˈpɾatu du ˈdiɐ|L|ris|5|Qual é o prato do dia?|¿Cuál es el plato del día?
 conta|cuenta|ˈkõtɐ|S|ris|5|A conta, por favor.|La cuenta, por favor.
-couvert|couvert (pan, manteiga e azeitonas)|kuˈvɛɾt|S|ris|4|O couvert já chegou à mesa.|El couvert ya llegó a la mesa.;n=se cobra si se consume
+couvert|couvert (pan, manteiga e azeitonas)|kuˈvɛɾt|S|ris|4|O couvert já chegou à mesa.|El couvert ya llegó a la mesa.|n=se cobra si se consume
 serviço|servicio|sɛɾˈvisiu|S|ris|4|O serviço está incluído.|El servicio está incluido.
 empregado|camarero|ẽpɾɨˈɡaðu|S|pro|5|O empregado anota o pedido.|El camarero anota el pedido.
 propina|propina (en la universidad)|pɾuˈpinɐ|S|ist|2|A propina da universidade.|La matrícula de la universidad.
@@ -249,7 +249,7 @@ roupa|ropa|ˈʁupɐ|S|rop|5|Preciso de roupa de inverno.|Necesito ropa de invier
 casaco|abrigo|kɐˈzaku|S|rop|5|Este casaco fica-me bem.|Este abrigo me queda bien.
 camisa|camisa|kɐˈmizɐ|S|rop|4|Uma camisa branca, por favor.|Una camisa blanca, por favor.
 camisola|jersey|kɐmiˈzɔlɐ|S|rop|4|A camisola de lã é quente.|El jersey de lana es cálido.
-calças|pantalones|ˈkaɫpɐʃ|S|rop|5|As calças ficam apertadas.|Los pantalones quedan estrechos.;n=siempre plural
+calças|pantalones|ˈkaɫpɐʃ|S|rop|5|As calças ficam apertadas.|Los pantalones quedan estrechos.|n=siempre plural
 vestido|vestido|vɨʃˈtiðu|S|rop|4|Um vestido para o casamento.|Un vestido para la boda.
 saia|falda|ˈsajɐ|S|rop|4|A saia é comprida.|La falda es larga.
 sapatos|zapatos|sɐˈpatuʃ|S|rop|5|Estes sapatos são cómodos.|Estos zapatos son cómodos.
@@ -276,8 +276,8 @@ frio|frío|ˈfɾiu|A|ast|5|Estou com frio.|Tengo frío.
 doce|dulce|ˈdosɨ|A|ali|5|A laranja está doce.|La naranja está dulce.
 picante|picante|piˈkɐ̃tɨ|A|ali|4|O molho é picante.|La salsa es picante.
 delicioso|delicioso|dɨliˈsjozu|A|ali|5|A francesinha é deliciosa.|La francesinha es deliciosa.
-esquisito|raro / extraño|ɨʃkiˈzitu|A|ast|3|O sabor é esquisito.|El sabor es raro.;ff=1; n=¡no significa «exquisito»!
-largo|ancho|ˈlaɾɡu|A|ast|4|A rua é larga.|La calle es ancha.;ff=1; n=«largo» = ancho; «comprido» = largo
+esquisito|raro / extraño|ɨʃkiˈzitu|A|ast|3|O sabor é esquisito.|El sabor es raro.|ff=1; n=¡no significa «exquisito»!
+largo|ancho|ˈlaɾɡu|A|ast|4|A rua é larga.|La calle es ancha.|ff=1; n=«largo» = ancho; «comprido» = largo
 comprido|largo (extenso)|kũˈpɾiðu|A|ast|3|O vestido é comprido.|El vestido es largo.
 estreito|estrecho|ɨʃˈtɾejtu|A|ast|4|A escada é estreita.|La escalera es estrecha.
 alto|alto|ˈaɫtu|A|ast|5|O miradouro é alto.|El mirador es alto.
@@ -293,8 +293,8 @@ cinzento|gris|sɨˈzẽtu|A|col|4|O céu está cinzento.|El cielo está gris.
 cor|color|koɾ|S|col|5|Qual é a tua cor favorita?|¿Cuál es tu color favorito?
 metro|metro|ˈmɛtɾu|S|tra|5|O metro de Lisboa é rápido.|El metro de Lisboa es rápido.
 elétrico|tranvía|eˈlɛtɾiku|S|tra|5|O elétrico 28 passa pela Alfama.|El elétrico 28 pasa por la Alfama.
-autocarro|autobús|awtuˈkaʁu|S|tra|5|Apanho o autocarro ao domingo.|Tomo el autobús el domingo.;n=en Brasil es «ônibus»
-comboio|tren|kõˈboju|S|tra|5|O comboio parte às oito.|El tren sale a las ocho.;n=en Brasil es «trem»
+autocarro|autobús|awtuˈkaʁu|S|tra|5|Apanho o autocarro ao domingo.|Tomo el autobús el domingo.|n=en Brasil es «ônibus»
+comboio|tren|kõˈboju|S|tra|5|O comboio parte às oito.|El tren sale a las ocho.|n=en Brasil es «trem»
 estação|estación|ɨʃtɐˈsɐ̃w̃|S|tra|5|A estação de Santa Apolónia.|La estación de Santa Apolónia.
 cais|andén|kajʃ|S|tra|4|O comboio parte do cais três.|El tren sale del andén 3.
 bilhete|bilhete|biˈʎetɨ|S|tra|5|Um bilhete de ida e volta.|Un bilhete de ida y vuelta.
@@ -381,7 +381,7 @@ primavera|primavera|pɾimɐˈvɛɾɐ|S|cli|4|A primavera em Lisboa é linda.|La 
 outono|otoño|owˈtunu|S|cli|4|No outono chove muito.|En otoño llueve mucho.
 estação do ano|estación del año|ɨʃtɐˈsɐ̃w̃ du ɐˈnu|L|cli|4|Qual é a tua estação favorita?|¿Cuál es tu estación favorita?
 fado|fado|ˈfaðu|S|mus|5|O fado é a música da saudade.|El fado es la música de la saudade.
-saudade|nostalgia amorosa|sɐwˈðaðɨ|S|emo|5|Sinto saudade de Lima.|Siento saudade de Lima.;n=palabra intraducible: nostalgia de lo amado
+saudade|nostalgia amorosa|sɐwˈðaðɨ|S|emo|5|Sinto saudade de Lima.|Siento saudade de Lima.|n=palabra intraducible: nostalgia de lo amado
 guitarra portuguesa|guitarra portuguesa|ɡiˈtaʀɐ puɾtuˈɡezɐ|L|mus|3|A guitarra portuguesa tem doze cordas.|La guitarra portuguesa tiene doce cuerdas.
 música|música|ˈmuzikɐ|S|mus|5|Gosto de música ao vivo.|Me gusta la música en vivo.
 canção|canción|kɐ̃ˈsɐ̃w̃|S|mus|4|A canção acabou em silêncio.|La canción acabó en silencio.
@@ -390,7 +390,7 @@ futebol|fútbol|futeˈbɔɫ|S|spt|5|Vamos ver o futebol!|¡Vamos a ver el fútbo
 jogo|partido|ˈʒoɡu|S|spt|5|O jogo começa às oito.|El partido empieza a las ocho.
 estádio|estadio|ɨʃˈtaðju|S|spt|4|O estádio da Luz é enorme.|El estadio da Luz es enorme.
 jogar|jugar (deporte)|ʒuˈɡaɾ|V|spt|5|Jogo futebol ao domingo.|Juego al fútbol el domingo.
-time|equipo|ˈtʃimɨ|S|spt|4|Qual é o teu time?|¿Cuál es tu equipo?;n=en pt-PT también «equipa»
+time|equipo|ˈtʃimɨ|S|spt|4|Qual é o teu time?|¿Cuál es tu equipo?|n=en pt-PT también «equipa»
 equipa|equipo|ɨˈkipɐ|S|spt|4|A equipa do Porto ganhou.|El equipo del Porto ganó.
 ganhar|ganar|ɡɐˈɲaɾ|V|spt|4|O Benfica ganha em casa.|El Benfica gana en casa.
 perder|perder|pɨɾˈdeɾ|V|spt|4|Perdemos, mas ninguém está triste.|Perdemos, pero nadie está triste.
@@ -405,7 +405,7 @@ montanha|montaña|mõˈtɐ̃ɲɐ|S|nat|4|A serra fica ao norte.|La sierra queda 
 livro|libro|ˈlivɾu|S|let|5|Leio um livro no comboio.|Leo un libro en el tren.
 ler|leer|leɾ|V|let|5|Leio as notícias de manhã.|Leo las noticias por la mañana.
 escrever|escribir|ɨʃkɾɨˈveɾ|V|let|5|Escrevo um e-mail.|Escribo un correo.
-telemóvel|móvil|tɨlɨˈmɔvɛɫ|S|tec|5|O telemóvel fica na mesa.|El móvil queda en la mesa.;n=en Brasil es «celular»
+telemóvel|móvil|tɨlɨˈmɔvɛɫ|S|tec|5|O telemóvel fica na mesa.|El móvil queda en la mesa.|n=en Brasil es «celular»
 computador|ordenador|kõputɐˈðoɾ|S|tec|4|Trabalho no computador.|Trabajo en el ordenador.
 internet|internet|ĩtɐɾˈnɛt|S|tec|4|O wifi não funciona.|El wifi no funciona.
 telemóvel (chamada)|llamada|tɨlɨˈmɔvɛɫ|S|cmu|3|Dou um telemóvel à mãe.|Llamo a mi madre.
@@ -518,8 +518,8 @@ perna|pierna|ˈpɛɾnɐ|S|cor|5|As pernas doem da subida.|Las piernas duelen de 
 olho|ojo|ˈoʎu|S|cor|5|Fecha os olhos e respira.|Cierra los ojos y respira.
 ouvido|oído|owˈviðu|S|cor|4|Ouvido, nariz e garganta.|Oído, nariz y garganta.
 boca|boca|ˈbɔkɐ|S|cor|5|Abre a boca, por favor.|Abre la boca, por favor.
-mão|mano|mɐ̃w̃|S|cor|5|Segura a chávena com as mãos.|Sostiene la taza con las manos.;p=mãos
-pé|pie|pɛ|S|cor|5|Vou a pé.|Voy a pie.;p=pés
+mão|mano|mɐ̃w̃|S|cor|5|Segura a chávena com as mãos.|Sostiene la taza con las manos.|p=mãos
+pé|pie|pɛ|S|cor|5|Vou a pé.|Voy a pie.|p=pés
 ombros|hombros|ˈõbɾuʃ|S|cor|4|Deixa os ombros para baixo.|Deja los hombros abajo.
 coração|corazón|kuɾɐˈsɐ̃w̃|S|cor|4|O coração acelera na subida.|El corazón acelera en la subida.
 respiração|respiración|ʁɨʃpiɾɐˈsɐ̃w̃|S|cor|4|Uma respiração lenta.|Una respiración lenta.
@@ -553,7 +553,7 @@ funcionário|funcionario|fũsjuˈnaɾju|S|pro|3|A funcionária da bilheteira.|La
 empregada|empleada (del hogar)|ẽpɾɨˈɡaðɐ|S|pro|4|A empregada limpa a casa.|La empleada limpia la casa.
 aposentado|jubilado|ɐpuzẽˈtaðu|S|pro|3|O meu avô é aposentado.|Mi abuelo es jubilado.
 desempregado|desempleado|dɨzẽpɾɨˈɡaðu|S|pro|3|Está desempregado há um ano.|Está desempleado desde hace un año.
-então|entonces / pues|ẽˈtɐ̃w̃|I|cmu|5|Então, vamos?|Entonces, ¿vamos?;n=la palabra relleno más portuguesa
+então|entonces / pues|ẽˈtɐ̃w̃|I|cmu|5|Então, vamos?|Entonces, ¿vamos?|n=la palabra relleno más portuguesa
 fixe|guay / genial|fiʃɨ|A|sve|4|O concerto foi fixe!|¡El concierto fue genial!
 boa sorte|buena suerte|ˈboɐ ˈsoɾtɨ|L|cmu|4|Boa sorte no exame!|¡Buena suerte en el examen!
 boa viagem|buen viaje|ˈboɐ viˈaʒẽj̃|L|vig|5|Boa viagem para o Porto!|¡Buen viaje a Oporto!

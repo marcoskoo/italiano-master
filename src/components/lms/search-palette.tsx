@@ -6,8 +6,7 @@ import { useLms } from "@/lib/lms/store";
 import { NAV_FLAT, VIEW_TITLES, navFlatFor } from "@/lib/lms/nav";
 import { useUi, navLabelFor } from "@/lib/lms/ui";
 import { searchDictionary } from "@/lib/lms/dict/dictionary";
-import { EN_DICT } from "@/lib/lms/dict/lang-en";
-import { PT_DICT } from "@/lib/lms/dict/lang-pt";
+import { dictListFor } from "@/lib/lms/dict/active";
 import { GRAMMAR } from "@/lib/lms/grammar";
 import type { ViewId } from "@/lib/lms/types";
 import { cn } from "@/lib/utils";
@@ -95,8 +94,9 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
             action: () => navigate("dizionario", { wordId: w.id }),
           });
         }
-      } else if (activeLang === "en" || activeLang === "pt") {
-        const DICT = activeLang === "en" ? EN_DICT : PT_DICT;
+      } else {
+        /* v9.24 · despacho central: en/pt/fr/de */
+        const DICT = dictListFor(activeLang);
         const nq = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         for (const w of DICT.filter((w) => w.it.toLowerCase().includes(nq) || w.es.toLowerCase().includes(nq)).slice(0, 8)) {
           out.push({

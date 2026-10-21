@@ -12,8 +12,7 @@ import {
 import { CAMBRIDGE, CB_LEVEL_OF } from "@/lib/lms/cambridge";
 import { langContent, levelOfUnit } from "@/lib/lms/lang";
 import { CERTS_BY_LANG, LANGS, SHIPPED_LEVELS, langOfId } from "@/lib/lms/languages";
-import { EN_DICT_COUNT } from "@/lib/lms/dict/lang-en";
-import { PT_DICT_COUNT } from "@/lib/lms/dict/lang-pt";
+import { dictCountFor } from "@/lib/lms/dict/active";
 import type { LangCode } from "@/lib/lms/types";
 import { GRAMMAR } from "@/lib/lms/grammar";
 import { VOCAB } from "@/lib/lms/vocabulary";
@@ -97,10 +96,11 @@ export function QuadroView() {
   }, [cambridgeProgress, activeLang]);
 
   const totalCandoDone = Object.keys(candoDone).length;
-  /* lemas del diccionario de la lengua activa (hover) */
+  /* lemas del diccionario de la lengua activa (hover) — v9.24: despacho
+     central con FR_DICT y DE_DICT; it conserva VOCAB histórico */
   const covVocabCount = activeLang === "it"
     ? VOCAB.length
-    : activeLang === "en" ? EN_DICT_COUNT : activeLang === "pt" ? PT_DICT_COUNT : 0;
+    : dictCountFor(activeLang);
 
   /* ── nivel sugerido por la griglia (mediana conservadora) ── */
   const filled = CEFR_GRID.map((r) => langSelf[r.key]).filter(Boolean) as CefrLevel[];

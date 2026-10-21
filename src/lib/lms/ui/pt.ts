@@ -6,6 +6,25 @@ import type { UiStrings } from "./types";
    mistura (respetamos o mesmo padrão de it.ts).                        */
 
 export const PT: UiStrings = {
+  /* v9.23 · títulos de vista localizados (patrón en/fr): sin esto el
+     header caía al fallback español de VIEW_TITLES */
+  titles: {
+    inicio: { title: "Bem-vindo!", sub: "A tua plataforma integral de idiomas, do zero ao C2" },
+    progreso: { title: "O meu progresso", sub: "XP, sequência, competências e recomendações adaptativas" },
+    statistiche: { title: "Estatísticas", sub: "O teu painel analítico: XP, memória, competências e recordes" },
+    classifica: { title: "Classificação semanal", sub: "Ligas Bronze → Diamante: o top-3 sobe todas as segundas-feiras" },
+    premi: { title: "Prémios & Desafios", sub: "Moedas, roda da sorte, loja, impulso de XP e o desafio mensal" },
+    piani: { title: "Planos PRO · Premium · Platinum", sub: "Liberta todo o potencial da plataforma" },
+    cursos: { title: "Cursos", sub: "O percurso completo: Do zero → A1 → A2 → B1 → B2 → C1 → C2" },
+    letture: { title: "Leituras", sub: "Meditação, espiritualidade, presença e relaxamento — áudio sincronizado, estratégias de compreensão e tradução ao passar o cursor" },
+    dizionario: { title: "Dicionário", sub: "Dicionário de aprendizagem português (Portugal)–espanhol" },
+    importatore: { title: "Importador de textos", sub: "Transforma qualquer texto ou página web numa lição interativa" },
+    pomodoro: { title: "Pomodoro de estudo", sub: "Sessões de foco 25/5 com XP e alertas de voz nas mudanças de fase" },
+    quadro: { title: "Quadro MCER", sub: "O padrão internacional do Conselho da Europa: escala global, autoavaliação, certificações e ACTFL/ILR" },
+    impostazioni: { title: "Definições", sub: "Tema, tamanho do texto, áudio, perfil e cópia de segurança" },
+    legal: { title: "Privacidade e legal", sub: "RGPD · CCPA · LGPD: os teus dados, os teus direitos, cookies e segurança da conta" },
+    admin: { title: "Painel de controlo", sub: "Administração total da plataforma" },
+  },
   common: {
     showEs: "Mostrar espanhol", hideEs: "Ocultar espanhol",
     prev: "Anterior", next: "Seguinte", stop: "Parar",

@@ -288,6 +288,20 @@ const RAW_PRECHECK: Record<string, string> = {
   "às": "às", "à": "à",
 };
 
+/* v9.23 · alias normalizados del SUPPLEMENT: las claves con diacríticos
+   (há, três, terça, sábado, março, dúzia, ninguém) nunca casaban con la
+   búsqueda normalizada. La clave literal conserva prioridad.        */
+let SUP_NORM: Map<string, SupInfo> | null = null;
+function supNorm(): Map<string, SupInfo> {
+  if (SUP_NORM) return SUP_NORM;
+  SUP_NORM = new Map<string, SupInfo>();
+  for (const [k, v] of Object.entries(SUPPLEMENT)) {
+    const nk = norm(k);
+    if (!SUP_NORM.has(nk)) SUP_NORM.set(nk, v);
+  }
+  return SUP_NORM;
+}
+
 function synthEntry(lemma: string, info: SupInfo, kind: SupKind): VocabWord {
   return {
     id: `pt-${kind}-${norm(lemma).replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`,
@@ -337,7 +351,7 @@ export function lookupWordPt(form: string): VocabWord | undefined {
 
   // 2.bis · suplemento exacto
   const n = norm(w);
-  const sup = SUPPLEMENT[n];
+  const sup = supNorm().get(n);
   if (sup) return synthEntry(n, sup, ["às", "aos", "dos", "das", "nos", "nas", "pelo", "pela", "pelos", "pelas", "num", "numa", "dum", "duma", "há"].includes(n) ? "fw" : "sup");
 
   // 3 · irregulares (clave normalizada sin acentos)
@@ -346,7 +360,7 @@ export function lookupWordPt(form: string): VocabWord | undefined {
     hit = find(irr);
     if (hit) return hit;
     // lema con guion (gostar de, chamar-se, precisar de)
-    const supIrr = SUPPLEMENT[norm(irr)];
+    const supIrr = supNorm().get(norm(irr));
     if (supIrr) return synthEntry(irr, supIrr, "sup");
   }
 
@@ -373,7 +387,7 @@ export function lookupWordPt(form: string): VocabWord | undefined {
           hit = find(masc);
           if (hit) return hit;
         }
-        const supP = SUPPLEMENT[c];
+        const supP = supNorm().get(c);
         if (supP) return synthEntry(c, supP, "sup");
       }
     }
@@ -417,7 +431,7 @@ export function lookupWordPt(form: string): VocabWord | undefined {
       for (const c of cands) {
         hit = find(c);
         if (hit) return hit;
-        const supV = SUPPLEMENT[c];
+        const supV = supNorm().get(c);
         if (supV) return synthEntry(c, supV, "sup");
       }
     }

@@ -17,8 +17,7 @@ import { PLANS, levelAllowed, requiredPlanForLevel, generateWeeklyPlan, planLimi
 import { QUEST_DEFS, ALL_QUESTS_BONUS_XP } from "@/lib/lms/quests";
 import { useUi } from "@/lib/lms/ui";
 import { viewSupportsLang } from "@/lib/lms/nav";
-import { EN_DICT } from "@/lib/lms/dict/lang-en";
-import { PT_DICT } from "@/lib/lms/dict/lang-pt";
+import { dictListFor } from "@/lib/lms/dict/active";
 import { InstallButton } from "../pwa";
 import { PremiumBanner } from "../plan-badge";
 import { AudioButton } from "../audio-button";
@@ -103,8 +102,9 @@ export function HomeView() {
   /* v9.18 · UI en la lengua de estudio activa */
   const u = useUi();
   const due = dueCards(srs).length;
-  /* v9.18 · palabra del día del diccionario de la lengua activa */
-  const DAILY_SOURCE = activeLang === "en" ? EN_DICT : activeLang === "pt" ? PT_DICT : VOCAB;
+  /* v9.18→v9.24 · palabra del día del diccionario de la lengua activa
+     (despacho central: en/pt/fr/de; it conserva VOCAB histórico) */
+  const DAILY_SOURCE = activeLang === "it" ? VOCAB : dictListFor(activeLang);
   const wordOfDay = useMemo(() => pickDaily(DAILY_SOURCE), [DAILY_SOURCE]);
   const weaknesses = useMemo(() => weakTopics(errorLog, 3), [errorLog]);
   const showWeekly = planLimits(plan).weeklyPlan && (remoteConfig?.features.weeklyPlan ?? true);

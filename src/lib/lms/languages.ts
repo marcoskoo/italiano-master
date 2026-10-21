@@ -253,6 +253,6 @@ export const SHIPPED_LEVELS: Record<LangCode, string[]> = {
   it: ["A1", "A2", "B1", "B2", "C1", "C2"],
   en: ["A1", "A2", "B1", "B2", "C1", "C2"],
   pt: ["A1", "A2", "B1", "B2", "C1", "C2"],
-  fr: [],
-  de: [],
+  fr: ["A1", "A2", "B1", "B2", "C1", "C2"],
+  de: ["A1", "A2", "B1", "B2", "C1", "C2"],
 };

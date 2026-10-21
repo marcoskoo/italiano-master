@@ -4,11 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, ArrowLeft, ArrowRight, BookA, Gauge, Info, Link2, Search, Sparkles, Star, Waves } from "lucide-react";
 import {
-  CEFR_VOCAB_TARGETS, DICTIONARY, searchDictionary,
+  CEFR_VOCAB_TARGETS, searchDictionary,
 } from "@/lib/lms/dict/dictionary";
-import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
-import { EN_DICT } from "@/lib/lms/dict/lang-en";
-import { PT_DICT } from "@/lib/lms/dict/lang-pt";
+import { dictListFor, dictByIdFor } from "@/lib/lms/dict/active";
 import type { LangCode } from "@/lib/lms/types";
 import { CATEGORY_META, CATEGORY_IMG, CEFR_LEVELS, type VocabWord, type CefrLevel } from "@/lib/lms/types";
 import { ThemeImg } from "../theme-img";
@@ -30,11 +28,10 @@ import { cn } from "@/lib/utils";
 const ALL_TYPES = ["sostantivo", "verbo", "aggettivo", "avverbio", "espressione", "pronome", "preposizione", "congiunzione", "articolo", "numerale", "interiezione", "locuzione"];
 const PAGE = 60;
 
-/* v9.17 · diccionario por lengua: it → VOCAB (curso temático);
-   en → EN_DICT (inglés americano A1-A2 + lematizador en el hover);
-   pt → PT_DICT (portugués europeo A1-A2 + lematizador pt). */
-const EN_BY_ID: Record<string, VocabWord> = Object.fromEntries(EN_DICT.map((w) => [w.id, w]));
-const PT_BY_ID: Record<string, VocabWord> = Object.fromEntries(PT_DICT.map((w) => [w.id, w]));
+/* v9.17→v9.24 · diccionario por lengua vía despacho central
+   (dict/active.ts): it → DICTIONARY/VOCAB (8.022 lemas); en → EN_DICT;
+   pt → PT_DICT; fr → FR_DICT (v9.23); de → DE_DICT (v9.24). Sin
+   ternarios locales: una sola fuente para todas las vistas.     */
 
 export function DictionaryView() {
   const u = useUi();
@@ -50,8 +47,8 @@ export function DictionaryView() {
   const [favReview, setFavReview] = useState(false);
 
   const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
-  const WORD_INDEX = activeLang === "it" ? VOCAB_BY_ID : activeLang === "en" ? EN_BY_ID : activeLang === "pt" ? PT_BY_ID : {};
-  const BASE_LIST: VocabWord[] = activeLang === "it" ? DICTIONARY : activeLang === "en" ? EN_DICT : activeLang === "pt" ? PT_DICT : [];
+  const WORD_INDEX = dictByIdFor(activeLang);
+  const BASE_LIST: VocabWord[] = dictListFor(activeLang);
   const srs = useLms((s) => s.srs);
   const upsertSrs = useLms((s) => s.upsertSrs);
   const addXp = useLms((s) => s.addXp);
