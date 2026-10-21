@@ -4,6 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { AppShell } from "@/components/lms/shell";
 import { useLms } from "@/lib/lms/store";
 import { VIEW_TITLES } from "@/lib/lms/nav";
+import { LANG_LIST } from "@/lib/lms/languages";
 import { initVoices } from "@/lib/lms/tts";
 import { fetchAppConfig, telemetry, getClientId, syncProfileRequest, fetchServerProgress, loginRequest, setAdminToken, type ProfileSyncPayload } from "@/lib/lms/remote";
 import { HomeView } from "@/components/lms/views/home";
@@ -214,13 +215,26 @@ export default function Home() {
   }, []);
 
   if (!mounted) {
+    /* v9.37 · pantalla de arranque: il pappagallo + le bandiere dei paesi
+       delle 5 lingue (mismo loro y orden de LANG_LIST que en la app). */
     return (
-      <div className="flex min-h-screen items-center justify-center bg-crema">
+      <div className="flex min-h-screen items-center justify-center bg-crema px-6">
         <div className="text-center">
-          <p className="font-display text-4xl font-semibold text-inchiostro">
-            Italiano <span className="italic text-verde-scuro">Master</span>
+          <img
+            src="/mascot/hello.webp"
+            alt=""
+            aria-hidden="true"
+            className="mx-auto h-32 w-32 rounded-[1.75rem] border-2 border-soft bg-crema object-cover shadow-sm sm:h-36 sm:w-36"
+          />
+          <div className="mt-6 flex items-center justify-center gap-2 text-4xl leading-none" aria-hidden="true">
+            {LANG_LIST.map((L) => (
+              <span key={L.code} title={L.country}>{L.countryFlag}</span>
+            ))}
+          </div>
+          <p className="mt-6 font-display text-3xl font-semibold tracking-tight text-inchiostro sm:text-4xl">
+            Políglota <span className="italic text-verde-scuro">Master</span>
           </p>
-          <p className="mt-3 font-mono text-xs uppercase tracking-[0.2em] text-inchiostro/40">caricamento…</p>
+          <p className="mt-3 font-mono text-xs uppercase tracking-[0.2em] text-inchiostro/40">cargando…</p>
           <div className="mx-auto mt-6 h-1.5 w-40 overflow-hidden rounded-full bg-inchiostro/10">
             <div className="h-full w-1/2 animate-pulse rounded-full bg-verde" />
           </div>

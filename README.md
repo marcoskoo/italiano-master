@@ -1,6 +1,6 @@
 # 🌍 Políglota Master
 
-**🔗 Demo en vivo:** [poliglota-master.vercel.app](https://poliglota-master.vercel.app) · **Código:** [github.com/marcoskoo/italiano-master](https://github.com/marcoskoo/italiano-master)
+**🔗 Demo en vivo:** [poliglota-master.vercel.app](https://poliglota-master.vercel.app) · **Código:** [github.com/marcoskoo/poliglota-master](https://github.com/marcoskoo/poliglota-master)
 
 **Plataforma interactiva de aprendizaje de idiomas para hispanohablantes** — un LMS completo para **italiano, inglés, portugués, francés y alemán** que va desde cero hasta el nivel C2 del MCER, con tutor de conversación, motor de ejercicios adaptativo, repetición espaciada (SRS), noticias con el método VOA Learning English y un **panel de administración con control total de la plataforma**.
 
@@ -95,7 +95,7 @@ No hay que configurar base de datos: en el primer arranque se siembran automáti
 ## ▲ Despliegue en Vercel
 
 ### Opción 1 — un clic
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmarcoskoo%2Fitaliano-master&project-name=italiano-master&repository-name=italiano-master)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmarcoskoo%2Fpoliglota-master&project-name=poliglota-master&repository-name=poliglota-master)
 
 ### Opción 2 — CLI
 ```bash

@@ -7,7 +7,7 @@
    · /api/* → solo red (nunca se cachea el backend)
    · Web Push (v9.0): recordatorios diarios vía VAPID          */
 
-const VERSION = "im-v9-36-0";
+const VERSION = "im-v9-37-0";
 const CACHE = `italiano-master-${VERSION}`;
 
 const PRECACHE = [
@@ -89,7 +89,7 @@ self.addEventListener("fetch", (event) => {
 /* ── Web Push (v9.0) ───────────────────────────────────────────── */
 
 self.addEventListener("push", (event) => {
-  let data = { title: "Italiano Master", body: "È ora di studiare!", url: "/", tag: "im-push" };
+  let data = { title: "Políglota Master", body: "È ora di studiare!", url: "/", tag: "im-push" };
   try {
     if (event.data) data = { ...data, ...event.data.json() };
   } catch {
