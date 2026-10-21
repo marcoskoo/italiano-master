@@ -1496,3 +1496,4 @@ Work Log:
 
 Stage Summary:
 - v9.31: la app se llama «Políglota Master» y vive en poliglota-master.vercel.app (proyecto Vercel renombrado vía API + dominio verificado). Branding actualizado en metadata/PWA/offline/UI/diccionarios/README. Identificadores internos (localStorage, salts, blob admin) intactos para preservar progreso y credenciales. Redirect del dominio antiguo pendiente de configurar tras el deploy.
+- Post-deploy: redirect 301 permanente configurado vía API (PATCH domains) de italiano-master.vercel.app → poliglota-master.vercel.app (incluye paths profundos: /sw.js → /sw.js). E2E producción en la nueva URL: title/header/logo P ✓, Noticias 9/18 fotos lazy ✓. Captura: upload/v931-prod.png.
