@@ -8,6 +8,21 @@ import { PT_C2 } from "./courses-c2";
 import { PT_MIND_A1 } from "./mind-a1";
 import { PT_CLOZE_A1 } from "./cloze-a1";
 import { PT_DEEP_A1 } from "./deep-a1";
+import { PT_MIND_A2 } from "./mind-a2";
+import { PT_CLOZE_A2 } from "./cloze-a2";
+import { PT_DEEP_A2 } from "./deep-a2";
+import { PT_MIND_B1 } from "./mind-b1";
+import { PT_CLOZE_B1 } from "./cloze-b1";
+import { PT_DEEP_B1 } from "./deep-b1";
+import { PT_MIND_B2 } from "./mind-b2";
+import { PT_CLOZE_B2 } from "./cloze-b2";
+import { PT_DEEP_B2 } from "./deep-b2";
+import { PT_MIND_C1 } from "./mind-c1";
+import { PT_CLOZE_C1 } from "./cloze-c1";
+import { PT_DEEP_C1 } from "./deep-c1";
+import { PT_MIND_C2 } from "./mind-c2";
+import { PT_CLOZE_C2 } from "./cloze-c2";
+import { PT_DEEP_C2 } from "./deep-c2";
 import { PT_DRILLS_A1 } from "./drills-a1";
 import { PT_CB_RULES_A1 } from "./cb-rules-a1";
 import { PT_CB_RULES_A2 } from "./cb-rules-a2";
@@ -71,9 +86,10 @@ export const PT_COURSES: CbLevel[] = [
   },
 ];
 
-export const PT_MIND = PT_MIND_A1;
-export const PT_CLOZE = PT_CLOZE_A1;
-export const PT_DEEP = PT_DEEP_A1;
+/* v9.38 · capas deep/cloze/mind A1–C2 completas (72 unidades) */
+export const PT_MIND = { ...PT_MIND_A1, ...PT_MIND_A2, ...PT_MIND_B1, ...PT_MIND_B2, ...PT_MIND_C1, ...PT_MIND_C2 };
+export const PT_CLOZE = { ...PT_CLOZE_A1, ...PT_CLOZE_A2, ...PT_CLOZE_B1, ...PT_CLOZE_B2, ...PT_CLOZE_C1, ...PT_CLOZE_C2 };
+export const PT_DEEP = { ...PT_DEEP_A1, ...PT_DEEP_A2, ...PT_DEEP_B1, ...PT_DEEP_B2, ...PT_DEEP_C1, ...PT_DEEP_C2 };
 export const PT_DRILLS = PT_DRILLS_A1;
 
 /* v9.36 · tablas de reglas + ejemplos + drills para las 72 unidades */

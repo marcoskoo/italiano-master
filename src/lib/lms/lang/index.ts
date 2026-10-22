@@ -10,8 +10,8 @@ import { GRAMMAR_DEEP } from "../extra/grammar-deep";
 import { GRAMMAR_DRILLS } from "../extra/grammar-drills";
 import { EN_COURSES, EN_MIND, EN_CLOZE, EN_DEEP, EN_DRILLS, EN_CB_RULES } from "./en";
 import { PT_COURSES, PT_MIND, PT_CLOZE, PT_DEEP, PT_DRILLS, PT_CB_RULES } from "./pt";
-import { FR_COURSES, FR_CB_RULES, FR_DRILLS } from "./fr";
-import { DE_COURSES, DE_CB_RULES, DE_DRILLS } from "./de";
+import { FR_COURSES, FR_CB_RULES, FR_DRILLS, FR_MIND, FR_CLOZE, FR_DEEP } from "./fr";
+import { DE_COURSES, DE_CB_RULES, DE_DRILLS, DE_MIND, DE_CLOZE, DE_DEEP } from "./de";
 
 /* ═══ v9.17 · Resolutor de contenido por lengua de estudio ════════════
    La interfaz sigue en español; el contenido (unidades, lecturas,
@@ -51,23 +51,21 @@ const PT_CONTENT: LangContent = {
   drills: PT_DRILLS,
 };
 
-/* v9.23/v9.24 · FR y DE aterrizan con el percorso completo de cursos;
-   las capas complementarias (mind/cloze/deep/drills) llegan por nivel
-   en pases sucesivos — las unidades son autocontenidas (patrón EN/PT
-   de v9.22 para A2–C2) y las vistas degradan con gracia a vacío.  */
+/* v9.23/v9.24 · FR y DE aterrizaron con el percorso completo; v9.38 añade
+   las capas deep/cloze/mind para sus 72 unidades (A1–C2). */
 const FR_CONTENT: LangContent = {
   courses: FR_COURSES,
-  cloze: {},
-  mind: {},
-  deep: {},
+  cloze: FR_CLOZE,
+  mind: FR_MIND,
+  deep: FR_DEEP,
   drills: FR_DRILLS,
 };
 
 const DE_CONTENT: LangContent = {
   courses: DE_COURSES,
-  cloze: {},
-  mind: {},
-  deep: {},
+  cloze: DE_CLOZE,
+  mind: DE_MIND,
+  deep: DE_DEEP,
   drills: DE_DRILLS,
 };
 

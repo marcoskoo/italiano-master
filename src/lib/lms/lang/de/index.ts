@@ -6,6 +6,24 @@ import { DE_B2 } from "./courses-b2";
 import { DE_C1 } from "./courses-c1";
 import { DE_C2 } from "./courses-c2";
 import { DE_CB_RULES_A1 } from "./cb-rules-a1";
+import { DE_MIND_A1 } from "./mind-a1";
+import { DE_CLOZE_A1 } from "./cloze-a1";
+import { DE_DEEP_A1 } from "./deep-a1";
+import { DE_MIND_A2 } from "./mind-a2";
+import { DE_CLOZE_A2 } from "./cloze-a2";
+import { DE_DEEP_A2 } from "./deep-a2";
+import { DE_MIND_B1 } from "./mind-b1";
+import { DE_CLOZE_B1 } from "./cloze-b1";
+import { DE_DEEP_B1 } from "./deep-b1";
+import { DE_MIND_B2 } from "./mind-b2";
+import { DE_CLOZE_B2 } from "./cloze-b2";
+import { DE_DEEP_B2 } from "./deep-b2";
+import { DE_MIND_C1 } from "./mind-c1";
+import { DE_CLOZE_C1 } from "./cloze-c1";
+import { DE_DEEP_C1 } from "./deep-c1";
+import { DE_MIND_C2 } from "./mind-c2";
+import { DE_CLOZE_C2 } from "./cloze-c2";
+import { DE_DEEP_C2 } from "./deep-c2";
 import { DE_CB_RULES_A2 } from "./cb-rules-a2";
 import { DE_CB_RULES_B1 } from "./cb-rules-b1";
 import { DE_CB_RULES_B2 } from "./cb-rules-b2";
@@ -80,4 +98,8 @@ export const DE_CB_RULES = {
 
 /* v9.36 · registro de drills para la lengua (antes vacío) */
 import type { GrammarDrill } from "../../extra/grammar-drills";
+/* v9.38 · capas deep/cloze/mind A1–C2 completas (72 unidades) */
+export const DE_MIND = { ...DE_MIND_A1, ...DE_MIND_A2, ...DE_MIND_B1, ...DE_MIND_B2, ...DE_MIND_C1, ...DE_MIND_C2 };
+export const DE_CLOZE = { ...DE_CLOZE_A1, ...DE_CLOZE_A2, ...DE_CLOZE_B1, ...DE_CLOZE_B2, ...DE_CLOZE_C1, ...DE_CLOZE_C2 };
+export const DE_DEEP = { ...DE_DEEP_A1, ...DE_DEEP_A2, ...DE_DEEP_B1, ...DE_DEEP_B2, ...DE_DEEP_C1, ...DE_DEEP_C2 };
 export const DE_DRILLS: Record<string, GrammarDrill> = {};

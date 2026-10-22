@@ -209,7 +209,7 @@ export const DE_NEWS_A: NewsItem[] = [
     title: "Der Verein: eine zweite Familie mit Statuten",
     titleEs: "El Verein: una segunda familia con estatutos",
     lead: {
-      it: "In Deutschland gibt es mehr Vereinsmitglieder als Einwohner mancher Länder. Der Verein ist kein Hobby — er ist eine Art平行 society, geregelt wie ein Staat und gefühlt wie ein Wohnzimmer.",
+      it: "In Deutschland gibt es mehr Vereinsmitglieder als Einwohner mancher Länder. Der Verein ist kein Hobby — er ist eine Art Parallelgesellschaft, geregelt wie ein Staat und gefühlt wie ein Wohnzimmer.",
       es: "En Alemania hay más socios de clubes que habitantes de algunos países. El Verein no es un hobby — es una especie de sociedad paralela, regulada como un estado y sentida como un salón de casa.",
     },
     paragraphs: [

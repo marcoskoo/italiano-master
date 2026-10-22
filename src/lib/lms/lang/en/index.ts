@@ -8,6 +8,21 @@ import { EN_C2 } from "./courses-c2";
 import { EN_MIND_A1 } from "./mind-a1";
 import { EN_CLOZE_A1 } from "./cloze-a1";
 import { EN_DEEP_A1 } from "./deep-a1";
+import { EN_MIND_A2 } from "./mind-a2";
+import { EN_CLOZE_A2 } from "./cloze-a2";
+import { EN_DEEP_A2 } from "./deep-a2";
+import { EN_MIND_B1 } from "./mind-b1";
+import { EN_CLOZE_B1 } from "./cloze-b1";
+import { EN_DEEP_B1 } from "./deep-b1";
+import { EN_MIND_B2 } from "./mind-b2";
+import { EN_CLOZE_B2 } from "./cloze-b2";
+import { EN_DEEP_B2 } from "./deep-b2";
+import { EN_MIND_C1 } from "./mind-c1";
+import { EN_CLOZE_C1 } from "./cloze-c1";
+import { EN_DEEP_C1 } from "./deep-c1";
+import { EN_MIND_C2 } from "./mind-c2";
+import { EN_CLOZE_C2 } from "./cloze-c2";
+import { EN_DEEP_C2 } from "./deep-c2";
 import { EN_DRILLS_A1 } from "./drills-a1";
 import { EN_CB_RULES_A1 } from "./cb-rules-a1";
 import { EN_CB_RULES_A2 } from "./cb-rules-a2";
@@ -69,9 +84,10 @@ export const EN_COURSES: CbLevel[] = [
   },
 ];
 
-export const EN_MIND = EN_MIND_A1;
-export const EN_CLOZE = EN_CLOZE_A1;
-export const EN_DEEP = EN_DEEP_A1;
+/* v9.38 · capas deep/cloze/mind A1–C2 completas (72 unidades) */
+export const EN_MIND = { ...EN_MIND_A1, ...EN_MIND_A2, ...EN_MIND_B1, ...EN_MIND_B2, ...EN_MIND_C1, ...EN_MIND_C2 };
+export const EN_CLOZE = { ...EN_CLOZE_A1, ...EN_CLOZE_A2, ...EN_CLOZE_B1, ...EN_CLOZE_B2, ...EN_CLOZE_C1, ...EN_CLOZE_C2 };
+export const EN_DEEP = { ...EN_DEEP_A1, ...EN_DEEP_A2, ...EN_DEEP_B1, ...EN_DEEP_B2, ...EN_DEEP_C1, ...EN_DEEP_C2 };
 export const EN_DRILLS = EN_DRILLS_A1;
 
 /* v9.36 · tablas de reglas + ejemplos + drills para las 72 unidades */

@@ -75,7 +75,7 @@ export const MIND_C1: Record<string, MindReading[]> = {
       predict: { q: "Antes de leer: ¿qué distinción clásica recuperará el texto?", options: ["Persuadir vs vencer", "Hablar vs callar", "Ganar vs perder"], answer: 0, why: "«Che non alza la voce»: la persuasión silenciosa." },
       quiz: [
         { q: "Cosa fa chi vuole persuadere?", kind: "literal", options: ["Ascolta fino a trovare il punto dove l'altro potrebbe cambiare idea", "Alza la voce per farsi sentire", "Interrompe con battute"], answer: 0, why: "El primer párrafo lo define." },
-        { q: "Cosa ottengono le parti che parlano lentamente e fanno domande?", kind: "literal", options: ["Accordi più durevoli", "Vittorie immediate", "Più applausi"], answer: 0, why: "«Accordi più durevoli»." , why: "«Ottengono accordi più durevoli»." },
+        { q: "Cosa ottengono le parti che parlano lentamente e fanno domande?", kind: "literal", options: ["Accordi più durevoli", "Vittorie immediate", "Più applausi"], answer: 0, why: "«Ottengono accordi più durevoli»." },
         { q: "Perché la calma è «tecnica» y no gentilezza?", kind: "inferencial", options: ["Porque produce efectos medibles: el escuchado reconsidera intereses", "Porque es más rápida", "Porque evita cualquier conflicto"], answer: 0, why: "«L'interlocutore ascoltato riconsidera gli interessi»." },
         { q: "«Chi domanda bene ha già spostato la conversazione». Qué pregunta usarías tú para abrir un debate difícil?", kind: "critica", options: ["Una que invite al otro a exponer sus intereses reales, no sus posiciones", "Una que demuestre mi superioridad", "Ninguna: mejor afirmar fuerte"], answer: 0, why: "La pregunta que expone intereses desarma posiciones rígidas." },
       ],
