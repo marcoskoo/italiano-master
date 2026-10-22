@@ -1,31 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Bot, Check, Crown, PenLine, Send, Sparkles, Theater, User } from "lucide-react";
 import { CEFR_LEVELS } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { PLANS, todayUsage, planLimits } from "@/lib/lms/plans";
 import { telemetry } from "@/lib/lms/remote";
+import { tutorFor, type TutorMode } from "@/lib/lms/tutor-persona";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
 
-/* ── Vista: Tutor IA ──────────────────────────────────────────────── */
+/* ── Vista: Tutor IA (v9.39 · multilingüe: la persona, el saludo, las
+   sugerencias y los modos salen de la lengua de estudio, no del
+   italiano hardcodeado) ──────────────────────────────────────────── */
 
 interface Msg { role: "user" | "assistant"; content: string; }
 
-const MODES = [
-  { id: "chat", label: "Chiacchierata", icon: Sparkles, desc: "Conversación libre en italiano" },
-  { id: "correct", label: "Correzione", icon: Check, desc: "Corrige tu texto" },
-  { id: "roleplay", label: "Role-play", icon: Theater, desc: "Situaciones con personaje" },
-] as const;
-
-const QUICK = [
-  "Spiegami la differenza tra imperfetto e passato prossimo",
-  "Come si dice “tengo que trabajar mañana”?",
-  "Cosa devo visitare a Roma in tre giorni?",
-  "Correggi: “Ieri ho andato al cinema con i miei amici”",
-];
+const MODE_ICONS: Record<TutorMode, typeof Sparkles> = {
+  chat: Sparkles, correct: Check, roleplay: Theater,
+};
 
 export function TutorView() {
   const navParams = useLms((s) => s.navParams);
@@ -38,11 +32,15 @@ export function TutorView() {
   const tutorCount = useLms((s) => s.tutorCount);
   const tutorCountDate = useLms((s) => s.tutorCountDate);
   const incrementTutor = useLms((s) => s.incrementTutor);
+  const activeLang = useLms((s) => s.activeLang);
 
   const tutorLimit = planLimits(plan).tutorPerDay;
   const tutorUsed = todayUsage(tutorCount, tutorCountDate);
   const tutorBlocked = tutorLimit >= 0 && tutorUsed >= tutorLimit;
   const account = useLms((s) => s.account);
+
+  const p = useMemo(() => tutorFor(activeLang), [activeLang]);
+  const MODES = p.modes;
 
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -52,15 +50,16 @@ export function TutorView() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const seededRef = useRef(false);
 
-  // saludo inicial
+  // saludo inicial EN LA LENGUA DE ESTUDIO (v9.39: era italiano fijo)
   useEffect(() => {
     if (messages.length === 0) {
       setMessages([{
         role: "assistant",
-        content: `Ciao ${userName.split(" ")[0]}! Sono Marco, il tuo tutor italiano. 🇮🇹 Possiamo chiacchierare, correggere i tuoi testi o fare role-play (bar, hotel, colloquio…). Di cosa parliamo oggi?`,
+        content: p.welcome(userName.split(" ")[0] || "student"),
       }]);
     }
-  }, []);
+     
+  }, [p.code]);
 
   const send = async (text?: string) => {
     const content = (text ?? input).trim();
@@ -69,7 +68,7 @@ export function TutorView() {
     setMessages(nextMessages);
     setInput("");
     setLoading(true);
-    telemetry("tutor_message", { mode }, account?.username);
+    telemetry("tutor_message", { mode, lang: p.code }, account?.username);
     try {
       const res = await fetch("/api/tutor", {
         method: "POST",
@@ -79,6 +78,7 @@ export function TutorView() {
           level,
           mode,
           userName,
+          lang: p.code,
         }),
       });
       const data = await res.json();
@@ -100,6 +100,7 @@ export function TutorView() {
       const seed = navParams.tutorSeed;
       setTimeout(() => send(seed), 300);
     }
+     
   }, [navParams.tutorSeed]);
 
   useEffect(() => {
@@ -116,7 +117,7 @@ export function TutorView() {
           La administración ha desactivado el tutor IA en este momento. Todos los demás materiales (cursos, gramática, vocabulario, juegos) siguen disponibles. Vuelve a probar más tarde.
         </p>
         <button onClick={() => navigate("inicio")} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 hover:bg-verde-scuro">
-          Torna all'inizio
+          Volver al inicio
         </button>
       </div>
     );
@@ -150,7 +151,7 @@ export function TutorView() {
                 mode === m.id ? "border-oro bg-oro-tenue text-oro-scuro dark:text-oro" : "border-soft text-muted-it hover:border-oro/40"
               )}
             >
-              <m.icon className="h-3.5 w-3.5" aria-hidden="true" /> {m.label}
+              {(() => { const Icon = MODE_ICONS[m.id]; return <Icon className="h-3.5 w-3.5" aria-hidden="true" />; })()} {m.label}
             </button>
           ))}
         </div>
@@ -164,11 +165,11 @@ export function TutorView() {
             <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-crema-scura bg-verde" aria-hidden="true" />
           </span>
           <div>
-            <p className="font-display text-lg font-semibold leading-tight">Marco · Tutor IA</p>
+            <p className="font-display text-lg font-semibold leading-tight">{p.name} · Tutor IA <span aria-hidden="true">{p.flag}</span></p>
             <p className="text-xs text-muted-it">
-              Nivel {level} · {MODES.find((m) => m.id === mode)?.desc} ·{" "}
+              {p.headerSub(level, MODES.find((m) => m.id === mode)?.desc ?? "")} ·{" "}
               <span className={cn("font-bold", tutorLimit >= 0 && tutorLimit - tutorUsed <= 2 ? "text-rosso" : "text-verde-scuro dark:text-verde")}>
-                {tutorLimit < 0 ? "messaggi ∞" : `${tutorUsed}/${tutorLimit} messaggi oggi`}
+                {tutorLimit < 0 ? "mensajes ∞" : `${tutorUsed}/${tutorLimit} mensajes hoy`}
               </span>
             </p>
           </div>
@@ -192,7 +193,7 @@ export function TutorView() {
                 {m.content}
                 {m.role === "assistant" && (
                   <span className="mt-2 block border-t border-inchiostro/10 pt-2 dark:border-inchiostro/20">
-                    <AudioButton text={m.content.replace(/[📝✅⭐]/gu, "")} size="sm" label="Ascolta la risposta di Marco" />
+                    <AudioButton text={m.content.replace(/[📝✅⭐]/gu, "")} size="sm" label={p.audioLabel} lang={p.code} />
                   </span>
                 )}
               </div>
@@ -207,7 +208,7 @@ export function TutorView() {
                 {[0, 1, 2].map((d) => (
                   <span key={d} className="h-2 w-2 animate-bounce rounded-full bg-verde" style={{ animationDelay: `${d * 0.15}s` }} />
                 ))}
-                <span className="ml-2 text-xs text-muted-it">Marco sta scrivendo…</span>
+                <span className="ml-2 text-xs text-muted-it">{p.writing}</span>
               </div>
             </div>
           )}
@@ -217,9 +218,9 @@ export function TutorView() {
         {/* sugerencias cuando está vacío */}
         {messages.length <= 1 && !loading && (
           <div className="border-t border-soft px-5 py-3">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-it">Suggerimenti</p>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-it">Sugerencias</p>
             <div className="flex flex-wrap gap-1.5">
-              {QUICK.map((q, i) => (
+              {p.quick.map((q, i) => (
                 <button
                   key={i}
                   onClick={() => send(q)}
@@ -238,10 +239,10 @@ export function TutorView() {
             <div className="rounded-2xl border-2 border-oro/45 bg-oro-tenue p-5 text-center dark:bg-oro-tenue/20">
               <Crown className="mx-auto h-7 w-7 text-oro-scuro dark:text-oro" aria-hidden="true" />
               <p className="mt-2 font-display text-lg font-semibold">
-                Hai esaurito i {tutorLimit} messaggi di oggi ({PLANS[plan].name})
+                {p.blockedTitle(tutorLimit, PLANS[plan].name)}
               </p>
               <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted-it">
-                Con PRO hai 20 messaggi al giorno, con PREMIUM 100 e con PLATINUM conversationi illimitate con Marco.
+                {p.blockedBody}
               </p>
               <button
                 onClick={() => navigate("piani")}
@@ -258,7 +259,7 @@ export function TutorView() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-            placeholder={mode === "correct" ? "Incolla qui il tuo testo da correggere…" : "Scrivi in italiano (o in spagnolo)…"}
+            placeholder={mode === "correct" ? p.placeholderCorrect : p.placeholderChat}
             aria-label="Mensaje para el tutor"
             className="min-h-11 flex-1 rounded-xl border-2 border-soft bg-crema px-4 outline-none transition-colors focus:border-verde"
           />
@@ -276,8 +277,7 @@ export function TutorView() {
 
       <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-muted-it">
         <PenLine className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        Marco adapta su italiano a tu nivel, corrige con explicaciones en español y termina siempre con una
-        pregunta para mantener viva la conversación. Cada mensaje suma +5 XP a tu destreza de conversación.
+        {p.footerNote}
       </p>
     </div>
   );

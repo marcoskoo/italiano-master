@@ -3,21 +3,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Play, RefreshCcw, Timer, Trophy, Zap } from "lucide-react";
-import { VERB_LIST, TENSES, PRONOUNS, findVerb, conjugate, type TenseId } from "@/lib/lms/conjugator";
-import type { Topic } from "@/lib/lms/types";
-import { normalizeItalian } from "@/lib/lms/numbers";
+import { conjugatorFor, type ConjugatorPack, type PackTense } from "@/lib/lms/conjugators";
+import { numbersFor } from "@/lib/lms/numbers-pack";
+import type { LangCode, Topic } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
 
-/* ── Vista: Allenamento verbi · drill contrarreloj · plugin v1.1 ──── */
-
-const DEFAULT_TENSES: TenseId[] = ["presente", "passato_prossimo"];
+/* ── Vista: Allenamento verbi · drill contrarreloj · v9.39 multilingüe ── */
 
 interface Question {
   verb: string;
   es: string;
-  tense: TenseId;
+  tense: string;
   tenseLabel: string;
   personIdx: number;
   answer: string;        // forma canónica (puede contener "/" para variantes)
@@ -25,39 +23,48 @@ interface Question {
   irregular: boolean;
 }
 
-function pickQuestion(tenses: TenseId[]): Question {
-  // excluye reflexivos: la forma con clítico complica el drill
-  const pool = VERB_LIST.filter((v) => !v.infinitive.endsWith("si"));
+function pickQuestion(pack: ConjugatorPack, tenses: string[]): Question {
+  // excluye reflexivos italianos (-si): el clítico complica el drill
+  const pool = pack.verbs.filter((v) => !/si$/.test(v.infinitive) || pack.code !== "it");
   const verb = pool[Math.floor(Math.random() * pool.length)];
-  const entry = findVerb(verb.infinitive)!;
   const tense = tenses[Math.floor(Math.random() * tenses.length)];
   const personIdx = Math.floor(Math.random() * 6);
-  const conj = conjugate(entry, tense);
-  const form = conj.forms[personIdx].form.replace(/!$/, "").replace(/—/, "");
+  const conj = pack.conjugate(verb, tense);
+  const form = (conj.forms[personIdx]?.form ?? "").replace(/!$/, "").replace(/—/g, "");
+  const canonical = (conj.forms[personIdx]?.form ?? "").replace(/!$/, "");
   const variants = form.split("/").flatMap((f) => {
     const base = f.trim();
-    return tense === "passato_prossimo" && !base.includes(" ")
-      ? [base]
-      : [base, base.replace(/o$/, "a"), base.replace(/i$/, "e")].filter((v, i, a) => a.indexOf(v) === i);
+    // concordancia o/a · i/e: solo italiana (participios con essere)
+    return pack.code === "it" && !base.includes(" ")
+      ? [base, base.replace(/o$/, "a"), base.replace(/i$/, "e")].filter((v, i, a) => a.indexOf(v) === i)
+      : [base];
   });
-  // si el oficial trae "/", añade también las combinaciones
-  const canonical = conj.forms[personIdx].form.replace(/!$/, "");
   if (canonical.includes("/")) {
     const [m, f] = canonical.split("/");
     const aux = m.split(" ")[0];
-    variants.push(`${aux} ${f.trim()}`);
-    variants.push(m.trim());
+    variants.push(`${aux} ${f.trim()}`, m.trim());
   }
   return {
     verb: verb.infinitive,
     es: verb.es,
     tense,
-    tenseLabel: TENSES.find((t) => t.id === tense)!.label,
+    tenseLabel: pack.tenses.find((t) => t.id === tense)?.label ?? tense,
     personIdx,
     answer: canonical,
     accepted: Array.from(new Set(variants.map((v) => v.trim()).filter(Boolean))),
-    irregular: conj.forms[personIdx].irregular,
+    irregular: conj.forms[personIdx]?.irregular ?? false,
   };
+}
+
+/** mapa genérico tiempo→tema SRS (funciona con los ids de cualquier pack) */
+function topicForTense(t: string): Topic {
+  const s = t.toLowerCase();
+  if (/present/.test(s) || s === "presente" || /präsens/.test(s)) return "presente";
+  if (/past|prät|perfekt|pass[eé]|imperf/.test(s)) return "passato";
+  if (/futur/.test(s)) return "futuro";
+  if (/conditional|condiz|condicion/.test(s)) return "condizionale";
+  if (/subjunct|conjunt|subjonct|konjunktiv|congiunt/.test(s)) return "congiuntivo";
+  return "grammatica";
 }
 
 function FeatureOff() {
@@ -74,7 +81,11 @@ function FeatureOff() {
 
 export function VerbDrillView() {
   const remoteConfig = useLms((s) => s.remoteConfig);
-  const [tenses, setTenses] = useState<TenseId[]>(DEFAULT_TENSES);
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  const pack = useMemo(() => conjugatorFor(activeLang), [activeLang]);
+  const num = useMemo(() => numbersFor(activeLang), [activeLang]);
+  const defaultTenses = useMemo(() => pack.tenses.slice(0, 2).map((t) => t.id), [pack]);
+  const [tenses, setTenses] = useState<string[]>(defaultTenses);
   const [running, setRunning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [q, setQ] = useState<Question | null>(null);
@@ -89,20 +100,24 @@ export function VerbDrillView() {
   const recordCorrect = useLms((s) => s.recordCorrect);
   const recordError = useLms((s) => s.recordError);
 
-  const topicFor = (t: TenseId): Topic =>
-    t === "presente" ? "presente"
-      : t === "passato_prossimo" || t === "imperfetto" ? "passato"
-        : t === "futuro" ? "futuro"
-          : t === "condizionale" ? "condizionale"
-            : t === "congiuntivo" ? "congiuntivo"
-              : "grammatica";
+  /* al cambiar de lengua, los ids de tiempo cambian: reset en render
+     (patrón oficial de React «adjusting state during render») */
+  const [prevLang, setPrevLang] = useState(activeLang);
+  if (prevLang !== activeLang) {
+    setPrevLang(activeLang);
+    setTenses(defaultTenses);
+    setQ(null);
+    setRunning(false);
+  }
+
+  const topicFor = (t: string): Topic => topicForTense(t);
 
   const nextQuestion = useCallback(() => {
-    setQ(pickQuestion(tenses.length ? tenses : DEFAULT_TENSES));
+    setQ(pickQuestion(pack, tenses.length ? tenses : defaultTenses));
     setInput("");
     setFeedback("idle");
     inputRef.current?.focus();
-  }, [tenses]);
+  }, [pack, tenses, defaultTenses]);
 
   const start = () => {
     setRunning(true);
@@ -111,7 +126,7 @@ export function VerbDrillView() {
     setStreak(0);
     setBestStreak(0);
     setHistory([]);
-    setQ(pickQuestion(tenses.length ? tenses : DEFAULT_TENSES));
+    setQ(pickQuestion(pack, tenses.length ? tenses : defaultTenses));
     setInput("");
     setFeedback("idle");
     setTimeout(() => inputRef.current?.focus(), 50);
@@ -131,8 +146,8 @@ export function VerbDrillView() {
 
   const check = () => {
     if (!q || feedback !== "idle") return;
-    const norm = normalizeItalian(input);
-    const good = norm.length > 0 && q.accepted.some((a) => normalizeItalian(a) === norm);
+    const norm = num.normalize(input);
+    const good = norm.length > 0 && q.accepted.some((a) => num.normalize(a) === norm);
     setFeedback(good ? "ok" : "ko");
     setHistory((h) => [{ verb: q.verb, form: q.answer, ok: good }, ...h].slice(0, 12));
     if (good) {
@@ -159,7 +174,7 @@ export function VerbDrillView() {
         <section className="mb-5 rounded-3xl border border-soft bg-surface p-5">
           <p className="mb-2 text-sm font-bold">Tiempos a entrenar</p>
           <div className="flex flex-wrap gap-2">
-            {TENSES.map((t) => {
+            {pack.tenses.map((t: PackTense) => {
               const on = tenses.includes(t.id);
               return (
                 <button
@@ -213,7 +228,7 @@ export function VerbDrillView() {
             <p className="font-display text-2xl font-semibold">{q.verb}</p>
             <span className="rounded-full bg-inchiostro/5 px-3 py-1 text-xs font-bold text-muted-it">{q.es}</span>
           </div>
-          <p className="mt-1 text-sm font-bold text-verde-scuro dark:text-verde">{q.tenseLabel} · {PRONOUNS[q.personIdx]}</p>
+          <p className="mt-1 text-sm font-bold text-verde-scuro dark:text-verde">{q.tenseLabel} · {pack.pronouns[q.personIdx]}</p>
 
           <input
             ref={inputRef}
@@ -241,7 +256,7 @@ export function VerbDrillView() {
             <div className="mt-4 rounded-2xl bg-rosso-tenue p-4 text-center">
               <p className="font-bold text-rosso-scuro dark:text-rosso">La forma corretta: <span className="font-display text-lg">{q.answer}</span></p>
               <div className="mt-3 flex items-center justify-center gap-3">
-                <AudioButton text={q.answer.replace(/\//g, " o ")} variant="full" label="Escucha" />
+                <AudioButton text={q.answer.replace(/\//g, " o ")} variant="full" label="Escucha" lang={activeLang} />
                 <button onClick={nextQuestion} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-inchiostro px-5 py-2.5 text-sm font-bold text-crema hover:scale-105 dark:bg-verde dark:text-inchiostro">
                   Prossimo →
                 </button>

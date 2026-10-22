@@ -36,6 +36,7 @@ import {
   type NewsCat, type NewsItem,
 } from "@/lib/lms/news";
 import { LANGS } from "@/lib/lms/languages";
+import { tutorFor } from "@/lib/lms/tutor-persona";
 import type { CefrLevel, LangCode } from "@/lib/lms/types";
 
 const LEVELS: (CefrLevel | "tutti")[] = ["tutti", "A1", "A2", "B1", "B2", "C1", "C2"];
@@ -593,9 +594,7 @@ function Reader({ news, lang, onBack }: { news: NewsItem; lang: LangCode; onBack
               <p className="mt-1 pl-8.5 text-sm italic text-muted-it">{d.es}</p>
               <button
                 onClick={() => navigate("tutor", {
-                  tutorSeed: lang === "it"
-                    ? `${d.it} (Rispondi in italiano semplice, livello ${news.level}, e correggi i miei errori.)`
-                    : `${d.it} (Responde en ${LANGS[lang].name.toLowerCase()} sencillo, nivel ${news.level}, y corrige mis errores.)`,
+                  tutorSeed: tutorFor(lang).seedFromReading(d.it, news.level),
                 })}
                 className="mt-2.5 ml-8.5 inline-flex min-h-9 items-center gap-1.5 rounded-xl border-2 border-azzurro/30 bg-azzurro/10 px-3.5 py-1.5 text-xs font-bold text-azzurro-scuro transition-all hover:scale-105 dark:text-azzurro"
               >

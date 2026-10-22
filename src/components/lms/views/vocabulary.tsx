@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Library, Play, Sparkles } from "lucide-react";
-import { VOCAB, VOCAB_BY_ID, normalizeSearch, wordsByCategory } from "@/lib/lms/vocabulary";
+import { normalizeSearch } from "@/lib/lms/vocabulary";
+import { vocabFor, wordsByCategoryFor } from "@/lib/lms/lang-extras";
 import { CATEGORY_META, CATEGORY_IMG, type WordCategory } from "@/lib/lms/types";
 import { ThemeImg } from "../theme-img";
 import { useLms } from "@/lib/lms/store";
@@ -15,6 +16,9 @@ import { cn } from "@/lib/utils";
 /* ── Vista: Vocabulario ───────────────────────────────────────────── */
 
 export function VocabularyView() {
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const VOCAB = useMemo(() => vocabFor(activeLang), [activeLang]);
+  const wordsByCategory = (cat: Parameters<typeof wordsByCategoryFor>[1]) => wordsByCategoryFor(activeLang, cat);
   const navParams = useLms((s) => s.navParams);
   const navigate = useLms((s) => s.navigate);
   const srs = useLms((s) => s.srs);
@@ -38,13 +42,13 @@ export function VocabularyView() {
   const categories = useMemo(() => {
     const cats: WordCategory[] = Array.from(new Set(VOCAB.map((w) => w.cat)));
     return cats;
-  }, []);
+  }, [VOCAB]);
 
   const searchResults = useMemo(
     () => (search.trim()
       ? VOCAB.filter((w) => normalizeSearch(w.it).includes(normalizeSearch(search)) || normalizeSearch(w.es).includes(normalizeSearch(search))).slice(0, 24)
       : []),
-    [search]
+    [search, VOCAB]
   );
 
   if (session) {
@@ -194,7 +198,7 @@ export function VocabularyView() {
 
 /* ── tarjeta de palabra ── */
 function WordCard({ w, srs, onAdd, onOpenDict }: {
-  w: (typeof VOCAB)[number];
+  w: import("@/lib/lms/types").VocabWord;
   srs: Record<string, unknown>;
   onAdd: (id: string) => void;
   onOpenDict: () => void;

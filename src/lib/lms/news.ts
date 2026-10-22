@@ -15,18 +15,49 @@ import type { CefrLevel, LangCode } from "./types";
 import { NEWS_DATA_A } from "./news-data-a";
 import { NEWS_DATA_B } from "./news-data-b";
 import { NEWS_DATA_C } from "./news-data-c";
+/* v9.39 · lote B por nivel: 3 → 15 noticias por nivel (90 por lengua) */
+import { NEWS_DATA_A1B } from "./news-data-a1b";
+import { NEWS_DATA_A2B } from "./news-data-a2b";
+import { NEWS_DATA_B1B } from "./news-data-b1b";
+import { NEWS_DATA_B2B } from "./news-data-b2b";
+import { NEWS_DATA_C1B } from "./news-data-c1b";
+import { NEWS_DATA_C2B } from "./news-data-c2b";
 import { EN_NEWS_A } from "./lang/en/news-a";
 import { EN_NEWS_B } from "./lang/en/news-b";
 import { EN_NEWS_C } from "./lang/en/news-c";
+import { EN_NEWS_A1B } from "./lang/en/news-a1b";
+import { EN_NEWS_A2B } from "./lang/en/news-a2b";
+import { EN_NEWS_B1B } from "./lang/en/news-b1b";
+import { EN_NEWS_B2B } from "./lang/en/news-b2b";
+import { EN_NEWS_C1B } from "./lang/en/news-c1b";
+import { EN_NEWS_C2B } from "./lang/en/news-c2b";
 import { PT_NEWS_A } from "./lang/pt/news-a";
 import { PT_NEWS_B } from "./lang/pt/news-b";
 import { PT_NEWS_C } from "./lang/pt/news-c";
+import { PT_NEWS_A1B } from "./lang/pt/news-a1b";
+import { PT_NEWS_A2B } from "./lang/pt/news-a2b";
+import { PT_NEWS_B1B } from "./lang/pt/news-b1b";
+import { PT_NEWS_B2B } from "./lang/pt/news-b2b";
+import { PT_NEWS_C1B } from "./lang/pt/news-c1b";
+import { PT_NEWS_C2B } from "./lang/pt/news-c2b";
 import { FR_NEWS_A } from "./lang/fr/news-a";
 import { FR_NEWS_B } from "./lang/fr/news-b";
 import { FR_NEWS_C } from "./lang/fr/news-c";
+import { FR_NEWS_A1B } from "./lang/fr/news-a1b";
+import { FR_NEWS_A2B } from "./lang/fr/news-a2b";
+import { FR_NEWS_B1B } from "./lang/fr/news-b1b";
+import { FR_NEWS_B2B } from "./lang/fr/news-b2b";
+import { FR_NEWS_C1B } from "./lang/fr/news-c1b";
+import { FR_NEWS_C2B } from "./lang/fr/news-c2b";
 import { DE_NEWS_A } from "./lang/de/news-a";
 import { DE_NEWS_B } from "./lang/de/news-b";
 import { DE_NEWS_C } from "./lang/de/news-c";
+import { DE_NEWS_A1B } from "./lang/de/news-a1b";
+import { DE_NEWS_A2B } from "./lang/de/news-a2b";
+import { DE_NEWS_B1B } from "./lang/de/news-b1b";
+import { DE_NEWS_B2B } from "./lang/de/news-b2b";
+import { DE_NEWS_C1B } from "./lang/de/news-c1b";
+import { DE_NEWS_C2B } from "./lang/de/news-c2b";
 
 export type NewsCat =
   | "scienza" | "tecnologia" | "ambiente" | "salute"
@@ -94,7 +125,11 @@ export function newsCatLabel(cat: NewsCat, lang: LangCode): string {
   return NEWS_CATS_LABEL[lang]?.[cat] ?? NEWS_CATS[cat].label;
 }
 
-export const NEWS: NewsItem[] = [...NEWS_DATA_A, ...NEWS_DATA_B, ...NEWS_DATA_C];
+export const NEWS: NewsItem[] = [
+  ...NEWS_DATA_A, ...NEWS_DATA_A1B, ...NEWS_DATA_A2B,
+  ...NEWS_DATA_B, ...NEWS_DATA_B1B, ...NEWS_DATA_B2B,
+  ...NEWS_DATA_C, ...NEWS_DATA_C1B, ...NEWS_DATA_C2B,
+];
 
 /* ═══ v9.26 · Notizie por lengua de estudio ═════════════════════════
    La vista consume el paquete de la lengua activa; el italiano conserva
@@ -102,10 +137,26 @@ export const NEWS: NewsItem[] = [...NEWS_DATA_A, ...NEWS_DATA_B, ...NEWS_DATA_C]
    contenido multilenguaje), `.es` = traducción de apoyo.               */
 export const NEWS_BY_LANG: Record<LangCode, NewsItem[]> = {
   it: NEWS,
-  en: [...EN_NEWS_A, ...EN_NEWS_B, ...EN_NEWS_C],
-  pt: [...PT_NEWS_A, ...PT_NEWS_B, ...PT_NEWS_C],
-  fr: [...FR_NEWS_A, ...FR_NEWS_B, ...FR_NEWS_C],
-  de: [...DE_NEWS_A, ...DE_NEWS_B, ...DE_NEWS_C],
+  en: [
+    ...EN_NEWS_A, ...EN_NEWS_A1B, ...EN_NEWS_A2B,
+    ...EN_NEWS_B, ...EN_NEWS_B1B, ...EN_NEWS_B2B,
+    ...EN_NEWS_C, ...EN_NEWS_C1B, ...EN_NEWS_C2B,
+  ],
+  pt: [
+    ...PT_NEWS_A, ...PT_NEWS_A1B, ...PT_NEWS_A2B,
+    ...PT_NEWS_B, ...PT_NEWS_B1B, ...PT_NEWS_B2B,
+    ...PT_NEWS_C, ...PT_NEWS_C1B, ...PT_NEWS_C2B,
+  ],
+  fr: [
+    ...FR_NEWS_A, ...FR_NEWS_A1B, ...FR_NEWS_A2B,
+    ...FR_NEWS_B, ...FR_NEWS_B1B, ...FR_NEWS_B2B,
+    ...FR_NEWS_C, ...FR_NEWS_C1B, ...FR_NEWS_C2B,
+  ],
+  de: [
+    ...DE_NEWS_A, ...DE_NEWS_A1B, ...DE_NEWS_A2B,
+    ...DE_NEWS_B, ...DE_NEWS_B1B, ...DE_NEWS_B2B,
+    ...DE_NEWS_C, ...DE_NEWS_C1B, ...DE_NEWS_C2B,
+  ],
 };
 
 export const NEWS_BY_ID: Record<string, NewsItem> = Object.fromEntries(NEWS.map((n) => [n.id, n]));

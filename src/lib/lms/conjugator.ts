@@ -19,7 +19,7 @@ export const FORMAL_PRONOUN = "Lei";
 
 type Forms6 = [string, string, string, string, string, string];
 
-interface VerbEntry {
+export interface VerbEntry {
   infinitive: string;
   es: string;
   pattern: "are" | "ere" | "ire" | "ire-isc" | "irregular";

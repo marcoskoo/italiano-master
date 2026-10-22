@@ -3,12 +3,13 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Compass, GraduationCap, RotateCcw } from "lucide-react";
-import { LEVEL_TEST, computeLevel } from "@/lib/lms/leveltest";
+import { computeLevel } from "@/lib/lms/leveltest";
+import { levelTestFor } from "@/lib/lms/lang-extras";
 import { useLms } from "@/lib/lms/store";
 import { CEFR_LEVELS, LEVEL_LABELS } from "@/lib/lms/types";
 import { cn } from "@/lib/utils";
 
-/* ── Vista: Test de nivel ─────────────────────────────────────────── */
+/* ── Vista: Test de nivel (v9.39 · preguntas por lengua de estudio) ── */
 
 export function LevelTestView() {
   const setLevel = useLms((s) => s.setLevel);
@@ -16,6 +17,8 @@ export function LevelTestView() {
   const recordQuiz = useLms((s) => s.recordQuiz);
   const navigate = useLms((s) => s.navigate);
   const currentLevel = useLms((s) => s.level);
+  const activeLang = useLms((s) => s.activeLang) as import("@/lib/lms/types").LangCode;
+  const LEVEL_TEST = levelTestFor(activeLang);
 
   const [idx, setIdx] = useState(0);
   const [choice, setChoice] = useState<number | null>(null);

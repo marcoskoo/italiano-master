@@ -10,9 +10,8 @@ import { useLms } from "@/lib/lms/store";
 import { AudioButton } from "../audio-button";
 import { Mascot } from "../mascot";
 import { cn } from "@/lib/utils";
-import {
-  SHADOW_PHRASES, ORAL_TASKS, scoreSpeech, shadowVerdict, type ShadowScore,
-} from "@/lib/lms/shadowing";
+import { scoreSpeech, shadowVerdict, type ShadowScore } from "@/lib/lms/shadowing";
+import { shadowPhrasesFor, ORAL_TASKS_IT_ONLY as ORAL_TASKS } from "@/lib/lms/lang-extras";
 import { CEFR_LEVELS, LEVEL_LABELS, type CefrLevel } from "@/lib/lms/types";
 import { speak } from "@/lib/lms/tts";
 
@@ -125,6 +124,9 @@ export function ShadowingView() {
   const trackQuest = useLms((s) => s.trackQuest);
   const navigate = useLms((s) => s.navigate);
   const level = useLms((s) => s.level);
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const itOnly = activeLang === "it"; /* el simulacro oral (CILS) es italiano */
+  const PHRASES = useMemo(() => shadowPhrasesFor(activeLang), [activeLang]);
 
   const recognitionCtor = useMemo(() => getSpeechRecognition(), []);
   const canRecognize = recognitionCtor !== null;
@@ -144,7 +146,7 @@ export function ShadowingView() {
 
       {/* tabs */}
       <div className="flex gap-2 rounded-2xl bg-crema-scura/60 p-1.5 dark:bg-inchiostro/10" role="tablist">
-        {([["frasi", "🗣️ Frasi da ripetere"], ["orale", "🎓 Simulacro orale (CILS)"]] as const).map(([id, label]) => (
+        {([["frasi", "🗣️ Frasi da ripetere"], ["orale", "🎓 Simulacro orale (CILS)"]] as const).filter(([id]) => itOnly || id === "frasi").map(([id, label]) => (
           <button
             key={id}
             role="tab"
@@ -161,7 +163,7 @@ export function ShadowingView() {
       </div>
 
       {tab === "frasi" ? (
-        <FrasiTab canRecognize={canRecognize} recognitionCtor={recognitionCtor} addXp={addXp} trackQuest={trackQuest} defaultLevel={level} />
+        <FrasiTab canRecognize={canRecognize} recognitionCtor={recognitionCtor} addXp={addXp} trackQuest={trackQuest} defaultLevel={level} phrases={PHRASES} lang={activeLang} />
       ) : (
         <OraleTab navigate={navigate} />
       )}
@@ -171,12 +173,14 @@ export function ShadowingView() {
 
 /* ═══ TAB 1 · Frases ─══════════════════════════════════════════════ */
 
-function FrasiTab({ canRecognize, recognitionCtor, addXp, trackQuest, defaultLevel }: {
+function FrasiTab({ canRecognize, recognitionCtor, addXp, trackQuest, defaultLevel, phrases: SHADOW_PHRASES, lang }: {
   canRecognize: boolean;
   recognitionCtor: SRCtor | null;
   addXp: (n: number, skill?: "pronuncia") => void;
   trackQuest: (t: "shadow", n?: number) => void;
   defaultLevel: CefrLevel | null;
+  phrases: import("@/lib/lms/shadowing").ShadowPhrase[];
+  lang: import("@/lib/lms/types").LangCode;
 }) {
   /* v9.5.3: el nivel del perfil se valida contra los datos reales — un nivel
      sin frases (p. ej. C2 antes de esta versión, o un valor corrupto)
@@ -190,7 +194,7 @@ function FrasiTab({ canRecognize, recognitionCtor, addXp, trackQuest, defaultLev
     if (lvl === "tutti") return SHADOW_PHRASES;
     const filtered = SHADOW_PHRASES.filter((p) => p.level === lvl);
     return filtered.length > 0 ? filtered : SHADOW_PHRASES; /* nunca vacía */
-  }, [lvl]);
+  }, [lvl, SHADOW_PHRASES]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState<ShadowScore | null>(null);
   const [manualDone, setManualDone] = useState(false);
@@ -361,7 +365,7 @@ function FrasiTab({ canRecognize, recognitionCtor, addXp, trackQuest, defaultLev
                   <Play className="h-4 w-4" aria-hidden="true" /> La tua voce
                 </button>
                 <button
-                  onClick={() => speak(phrase.it)}
+                  onClick={() => speak(phrase.it, { lang })}
                   className="inline-flex min-h-12 items-center gap-2 rounded-2xl border-2 border-oro/40 bg-oro-tenue px-5 py-3 text-sm font-bold text-oro-scuro transition-all hover:border-oro active:scale-95 dark:text-oro"
                 >
                   <Volume2 className="h-4 w-4" aria-hidden="true" /> Originale

@@ -3,14 +3,18 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, BookOpen, Check, Clapperboard, Clock, Volume2 } from "lucide-react";
-import { CULTURE, CULTURE_IMG } from "@/lib/lms/culture";
+import { cultureFor, cultureImgFor } from "@/lib/lms/lang-extras";
 import { useLms } from "@/lib/lms/store";
+import type { LangCode } from "@/lib/lms/types";
 import { speak } from "@/lib/lms/tts";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Cultura italiana ──────────────────────────────────────── */
 
 export function CultureView() {
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  const CULTURE = cultureFor(activeLang);
+  const CULTURE_IMG = cultureImgFor(activeLang);
   const [openId, setOpenId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const addXp = useLms((s) => s.addXp);
@@ -54,7 +58,7 @@ export function CultureView() {
               {article.vocab.map((v, i) => (
                 <button
                   key={i}
-                  onClick={() => speak(v.it, { rate: 0.85 })}
+                  onClick={() => speak(v.it, { rate: 0.85, lang: activeLang })}
                   className="inline-flex items-center gap-1.5 rounded-full border border-verde/25 bg-surface px-3 py-1.5 text-xs font-semibold transition-all hover:scale-105"
                 >
                   <Volume2 className="h-3 w-3 text-verde" aria-hidden="true" />

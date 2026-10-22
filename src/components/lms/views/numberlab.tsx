@@ -3,12 +3,36 @@
 import { useCallback, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Clock, Hash, RefreshCcw, Sparkles, Trophy } from "lucide-react";
-import { numberToItalian, ordinalToItalian, timeToItalian, randomNumber, italianEquals } from "@/lib/lms/numbers";
+import { randomNumber } from "@/lib/lms/numbers";
+import { numbersFor } from "@/lib/lms/numbers-pack";
 import { useLms } from "@/lib/lms/store";
+import type { LangCode } from "@/lib/lms/types";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
 
-/* ── Vista: Laboratorio de números · plugin v1.1 ──────────────────── */
+/* ── Vista: Laboratorio de números · v9.39 multilingüe ───────────── */
+
+const NUMBER_TIPS: Record<LangCode, string> = {
+  it: "Trampas del italiano: ventuno y ventotto (apócope), ventitré (acento), cento invariable, mille / duemila.",
+  en: "Trampas del inglés: twenty-one con guion, a/one hundred, mil = one thousand, millón = million (sin «un»).",
+  pt: "Trampas del portugués: vinte e um con «e», cem/cento, duzentos/trezentas (concordancia de género).",
+  fr: "Trampas del francés: soixante-dix (70), quatre-vingts (80), quatre-vingt-dix (90), cents plural, mille invariable.",
+  de: "Trampas del alemán: orden invertido (einundzwanzig = 21), sechzehn (una sola c), hundert y tausend invariables.",
+};
+const TIME_TIPS: Record<LangCode, string> = {
+  it: "Recuerda: è l'una (singular), sono le… (plural), e un quarto / e mezza / meno un quarto, mezzogiorno y mezzanotte.",
+  en: "Recuerda: it's eight o'clock, quarter past eight, half past eight, quarter to nine; noon y midnight.",
+  pt: "Recuerda: uma hora (singular), duas horas (plural), e um quarto / e meia / para as três; meio-dia y meia-noite.",
+  fr: "Recuerda: il est une heure (singular), il est huit heures (plural), et quart / et demie / moins le quart; midi y minuit.",
+  de: "Recuerda: es ist acht Uhr, halb neun = 8:30 (¡la media hora mira adelante!), Viertel nach / Viertel vor.",
+};
+const PRACTICE_PLACEHOLDER: Record<LangCode, string> = {
+  it: "scrivi in italiano… (p. ej. trentaquattro)",
+  en: "write in English… (e.g. thirty-four)",
+  pt: "escreve em português… (p. ex. trinta e quatro)",
+  fr: "écris en français… (p. ex. trente-quatre)",
+  de: "schreib auf Deutsch… (z. B. vierunddreißig)",
+};
 
 type Tab = "convertisseur" | "ora" | "pratica";
 type Diff = "facile" | "medio" | "difficile";
@@ -61,12 +85,14 @@ export function NumberLabView() {
   );
 }
 
-/* ── Convertidor número → italiano ── */
+/* ── Convertidor número → lengua de estudio ── */
 function Converter() {
   const [num, setNum] = useState(42);
   const [showOrdinal, setShowOrdinal] = useState(false);
-  const words = numberToItalian(num);
-  const ord = showOrdinal ? ordinalToItalian(num) : "";
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  const pack = numbersFor(activeLang);
+  const words = pack.numberTo(num);
+  const ord = showOrdinal ? pack.ordinal(num) : "";
 
   return (
     <div className="grid gap-5 lg:grid-cols-2">
@@ -108,7 +134,7 @@ function Converter() {
       </section>
 
       <section className="flex flex-col justify-center rounded-3xl border-2 border-verde/40 bg-verde-tenue p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-verde-scuro dark:text-verde">In italiano</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-verde-scuro dark:text-verde">En {activeLang === "it" ? "italiano" : activeLang === "en" ? "inglés" : activeLang === "pt" ? "portugués" : activeLang === "fr" ? "francés" : "alemán"}</p>
         <motion.p key={num + String(showOrdinal)} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-3 font-display text-3xl font-semibold leading-tight text-inchiostro sm:text-4xl">
           {words}
         </motion.p>
@@ -116,10 +142,10 @@ function Converter() {
           <p className="mt-2 font-display text-xl italic text-verde-scuro dark:text-verde">{num}º → {ord}</p>
         )}
         <div className="mt-4">
-          <AudioButton text={words} variant="full" label="Escucha el número" />
+          <AudioButton text={words} variant="full" label="Escucha el número" lang={activeLang} />
         </div>
         <p className="mt-4 text-xs leading-relaxed text-muted-it">
-          Trampas del italiano: <b>ventuno</b> y <b>ventotto</b> (apócope), <b>ventitré</b> (acento), <b>cento</b> invariable, <b>mille</b> / <b>duemila</b>.
+          {NUMBER_TIPS[activeLang]}
         </p>
       </section>
     </div>
@@ -130,7 +156,8 @@ function Converter() {
 function ClockLab() {
   const [h, setH] = useState(9);
   const [m, setM] = useState(30);
-  const sentence = timeToItalian(h, m);
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  const sentence = numbersFor(activeLang).time(h, m);
 
   return (
     <div className="grid gap-5 lg:grid-cols-2">
@@ -164,10 +191,10 @@ function ClockLab() {
           {sentence}
         </motion.p>
         <div className="mt-4">
-          <AudioButton text={sentence} variant="full" label="Escucha la hora" />
+          <AudioButton text={sentence} variant="full" label="Escucha la hora" lang={activeLang} />
         </div>
         <p className="mt-4 text-xs leading-relaxed text-muted-it">
-          Recuerda: <b>è l'una</b> (singular), <b>sono le…</b> (plural), <b>e un quarto / e mezza / meno un quarto</b>, y los astros: <b>mezzogiorno</b> y <b>mezzanotte</b>.
+          {TIME_TIPS[activeLang]}
         </p>
       </section>
     </div>
@@ -185,6 +212,8 @@ function Practice() {
   const addXp = useLms((s) => s.addXp);
   const recordCorrect = useLms((s) => s.recordCorrect);
   const recordError = useLms((s) => s.recordError);
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  const pack = numbersFor(activeLang);
 
   const next = useCallback(() => {
     setTarget(randomNumber(diff));
@@ -194,7 +223,7 @@ function Practice() {
   }, [diff]);
 
   const check = () => {
-    const good = italianEquals(input, numberToItalian(target));
+    const good = pack.equals(input, pack.numberTo(target));
     setState(good ? "ok" : "ko");
     setReveal(true);
     setScore((s) => ({ ok: s.ok + (good ? 1 : 0), total: s.total + 1 }));
@@ -240,8 +269,8 @@ function Practice() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && state !== "idle" && reveal) next(); else if (e.key === "Enter" && input.trim()) check(); }}
           disabled={reveal}
-          placeholder="scrivi in italiano… (p. ej. trentaquattro)"
-          aria-label="Tu respuesta en italiano"
+          placeholder={PRACTICE_PLACEHOLDER[activeLang]}
+          aria-label="Tu respuesta en la lengua de estudio"
           className="w-full rounded-2xl border border-soft bg-crema px-4 py-3 text-center text-lg font-semibold outline-none focus:ring-2 focus:ring-verde/40 disabled:opacity-60"
         />
         {!reveal ? (
@@ -251,10 +280,10 @@ function Practice() {
         ) : (
           <div className="mt-4">
             <p className={cn("rounded-2xl p-3 font-bold", state === "ok" ? "bg-verde-tenue text-verde-scuro dark:text-verde" : "bg-rosso-tenue text-rosso-scuro dark:text-rosso")}>
-              {state === "ok" ? "🎉 Perfetto! +6 XP" : `Quasi! Era: ${numberToItalian(target)}`}
+              {state === "ok" ? "🎉 Perfetto! +6 XP" : `Casi! Era: ${pack.numberTo(target)}`}
             </p>
             <div className="mt-3 flex items-center justify-center gap-3">
-              <AudioButton text={numberToItalian(target)} variant="full" label="Escucha" />
+              <AudioButton text={pack.numberTo(target)} variant="full" label="Escucha" lang={activeLang} />
               <button onClick={next} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-inchiostro px-5 py-2.5 text-sm font-bold text-crema transition-all hover:scale-105 dark:bg-verde dark:text-inchiostro">
                 <RefreshCcw className="h-4 w-4" aria-hidden="true" /> Prossimo
               </button>
@@ -263,7 +292,7 @@ function Practice() {
         )}
       </div>
 
-      <p className="mt-4 text-center text-xs text-muted-it">La comparación ignora acentos, espacios y apóstrofos: <b>venti tre</b> y <b>ventitré</b> cuentan como correctas.</p>
+      <p className="mt-4 text-center text-xs text-muted-it">La comparación ignora acentos, espacios, guiones y apóstrofos: escribe como suena y cuenta como correcta.</p>
     </div>
   );
 }

@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ListChecks, MapPin, Play, Sparkles, Square, Volume2 } from "lucide-react";
-import { SITUATIONS, SITUATION_IMG } from "@/lib/lms/situations";
-import { getExercises } from "@/lib/lms/exercises";
+import { situationsFor, situationImgFor } from "@/lib/lms/lang-extras";
+import { tutorFor } from "@/lib/lms/tutor-persona";
 import { useLms } from "@/lib/lms/store";
+import { getExercises } from "@/lib/lms/exercises";
 import { speakDialogue, stopSpeaking } from "@/lib/lms/tts";
 import { useVoiceCast, SpeakerAvatar, SpeakerChip, VoiceCastNote, DialogueLineButton, speakerIndexMap, uniqueSpeakers } from "../voice-cast";
 import { QuizEngine } from "../quiz-engine";
@@ -15,6 +16,9 @@ import { cn } from "@/lib/utils";
 /* ── Vista: Situaciones reales ────────────────────────────────────── */
 
 export function SituationsView() {
+  const activeLang = useLms((s) => s.activeLang) as import("@/lib/lms/types").LangCode;
+  const SITUATIONS = useMemo(() => situationsFor(activeLang), [activeLang]);
+  const SITUATION_IMG = useMemo(() => situationImgFor(activeLang), [activeLang]);
   const navParams = useLms((s) => s.navParams);
   const navigate = useLms((s) => s.navigate);
   const [openId, setOpenId] = useState<string | null>(navParams.situationId ?? null);
@@ -89,7 +93,7 @@ export function SituationsView() {
               <button
                 onClick={() =>
                   playing === null
-                    ? speakDialogue(situation.dialogue, cast, { rate: 0.85, onIndex: (i) => setPlaying(i), onDone: () => setPlaying(null) })
+                    ? speakDialogue(situation.dialogue, cast, { rate: 0.85, lang: activeLang, onIndex: (i) => setPlaying(i), onDone: () => setPlaying(null) })
                     : (stopSpeaking(), setPlaying(null))
                 }
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-verde px-4 py-2 text-xs font-bold text-white transition-all hover:scale-105 dark:text-inchiostro"
@@ -127,7 +131,7 @@ export function SituationsView() {
             <ListChecks className="h-4 w-4" aria-hidden="true" /> Esercizi della situazione
           </button>
           <button
-            onClick={() => navigate("tutor", { tutorSeed: `Role-play in italiano. ${situation.roleplay.it} Mantieni il personaggio e adatta l'italiano al livello ${situation.level}.` })}
+            onClick={() => navigate("tutor", { tutorSeed: tutorFor(activeLang).seedFromSituation(situation.roleplay.it, situation.level) })}
             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.02]"
           >
             <Sparkles className="h-4 w-4" aria-hidden="true" /> Role-play con il Tutor IA

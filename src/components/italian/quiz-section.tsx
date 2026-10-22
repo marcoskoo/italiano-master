@@ -4,6 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Flame, Lightbulb, RotateCcw, Trophy, X } from "lucide-react";
 import { Mascot } from "../lms/mascot";
+import { useMemo } from "react";
+import { exercisesForLang } from "@/lib/lms/exercises";
+import type { LangCode } from "@/lib/lms/types";
 
 /* ── Questions ────────────────────────────────────────────────────── */
 interface Question {
@@ -14,7 +17,7 @@ interface Question {
   note: string;
 }
 
-const QUESTIONS: Question[] = [
+const IT_QUESTIONS: Question[] = [
   {
     cat: "vocabolario",
     prompt: "Which verb means “to chat, to gossip”?",
@@ -85,7 +88,15 @@ const QUESTIONS: Question[] = [
 
 const LETTERS = ["A", "B", "C", "D"];
 
-export function QuizSection() {
+export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
+  /* v9.39 · preguntas por lengua: IT usa el set histórico; EN/PT/FR/DE
+     se construyen desde su banco de ejercicios (mc). */
+  const QUESTIONS: Question[] = useMemo(() => {
+    if (lang === "it") return IT_QUESTIONS;
+    const pool = exercisesForLang(lang, 0).filter((e): e is Extract<import("@/lib/lms/types").Exercise, { type: "mc" }> => e.type === "mc" && Array.isArray((e as { options?: string[] }).options) && ((e as { options?: string[] }).options ?? []).length === 4);
+    const qs = pool.map((e) => ({ cat: e.topic, prompt: e.prompt, options: e.options, answer: e.answer, note: e.explain }));
+    return qs.length >= 4 ? qs : IT_QUESTIONS;
+  }, [lang]);
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [locked, setLocked] = useState(false);
@@ -128,7 +139,7 @@ export function QuizSection() {
         }
       }, 1900);
     },
-    [idx, locked, done]
+    [idx, locked, done, QUESTIONS]
   );
 
   const restart = useCallback(() => {

@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { Printer } from "lucide-react";
-import { VOCAB, wordsByCategory } from "@/lib/lms/vocabulary";
-import { CATEGORY_META, CATEGORY_IMG, PRINTABLE_IMG, type WordCategory } from "@/lib/lms/types";
+import { vocabFor, wordsByCategoryFor, grammarFor } from "@/lib/lms/lang-extras";
+import { CATEGORY_META, CATEGORY_IMG, PRINTABLE_IMG } from "@/lib/lms/types";
 import { ThemeImg } from "../theme-img";
-import { GRAMMAR } from "@/lib/lms/grammar";
-import { VERB_LIST, findVerb, conjugate, TENSES, PRONOUNS } from "@/lib/lms/conjugator";
+import { conjugatorFor } from "@/lib/lms/conjugators";
 import { useLms } from "@/lib/lms/store";
+import type { LangCode, WordCategory } from "@/lib/lms/types";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Schede di studio · hojas imprimibles · plugin v1.1 ─────── */
@@ -78,8 +78,15 @@ export function PrintablesView() {
   const [verb, setVerb] = useState("essere");
   const navigate = useLms((s) => s.navigate);
   const remoteConfig = useLms((s) => s.remoteConfig);
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  const pack = useMemo(() => conjugatorFor(activeLang), [activeLang]);
+  const VOCAB = vocabFor(activeLang);
+  const GRAMMAR = grammarFor(activeLang);
+  const wordsByCategory = (cat: WordCategory) => wordsByCategoryFor(activeLang, cat);
+  const [prevLang, setPrevLang] = useState(activeLang);
+  if (prevLang !== activeLang) { setPrevLang(activeLang); setVerb(pack.popular[0]); }
 
-  const categories = useMemo(() => Array.from(new Set(VOCAB.map((w) => w.cat))), []);
+  const categories = useMemo(() => Array.from(new Set(VOCAB.map((w) => w.cat))), [VOCAB]);
 
   function buildVocabSheet(): string {
     const meta = CATEGORY_META[category];
@@ -97,16 +104,16 @@ export function PrintablesView() {
   }
 
   function buildVerbSheet(): string {
-    const entry = findVerb(verb)!;
-    const sections = TENSES.map((t) => {
-      const conj = conjugate(entry, t.id);
+    const entry = pack.findVerb(verb) ?? pack.findVerb(pack.popular[0])!;
+    const sections = pack.tenses.map((t) => {
+      const conj = pack.conjugate(entry, t.id);
       const rows = conj.forms.map((f) => `<tr><td>${esc(f.pronoun)}</td><td class="it ${f.irregular ? "irr" : ""}">${esc(f.form)}</td></tr>`).join("");
       return `<h2>${esc(t.label)} <span style="font-weight:normal;color:#666;font-size:11px">(${esc(t.hint)})</span></h2>
-              <table><thead><tr><th style="width:35%">Pronome</th><th>Forma${entry.pattern === "irregular" ? " · <span class=irr>rosa = irregolare</span>" : ""}</th></tr></thead><tbody>${rows}</tbody></table>`;
+              <table><thead><tr><th style="width:35%">Pronome</th><th>Forma${entry.patternLabel.includes("irregular") || entry.patternLabel.toLowerCase().includes("irreg") ? " · <span class=irr>rosa = irregolare</span>" : ""}</th></tr></thead><tbody>${rows}</tbody></table>`;
     }).join("");
     return sheetShell(`Verbo: ${entry.infinitive}`, `Tabella di coniugazione · ${entry.es}`,
       `<h2>${esc(entry.infinitive)} — ${esc(entry.es)}</h2>
-       <p class="summary">Ausiliare: <b>${entry.auxiliary}</b> · participio: <b>${esc(entry.participle)}</b> · gerundio: <b>${esc(entry.gerund)}</b></p>
+       <p class="summary">${esc(entry.infoEs)}</p>
        ${sections}`);
   }
 
@@ -177,9 +184,9 @@ export function PrintablesView() {
 
         {kind === "verbi" && (
           <div className="mt-5">
-            <label htmlFor="pr-verb" className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Verbo ({VERB_LIST.length} en el conjugador)</label>
+            <label htmlFor="pr-verb" className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-it">Verbo ({pack.verbs.length} en el conjugador)</label>
             <select id="pr-verb" value={verb} onChange={(e) => setVerb(e.target.value)} className="w-full rounded-xl border border-soft bg-crema px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-verde/40">
-              {VERB_LIST.map((v) => <option key={v.infinitive} value={v.infinitive}>{v.infinitive} — {v.es}</option>)}
+              {pack.verbs.map((v) => <option key={v.infinitive} value={v.infinitive}>{v.infinitive} — {v.es}</option>)}
             </select>
           </div>
         )}
@@ -213,7 +220,7 @@ export function PrintablesView() {
         )}
         {kind === "verbi" && (
           <div className="flex flex-wrap gap-1.5 text-xs">
-            {TENSES.map((t) => <span key={t.id} className="rounded-lg bg-verde-tenue px-2.5 py-1 font-bold text-verde-scuro dark:text-verde">{t.label}</span>)}
+            {pack.tenses.map((t) => <span key={t.id} className="rounded-lg bg-verde-tenue px-2.5 py-1 font-bold text-verde-scuro dark:text-verde">{t.label}</span>)}
             <span className="w-full pt-1 text-muted-it">7 tiempos × 6 personas = 42 formas + auxiliar, participio y gerundio.</span>
           </div>
         )}

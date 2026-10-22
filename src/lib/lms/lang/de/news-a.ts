@@ -21,7 +21,7 @@ export const DE_NEWS_A: NewsItem[] = [
       { it: "Forscher in Berlin haben eine gute Nachricht. Wer jeden Tag mit dem Fahrrad fährt, hat ein besseres Herz und bessere Laune.",
       es: "Investigadores de Berlín tienen una buena noticia. Quien anda en bici cada día tiene un corazón mejor y mejor humor." },
       { it: "Die Studie sagt: fünfzehn Minuten am Morgen, fünfzehn Minuten am Abend. Das ist alles. Kein Fitnessstudio, keine Mitgliedschaft.",
-      es: "El estudio dice: quince minutos por la mañana, quince por la tarde. Eso es todo. Sin gimnasio, sin membresía." },
+      es: "El estudio dice: quince minutos por la mañana, quince por la tarde. Nada más. Sin gimnasio, sin membresía." },
       { it: "Berlin ist flach, und das hilft. Die Stadt baut neue Radwege, und die Autofahrer lernen Geduld.",
       es: "Berlín es llano, y eso ayuda. La ciudad construye nuevos carriles bici, y los conductores aprenden paciencia." },
       { it: "Ein Forscher sagt: «Das Fahrrad ist die einzige Maschine, die stärker wird, wenn man sie benutzt — und der Mensch gleich mit.»",

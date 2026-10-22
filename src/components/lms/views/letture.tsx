@@ -15,6 +15,7 @@ import { useLms } from "@/lib/lms/store";
 import { speak, stopSpeaking, hasItalianVoice, onVoices } from "@/lib/lms/tts";
 import { useVoiceCast, SpeakerAvatar, SpeakerChip, VoiceCastNote, speakerIndexMap, uniqueSpeakers } from "../voice-cast";
 import { LETTURE, LETTURE_CATS, LETTURE_BY_ID, LETTURE_IMG, letturaExercises, type Lettura, type LetturaCat } from "@/lib/lms/letture";
+import { tutorFor } from "@/lib/lms/tutor-persona";
 import type { CefrLevel } from "@/lib/lms/types";
 import { QuizEngine } from "../quiz-engine";
 import { VoiceHint } from "../audio-button";
@@ -193,6 +194,7 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
   const trackQuest = useLms((s) => s.trackQuest);
   const markReadingDone = useLms((s) => s.markReadingDone);
   const navigate = useLms((s) => s.navigate);
+  const activeLang = useLms((s) => s.activeLang) as import("@/lib/lms/types").LangCode;
 
   const [rate, setRate] = useState(RATES.includes(settingsRate) ? settingsRate : 0.9);
   const [subs, setSubs] = useState(settingsSubs);
@@ -500,7 +502,7 @@ function Reader({ text, onBack }: { text: Lettura; onBack: () => void }) {
               </p>
               <p className="mt-1 pl-8.5 text-sm italic text-muted-it">{d.es}</p>
               <button
-                onClick={() => navigate("tutor", { tutorSeed: `${d.it} (Rispondi in italiano semplice, livello ${text.level}, e correggi i miei errori.)` })}
+                onClick={() => navigate("tutor", { tutorSeed: tutorFor(activeLang).seedFromReading(d.it, text.level) })}
                 className="mt-2.5 ml-8.5 inline-flex min-h-9 items-center gap-1.5 rounded-xl border-2 border-verde/30 bg-verde-tenue px-3.5 py-1.5 text-xs font-bold text-verde-scuro transition-all hover:scale-105 dark:text-verde"
               >
                 <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" /> Discutine con il Tutor IA

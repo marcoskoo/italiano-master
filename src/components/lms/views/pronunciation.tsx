@@ -6,62 +6,15 @@ import { Ear, Info, Mic, Volume2 } from "lucide-react";
 import { VowelLab } from "@/components/italian/vowel-lab";
 import { IntonationStudio } from "@/components/italian/intonation-studio";
 import { speak } from "@/lib/lms/tts";
+import { pronunciationFor } from "@/lib/lms/lang-extras";
+import type { LangCode } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Pronunciación ─────────────────────────────────────────── */
 
-const SOUNDS: { id: string; title: string; rule: string; words: { w: string; es: string }[]; level: string }[] = [
-  {
-    id: "c-g", title: "C y G duras / suaves", level: "A1",
-    rule: "Ante a/o/u suenan duras (casa, gatto); ante e/i suenan suaves como “ch” y “j” (cena, gelato). Con h intermedia vuelven a ser duras (chiave, spaghetti).",
-    words: [
-      { w: "cena", es: "cena (suave)" }, { w: "casa", es: "casa (dura)" },
-      { w: "gelato", es: "helado (suave)" }, { w: "spaghetti", es: "espaguetis (dura)" },
-    ],
-  },
-  {
-    id: "gn", title: "GN = ñ", level: "A1",
-    rule: "El dígrafo gn suena exactamente como la ñ española. Bagno = baño. Es el sonido más fácil para hispanohablantes… y el más difícil para el resto del mundo.",
-    words: [
-      { w: "bagno", es: "baño" }, { w: "gnocchi", es: "ñoquis" },
-      { w: "lasagne", es: "lasaña" }, { w: "ogni", es: "cada" },
-    ],
-  },
-  {
-    id: "gl", title: "GLI = lli", level: "A2",
-    rule: "gl + i suena como “lli” (familia = famiglia). Ojo: solo cuando va seguido de i o al final de palabra (figli, foglie).",
-    words: [
-      { w: "famiglia", es: "familia" }, { w: "figli", es: "hijos" },
-      { w: "fioriglia", es: "floristería" }, { w: "bottiglia", es: "botella" },
-    ],
-  },
-  {
-    id: "sc", title: "SC = sh / sk", level: "A2",
-    rule: "Ante e/i suena “sh” (pesce, lasciare); ante a/o/u suena “sk” (scarpa, scala).",
-    words: [
-      { w: "pesce", es: "pescado (sh)" }, { w: "scarpa", es: "zapato (sk)" },
-      { w: "lasciare", es: "dejar (sh)" }, { w: "scuola", es: "escuela (sk)" },
-    ],
-  },
-  {
-    id: "doppie", title: "Consonantes dobles", level: "A2",
-    rule: "Las consonantes dobles se pronuncian MÁS LARGAS, y son distintivas: nono (noveno) ≠ nonno (abuelo). Alarga el sonido como si sostuvieras la consonante un instante.",
-    words: [
-      { w: "nonno / nono", es: "abuelo / noveno" }, { w: "cane / canne", es: "perro / cañas" },
-      { w: "sete / sette", es: "sed / siete" }, { w: "pala / palla", es: "pala / pelota" },
-    ],
-  },
-  {
-    id: "r", title: "La R italiana", level: "B1",
-    rule: "La r italiana es vibrante simple (una vibración, como la “r” suave española) o múltiple a principio de palabra (como la “rr”). Error típico: pronunciarla como la r francesa o inglesa.",
-    words: [
-      { w: "Roma", es: "Roma" }, { w: "caro / carro", es: "querido / carro" },
-      { w: "presto", es: "rápido" }, { w: "birra", es: "cerveza" },
-    ],
-  },
-];
+
 
 const MINIMAL_PAIRS: { a: string; b: string; esA: string; esB: string }[] = [
   { a: "pena", b: "penna", esA: "pena", esB: "pluma" },
@@ -73,9 +26,16 @@ const MINIMAL_PAIRS: { a: string; b: string; esA: string; esB: string }[] = [
 ];
 
 export function PronunciationView() {
-  const [tab, setTab] = useState<"suoni" | "vocali" | "intonazione" | "coppie">("vocali");
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  /* v9.39 · sonidos por lengua; los laboratorios interactivos de vocales,
+     entonación y pares mínimos son específicos del italiano */
+  const itOnly = activeLang === "it";
+  const [tab, setTab] = useState<"suoni" | "vocali" | "intonazione" | "coppie">(itOnly ? "vocali" : "suoni");
+  const [prevLang, setPrevLang] = useState(activeLang);
+  if (prevLang !== activeLang) { setPrevLang(activeLang); if (!itOnly && tab !== "suoni") setTab("suoni"); }
   const addXp = useLms((s) => s.addXp);
   const [pairIdx, setPairIdx] = useState(0);
+  const SOUNDS = pronunciationFor(activeLang);
 
   const pair = MINIMAL_PAIRS[pairIdx];
 
@@ -88,7 +48,7 @@ export function PronunciationView() {
           { id: "intonazione", label: "🎵 Estudio de entonación", it: "intonazione" },
           { id: "suoni", label: "🔤 Sonidos especiales", it: "suoni" },
           { id: "coppie", label: "👂 Pares mínimos", it: "coppie minime" },
-        ].map((t) => (
+        ].filter((t) => itOnly || t.id === "suoni").map((t) => (
           <button
             key={t.id}
             role="tab"
@@ -143,7 +103,7 @@ export function PronunciationView() {
                 {s.words.map((w, j) => (
                   <button
                     key={j}
-                    onClick={() => { speak(w.w, { rate: 0.8 }); addXp(1, "pronuncia"); }}
+                    onClick={() => { speak(w.w, { rate: 0.8, lang: activeLang }); addXp(1, "pronuncia"); }}
                     className="flex min-h-11 items-center gap-2 rounded-xl border border-soft bg-crema px-3 py-2 text-left transition-all hover:border-verde/40 hover:scale-[1.02] dark:bg-inchiostro/10"
                   >
                     <Volume2 className="h-3.5 w-3.5 shrink-0 text-verde" aria-hidden="true" />

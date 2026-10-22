@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Brain, ChevronDown, ListChecks, Search, Table2, Volume2 } from "lucide-react";
-import { GRAMMAR, GRAMMAR_IMG } from "@/lib/lms/grammar";
+import { grammarFor, grammarImgFor } from "@/lib/lms/lang-extras";
 import { ThemeImg } from "../theme-img";
 import { getExercises } from "@/lib/lms/exercises";
 import { CEFR_LEVELS } from "@/lib/lms/types";
@@ -16,6 +16,9 @@ import { cn } from "@/lib/utils";
 /* ── Vista: Gramática ─────────────────────────────────────────────── */
 
 export function GrammarView() {
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const GRAMMAR = useMemo(() => grammarFor(activeLang), [activeLang]);
+  const GRAMMAR_IMG = useMemo(() => grammarImgFor(activeLang), [activeLang]);
   const userLevel = useLms((s) => s.level);
   const navParams = useLms((s) => s.navParams);
   const [levelFilter, setLevelFilter] = useState<string>(userLevel ?? "A1");
@@ -45,7 +48,7 @@ export function GrammarView() {
           ? (g.title + " " + g.titleIt + " " + g.summary + " " + g.explanation.join(" ")).toLowerCase().includes(q)
           : true
       ),
-    [levelFilter, q]
+    [GRAMMAR, levelFilter, q]
   );
 
   const practicing = practiceTopic ? GRAMMAR.find((g) => g.id === practiceTopic) : undefined;

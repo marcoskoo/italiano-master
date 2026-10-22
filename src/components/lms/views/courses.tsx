@@ -16,6 +16,7 @@ import { ThemeImg } from "../theme-img";
 import { getExercises } from "@/lib/lms/exercises";
 import { VOCAB_BY_ID } from "@/lib/lms/vocabulary";
 import { useLms } from "@/lib/lms/store";
+import { tutorFor } from "@/lib/lms/tutor-persona";
 import { newCard } from "@/lib/lms/srs";
 import { levelAllowed, requiredPlanForLevel, PLANS } from "@/lib/lms/plans";
 import { useUi } from "@/lib/lms/ui";
@@ -635,7 +636,7 @@ function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void
             <h2 className="flex items-center gap-2 font-display text-2xl font-semibold">
               <Ear className="h-5 w-5 text-verde" aria-hidden="true" /> Ora parliamo!
             </h2>
-            <p className="mt-2 text-sm text-muted-it">Lee (o escucha) el siguiente estímulo y practica con el Tutor IA. Marco adaptará su italiano a tu nivel.</p>
+            <p className="mt-2 text-sm text-muted-it">Lee (o escucha) el siguiente estímulo y practica con el Tutor IA. {tutorFor(ulang).name} adaptará su {tutorFor(ulang).langNameEs} a tu nivel.</p>
 
             <div className="mt-5 rounded-2xl bg-verde-tenue/70 p-5 dark:bg-verde-tenue/30">
               <div className="flex items-start justify-between gap-3">
@@ -647,14 +648,14 @@ function LessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void
 
             <div className="mt-6 flex flex-wrap gap-3">
               <button
-                onClick={() => setTutorSeed("tutor", { tutorSeed: `Sono uno studente di livello ${lesson.level === "zero" ? "A1" : lesson.level}. Conversemos sobre el tema de esta lección (${lesson.titleIt}): ${lesson.conversationPrompt.it}` })}
+                onClick={() => setTutorSeed("tutor", { tutorSeed: tutorFor(ulang).seedFromLesson(lesson.level === "zero" ? "A1" : lesson.level, lesson.titleIt, lesson.conversationPrompt.it) })}
                 className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.03]"
               >
                 <Sparkles className="h-4 w-4" aria-hidden="true" /> Practica con el Tutor IA
               </button>
             </div>
             <p className="mt-4 text-xs leading-relaxed text-muted-it">
-              Il tutor ti correggerà con cariño: si comete un error, Marco responde naturalmente y añade la corrección en español.
+              Il tutor ti correggerà con cariño: si comete un error, {tutorFor(ulang).name} responde naturalmente y añade la corrección en español.
             </p>
           </div>
         )}

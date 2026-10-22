@@ -3,6 +3,13 @@ import { EXERCISES_EXTRA } from "./extra/exercises-extra";
 import { EXERCISES_EXTRA_2 } from "./extra/exercises-extra2";
 import { EXERCISES_EXTRA_3 } from "./extra/exercises-extra3";
 import { EXERCISES_EXTRA_4 } from "./extra/exercises-extra4";
+/* v9.39 · bancos por lengua de estudio: escuchas/lecturas/situaciones EN/PT/FR/DE.
+   Sus ids llevan prefijo (en-ex-*, pt-ex-*, fr-ex-*, ex-de-*) → las vistas
+   que deben mostrar solo una lengua filtran por prefijo (ver exForLang). */
+import { EN_EXERCISES } from "./lang/en/exercises";
+import { PT_EXERCISES } from "./lang/pt/exercises";
+import { FR_EXERCISES } from "./lang/fr/exercises";
+import { DE_EXERCISES } from "./lang/de/exercises";
 
 /* ── Banca de ejercicios · motor de práctica ──────────────────────── */
 /* Nota: las citas internas usan comillas tipográficas “ ” */
@@ -224,8 +231,31 @@ EXERCISES.push(...EXERCISES_EXTRA_2);
 EXERCISES.push(...EXERCISES_EXTRA_3);
 /* Paquete v7.0: +10 ejercicios unidad C2 académico-literaria */
 EXERCISES.push(...EXERCISES_EXTRA_4);
+/* v9.39 · bancos multilingües (los ids con prefijo de lengua) */
+EXERCISES.push(...EN_EXERCISES, ...PT_EXERCISES, ...FR_EXERCISES, ...DE_EXERCISES);
 
 export const EXERCISES_BY_ID: Record<string, Exercise> = Object.fromEntries(EXERCISES.map((e) => [e.id, e]));
+
+/** v9.39 · ejercicios de UNA lengua: IT = ids sin prefijo de lengua. */
+const LANG_PREFIX: Record<string, RegExp> = {
+  it: /^(?!((en|pt|fr)-ex-|ex-de-))/,
+  en: /^(en-ex-)/,
+  pt: /^(pt-ex-)/,
+  fr: /^(fr-ex-)/,
+  de: /^(ex-de-)/,
+};
+export function exercisesForLang(lang: string, limit = 12): Exercise[] {
+  const re = LANG_PREFIX[lang] ?? LANG_PREFIX.it;
+  const pool = EXERCISES.filter((e) => re.test(e.id));
+  return limit > 0 ? pool.slice(0, limit) : pool;
+}
+export function exercisesByLevelForLang(lang: string, level: string, limit = 12): Exercise[] {
+  const re = LANG_PREFIX[lang] ?? LANG_PREFIX.it;
+  const pool = EXERCISES.filter((e) => re.test(e.id) && e.level === level && e.type !== "match");
+  const seed = pool.length;
+  const arr = [...pool].sort((a, b) => ((a.id.length * 31 + seed) % 97) - ((b.id.length * 31 + seed) % 97));
+  return arr.slice(0, limit);
+}
 
 export function getExercises(ids: string[]): Exercise[] {
   return ids.map((id) => EXERCISES_BY_ID[id]).filter(Boolean);

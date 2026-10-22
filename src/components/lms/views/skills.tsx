@@ -5,10 +5,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, BookOpen, Check, Languages, PenLine, Play, RotateCcw, Sparkles, Square, Volume2,
 } from "lucide-react";
-import { LISTENING, LISTENING_IMG } from "@/lib/lms/listening";
-import { READINGS, READING_IMG } from "@/lib/lms/reading";
-import { WRITINGS } from "@/lib/lms/writing";
-import { CONVERSATION_SCENARIOS, CONVERSATION_IMG } from "@/lib/lms/conversation";
+import { listeningFor, listeningImgFor, readingsFor, readingImgFor, writingsFor, conversationFor, conversationImgFor } from "@/lib/lms/lang-extras";
 import { getExercises } from "@/lib/lms/exercises";
 import { CEFR_LEVELS, type CefrLevel } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
@@ -23,6 +20,9 @@ import { cn } from "@/lib/utils";
 /* ════════ Vista: ESCUCHA (Ascolto) ════════ */
 
 export function ListeningView() {
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const LISTENING = useMemo(() => listeningFor(activeLang), [activeLang]);
+  const LISTENING_IMG = useMemo(() => listeningImgFor(activeLang), [activeLang]);
   const [levelFilter, setLevelFilter] = useState<CefrLevel | "all">("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [playing, setPlaying] = useState<number | null>(null);
@@ -30,7 +30,7 @@ export function ListeningView() {
   const [speed, setSpeed] = useState(0.85);
   const showSubs = useLms((s) => s.settings.showSubtitles);
 
-  const tasks = useMemo(() => LISTENING.filter((t) => levelFilter === "all" || t.level === levelFilter), [levelFilter]);
+  const tasks = useMemo(() => LISTENING.filter((t) => levelFilter === "all" || t.level === levelFilter), [LISTENING, levelFilter]);
   const task = LISTENING.find((t) => t.id === openId);
 
   /* reparto de voces por personaje (v9.1): cada hablante con su propia voz TTS */
@@ -40,7 +40,7 @@ export function ListeningView() {
 
   const playAll = (lines: { it: string; speaker?: string }[], rate: number) => {
     stopSpeaking();
-    return speakDialogue(lines, cast, { rate, onIndex: (i) => setPlaying(i), onDone: () => setPlaying(null) });
+    return speakDialogue(lines, cast, { rate, lang: activeLang, onIndex: (i) => setPlaying(i), onDone: () => setPlaying(null) });
   };
 
   if (task && quizOpen) {
@@ -92,7 +92,7 @@ export function ListeningView() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  onClick={() => speak(w, { rate: speed })}
+                  onClick={() => speak(w, { rate: speed, lang: activeLang })}
                   className="flex min-h-12 items-center justify-between rounded-2xl border-2 border-soft bg-crema px-4 py-3 text-left font-medium transition-all hover:border-verde/50 hover:scale-[1.01]"
                 >
                   <span className="flex items-center gap-2.5">
@@ -167,13 +167,19 @@ export function ListeningView() {
             onClick={() => setOpenId(t.id)}
             className="group relative overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
           >
-            <img
-              src={LISTENING_IMG[t.id]}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
+            {LISTENING_IMG[t.id] ? (
+              <img
+                src={LISTENING_IMG[t.id]}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            ) : (
+              <div aria-hidden="true" className="flex aspect-[16/9] w-full items-center justify-center bg-gradient-to-br from-azzurro/15 via-crema-scura/40 to-verde-tenue/60 dark:from-azzurro/10 dark:via-inchiostro/25 dark:to-verde-tenue/15">
+                <span className="text-4xl opacity-80">🎧</span>
+              </div>
+            )}
             <span className="absolute right-3 top-3 rounded-full bg-inchiostro/70 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-white backdrop-blur-sm">{t.level}</span>
             <div className="p-5">
               <p className="font-display text-lg font-semibold">{t.title}</p>
@@ -191,6 +197,9 @@ export function ListeningView() {
 /* ════════ Vista: LECTURA (Lettura) ════════ */
 
 export function ReadingView() {
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const READINGS = useMemo(() => readingsFor(activeLang), [activeLang]);
+  const READING_IMG = useMemo(() => readingImgFor(activeLang), [activeLang]);
   const [levelFilter, setLevelFilter] = useState<CefrLevel | "all">("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [quizOpen, setQuizOpen] = useState(false);
@@ -198,7 +207,7 @@ export function ReadingView() {
   const navigate = useLms((s) => s.navigate);
   const exclusiveOk = planLimits(plan).exclusiveContent;
 
-  const texts = useMemo(() => READINGS.filter((t) => levelFilter === "all" || t.level === levelFilter), [levelFilter]);
+  const texts = useMemo(() => READINGS.filter((t) => levelFilter === "all" || t.level === levelFilter), [READINGS, levelFilter]);
   const text = READINGS.find((t) => t.id === openId);
 
   if (text && quizOpen) {
@@ -317,6 +326,8 @@ export function ReadingView() {
 /* ════════ Vista: ESCRITURA (Scrittura) ════════ */
 
 export function WritingView() {
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const WRITINGS = useMemo(() => writingsFor(activeLang), [activeLang]);
   const [openId, setOpenId] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
@@ -485,6 +496,9 @@ export function WritingView() {
 /* ════════ Vista: CONVERSACIÓN ════════ */
 
 export function ConversationView() {
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const CONVERSATION_SCENARIOS = useMemo(() => conversationFor(activeLang), [activeLang]);
+  const CONVERSATION_IMG = useMemo(() => conversationImgFor(activeLang), [activeLang]);
   const navigate = useLms((s) => s.navigate);
   const level = useLms((s) => s.level);
   const plan = useLms((s) => s.plan);
@@ -514,7 +528,7 @@ export function ConversationView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             className={cn(
-              "relative flex flex-col rounded-3xl border-2 p-5",
+              "relative flex min-w-0 flex-col rounded-3xl border-2 p-5",
               locked ? "border-dashed border-oro/50 bg-oro-tenue/25 dark:bg-oro-tenue/10" : "border-soft bg-surface"
             )}
           >

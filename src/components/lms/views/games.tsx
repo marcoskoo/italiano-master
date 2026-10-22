@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Gamepad2, Grid3x3, ListOrdered, Sparkles, Timer, Trophy } from "lucide-react";
-import { VOCAB, wordsByCategory } from "@/lib/lms/vocabulary";
+import { vocabFor, wordsByCategoryFor } from "@/lib/lms/lang-extras";
 import { CATEGORY_META, CATEGORY_IMG, type CefrLevel, type WordCategory } from "@/lib/lms/types";
 import { ThemeImg } from "../theme-img";
-import { EXERCISES } from "@/lib/lms/exercises";
+import { exercisesForLang } from "@/lib/lms/exercises";
 import { useLms } from "@/lib/lms/store";
 import { QuizEngine } from "../quiz-engine";
 import { QuizSection } from "@/components/italian/quiz-section";
@@ -29,6 +29,9 @@ export function GamesView() {
   const [game, setGame] = useState<GameId | null>(null);
   const remoteConfig = useLms((s) => s.remoteConfig);
   const navigate = useLms((s) => s.navigate);
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  /* v9.39 · «Ordina la frase» solo tiene banco italiano (type order) */
+  const orderAvailable = activeLang === "it";
 
   // función desactivada desde el Panel Admin (tras todos los hooks)
   if (remoteConfig && !remoteConfig.features.games) {
@@ -47,14 +50,14 @@ export function GamesView() {
   }
 
   if (game === "memoria") return <MemoryGame onBack={() => setGame(null)} />;
-  if (game === "ordinare") return <OrderGame onBack={() => setGame(null)} />;
+  if (game === "ordinare") return orderAvailable ? <OrderGame onBack={() => setGame(null)} /> : null;
   if (game === "impiccato") return <HangmanGame onBack={() => setGame(null)} />;
   if (game === "quiz") return (
     <div>
       <button onClick={() => setGame(null)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
         ← Tutti i giochi
       </button>
-      <QuizSection />
+      <QuizSection lang={activeLang} />
     </div>
   );
 
@@ -62,10 +65,9 @@ export function GamesView() {
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {[
         { id: "memoria", title: "Memoria", it: "gioco di memoria", desc: "Encuentra las parejas italiano–español. Menos movimientos = más puntos.", icon: Grid3x3 },
-        { id: "ordinare", title: "Ordina la frase", it: "metti in ordine", desc: "Construye frases italianas reales tocando las palabras en orden.", icon: ListOrdered },
         { id: "quiz", title: "Quiz lampo", it: "quiz relámpago", desc: "Ocho preguntas rápidas: correcto pulsa verde, error pulsa rojo.", icon: Sparkles },
         { id: "impiccato", title: "L'impiccato", it: "il gioco dell'impiccato", desc: "Adivina la palabra italiana letra a letra antes de completar el muñeco.", icon: Gamepad2 },
-      ].map((g, i) => (
+      ].filter((g) => orderAvailable || g.id !== "ordinare").map((g, i) => (
         <motion.button
           key={g.id}
           initial={{ opacity: 0, y: 12 }}
@@ -97,6 +99,9 @@ export function GamesView() {
 
 /* ── Juego de memoria ── */
 function MemoryGame({ onBack }: { onBack: () => void }) {
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const VOCAB = useMemo(() => vocabFor(activeLang), [activeLang]);
+  const wordsByCategory = useCallback((cat: Parameters<typeof wordsByCategoryFor>[1]) => wordsByCategoryFor(activeLang, cat), [activeLang]);
   const [cat, setCat] = useState<WordCategory | null>(null);
   const [cards, setCards] = useState<{ id: number; wordId: string; text: string; lang: "it" | "es"; flipped: boolean; matched: boolean }[]>([]);
   const [first, setFirst] = useState<number | null>(null);
@@ -125,7 +130,7 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
     ]).sort(() => Math.random() - 0.5);
     setCards(deck);
     setFirst(null); setMoves(0); setLock(false); setElapsed(0); setStartTime(Date.now());
-  }, []);
+  }, [wordsByCategory]);
 
   const flip = (idx: number) => {
     if (lock || cards[idx].flipped || cards[idx].matched) return;
@@ -222,13 +227,14 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
 
 /* ── Juego de ordenar frases ── */
 function OrderGame({ onBack }: { onBack: () => void }) {
-  const orderExercises = useMemo(() => EXERCISES.filter((e) => e.type === "order"), []);
+  /* v9.39 · juego «solo italiano»: banco histórico type order */
+  const orderExercises = useMemo(() => exercisesForLang("it", 0).filter((e) => e.type === "order") as Extract<import("@/lib/lms/types").Exercise, { type: "order" }>[], []);
   const [idx, setIdx] = useState(0);
   const addXp = useLms((s) => s.addXp);
   const recordCorrect = useLms((s) => s.recordCorrect);
   const recordError = useLms((s) => s.recordError);
 
-  const exercise = orderExercises[idx % orderExercises.length] as Extract<(typeof EXERCISES)[number], { type: "order" }>;
+  const exercise = orderExercises[idx % orderExercises.length];
   const shuffleWords = (ex: { words: string[] }) => [...ex.words].sort(() => Math.random() - 0.5).map((w) => ({ w, used: false }));
   const [words, setWords] = useState(() => shuffleWords(orderExercises[0] as { words: string[] }));
   const [built, setBuilt] = useState<string[]>([]);
@@ -343,13 +349,15 @@ const HANG_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "l", "m", "n", "
   "à", "è", "é", "ì", "ò", "ù"];
 
 function HangmanGame({ onBack }: { onBack: () => void }) {
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const VOCAB = useMemo(() => vocabFor(activeLang), [activeLang]);
   // palabras de una sola pieza, sin espacios ni apóstrofos, entre 4 y 12 letras
   const pool = useMemo(
     () => VOCAB.filter((w) => {
       const it = w.it.toLowerCase();
       return it.length >= 4 && it.length <= 12 && /^[a-zàèéìòù]+$/.test(it);
     }),
-    []
+    [VOCAB]
   );
   const [target, setTarget] = useState(() => pool[0]);
   const [guessed, setGuessed] = useState<Set<string>>(new Set());

@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Microscope, Sparkles } from "lucide-react";
-import { VOCAB } from "@/lib/lms/vocabulary";
-import { VERB_LIST, findVerb, conjugate, TENSES, type TenseId } from "@/lib/lms/conjugator";
+import { vocabFor, closedLexiconFor } from "@/lib/lms/lang-extras";
+import { conjugatorFor } from "@/lib/lms/conjugators";
 import { CEFR_LEVELS, type CefrLevel } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { cn } from "@/lib/utils";
@@ -12,27 +12,7 @@ import { cn } from "@/lib/utils";
 /* ── Vista: Analizzatore di frasi · plugin v1.1 ────────────────────── */
 
 /* léxico cerrado (artículos, preposiciones, pronombres, conjunciones…) */
-const CLOSED: Record<string, string> = {
-  il: "el", lo: "el", la: "la", i: "los", gli: "los", le: "las", un: "un", uno: "un", una: "una",
-  un_: "un", di: "de", a: "a", da: "de/desde", in: "en", con: "con", su: "sobre", per: "para",
-  del: "del", della: "de la", dei: "de los", degli: "de los", delle: "de las", al: "al", alla: "a la",
-  ai: "a los", agli: "a los", alle: "a las", dal: "del", dalla: "de la", dai: "de los", dagli: "de los",
-  dalle: "de las", nel: "en el", nella: "en la", nei: "en los", negli: "en los", nelle: "en las",
-  sul: "sobre el", sulla: "sobre la", sui: "sobre los", sulle: "sobre las", col: "con el",
-  e: "y", o: "o", ma: "pero", però: "sin embargo", che: "que", se: "si", perché: "porque/por qué",
-  come: "cómo/como", dove: "dónde", quando: "cuándo", quanto: "cuánto", quale: "cuál", chi: "quién",
-  cosa: "qué", non: "no", anche: "también", molto: "mucho", poco: "poco", più: "más", meno: "menos",
-  già: "ya", ancora: "todavía", sempre: "siempre", mai: "nunca", oggi: "hoy", domani: "mañana", ieri: "ayer",
-  qui: "aquí", là: "allí", adesso: "ahora", poi: "después", prima: "antes", bene: "bien", male: "mal",
-  io: "yo", tu: "tú", lui: "él", lei: "ella", noi: "nosotros", voi: "vosotros", loro: "ellos",
-  mi: "me", ti: "te", si: "se", ci: "nos", vi: "os", è: "es", sono: "son/soy", era: "era", erano: "eran",
-  ho: "he/tengo", hai: "has/tienes", ha: "ha/tiene", abbiamo: "hemos/tenemos", avete: "habéis/tenéis",
-  hanno: "han/tienen", "c'è": "hay (sing.)", "ci sono": "hay (plural)",
-  questo: "este", questa: "esta", questi: "estos", quello: "ese/aquél", quella: "esa/aquélla",
-  sì: "sí", no: "no", grazie: "gracias", prego: "de nada", tutto: "todo", tutti: "todos",
-  ogni: "cada", tra: "entre", fra: "entre", verso: "hacia", senza: "sin", sotto: "debajo", sopra: "encima",
-  davanti: "delante", dietro: "detrás", mentre: "mientras", quindi: "por lo tanto", invece: "en cambio",
-};
+
 
 interface Token {
   raw: string;
@@ -46,20 +26,30 @@ interface Token {
 const LEVEL_ORDER: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 export function AnalyzerView() {
-  const [text, setText] = useState("Ieri sono andato al mercato e ho comprato delle pesche squisite.");
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const DEFAULT_TEXT: Record<string, string> = {
+    it: "Ieri sono andato al mercato e ho comprato delle pesche squisite.",
+    en: "Yesterday I went to the farmers market and bought some delicious peaches.",
+    pt: "Ontem fui ao mercado e comprei umas pêssegos deliciosos.",
+    fr: "Hier je suis allé au marché et j'ai acheté des pêches délicieuses.",
+    de: "Gestern bin ich zum Markt gegangen und habe wunderbare Pfirsiche gekauft.",
+  };
+  const [text, setText] = useState(DEFAULT_TEXT[activeLang] ?? DEFAULT_TEXT.it);
   const [analyzed, setAnalyzed] = useState(false);
+  const [prevLang, setPrevLang] = useState(activeLang);
+  if (prevLang !== activeLang) { setPrevLang(activeLang); setText(DEFAULT_TEXT[activeLang] ?? DEFAULT_TEXT.it); setAnalyzed(false); }
   const addXp = useLms((s) => s.addXp);
   const navigate = useLms((s) => s.navigate);
   const remoteConfig = useLms((s) => s.remoteConfig);
 
-  /* índice inverso de formas verbales: forma → {infinitivo, tiempo, persona} */
+  /* índice inverso de formas verbales: forma → {infinitivo, tiempo, persona}
+     v9.39 · construido con el pack de conjugación de la lengua activa */
+  const pack = conjugatorFor(activeLang);
   const verbIndex = useMemo(() => {
     const map = new Map<string, { infinitive: string; tense: string; person: string; es: string }>();
-    for (const v of VERB_LIST) {
-      const entry = findVerb(v.infinitive);
-      if (!entry) continue;
-      for (const t of TENSES) {
-        const conj = conjugate(entry, t.id as TenseId);
+    for (const v of pack.verbs) {
+      for (const t of pack.tenses) {
+        const conj = pack.conjugate(v, t.id);
         conj.forms.forEach((f) => {
           const form = f.form.replace(/!$/, "").split(" / ")[0];
           const single = form.split("/")[0].trim();
@@ -70,17 +60,19 @@ export function AnalyzerView() {
       }
     }
     return map;
-  }, []);
+  }, [pack]);
 
-  /* índice del diccionario: palabra → VocabWord */
+  /* índice del diccionario: palabra → VocabWord (lengua activa) */
+  const VOCAB = useMemo(() => vocabFor(activeLang), [activeLang]);
+  const CLOSED = useMemo(() => closedLexiconFor(activeLang), [activeLang]);
   const vocabIndex = useMemo(() => {
-    const map = new Map<string, typeof VOCAB[number]>();
+    const map = new Map<string, import("@/lib/lms/types").VocabWord>();
     for (const w of VOCAB) {
-      const key = w.it.toLowerCase().replace(/^(il|lo|la|l'|un|una)\s+/, "");
+      const key = w.it.toLowerCase().replace(/^(il|lo|la|l'|un|una|the|o|a|os|as|le|la|les|der|die|das|ein|eine)\s+/, "");
       if (!map.has(key)) map.set(key, w);
     }
     return map;
-  }, []);
+  }, [VOCAB]);
 
   const tokens = useMemo<Token[]>(() => {
     if (!analyzed) return [];
@@ -95,7 +87,7 @@ export function AnalyzerView() {
       if (CLOSED[clean]) return { raw, clean, es: CLOSED[clean], kind: "grammatica" as const };
       return { raw, clean, kind: "ignota" as const };
     });
-  }, [text, analyzed, vocabIndex, verbIndex]);
+  }, [text, analyzed, vocabIndex, verbIndex, CLOSED]);
 
   const stats = useMemo(() => {
     const known = tokens.filter((t) => t.kind && t.kind !== "ignota");
