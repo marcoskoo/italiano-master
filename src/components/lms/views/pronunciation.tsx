@@ -6,11 +6,12 @@ import { Ear, Info, Mic, Volume2 } from "lucide-react";
 import { VowelLab } from "@/components/italian/vowel-lab";
 import { IntonationStudio } from "@/components/italian/intonation-studio";
 import { speak } from "@/lib/lms/tts";
-import { pronunciationFor } from "@/lib/lms/lang-extras";
+import { pronunciationFor, pronImgFor } from "@/lib/lms/lang-extras";
 import type { LangCode } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
+import { ImgWithFallback } from "../theme-img";
 
 /* ── Vista: Pronunciación ─────────────────────────────────────────── */
 
@@ -36,6 +37,8 @@ export function PronunciationView() {
   const addXp = useLms((s) => s.addXp);
   const [pairIdx, setPairIdx] = useState(0);
   const SOUNDS = pronunciationFor(activeLang);
+  /* v9.40 · foto realista por sonido (boca articulando, 5 lenguas) */
+  const PRON_IMG = pronImgFor(activeLang);
 
   const pair = MINIMAL_PAIRS[pairIdx];
 
@@ -94,9 +97,14 @@ export function PronunciationView() {
               transition={{ delay: i * 0.05 }}
               className="rounded-3xl border border-soft bg-surface p-5 sm:p-6"
             >
-              <div className="flex items-center justify-between">
-                <h3 className="font-display text-xl font-semibold">{s.title}</h3>
-                <span className="rounded-full bg-verde-tenue px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-verde-scuro dark:text-verde">{s.level}</span>
+              <div className="flex items-center gap-3">
+                {PRON_IMG[s.id] && (
+                  <ImgWithFallback src={PRON_IMG[s.id]} emoji="🗣️" className="h-14 w-20 shrink-0 rounded-xl object-cover shadow-sm" />
+                )}
+                <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+                  <h3 className="font-display text-xl font-semibold">{s.title}</h3>
+                  <span className="rounded-full bg-verde-tenue px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-verde-scuro dark:text-verde">{s.level}</span>
+                </div>
               </div>
               <p className="mt-2.5 text-sm leading-relaxed text-muted-it">{s.rule}</p>
               <div className="mt-4 grid grid-cols-2 gap-2">

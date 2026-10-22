@@ -131,17 +131,44 @@ export function conversationFor(lang: string | undefined | null): ConversationSc
   return CONVERSATION_BY_LANG[(lang ?? "it") as LangCode] ?? CONVERSATION_SCENARIOS;
 }
 
-/* Ilustraciones: el italiano conserva sus jpg históricos; las demás
-   lenguas aún no tienen ilustración → mapas vacíos (las vistas las
-   omiten con render condicional).                                    */
+/* ── Ilustraciones v9.40 · fotos realistas por lengua ───────────────
+   El italiano conserva sus jpg históricos; EN/PT/FR/DE estrenan fotos
+   realistas generadas (mismo patrón de ruta: /images/<carpeta>/<id>). */
+const imgMap = (list: { id: string }[], folder: string, ext = "jpg") =>
+  Object.fromEntries(list.map((t) => [t.id, `/images/${folder}/${t.id}.${ext}`]));
+
+const LISTENING_IMG_BY_LANG: Record<LangCode, Record<string, string>> = {
+  it: LISTENING_IMG,
+  en: imgMap(EN_LISTENING, "ascolto"), pt: imgMap(PT_LISTENING, "ascolto"),
+  fr: imgMap(FR_LISTENING, "ascolto"), de: imgMap(DE_LISTENING, "ascolto"),
+};
+const READING_IMG_BY_LANG: Record<LangCode, Record<string, string>> = {
+  it: READING_IMG,
+  en: imgMap(EN_READINGS, "testi"), pt: imgMap(PT_READINGS, "testi"),
+  fr: imgMap(FR_READINGS, "testi"), de: imgMap(DE_READINGS, "testi"),
+};
+const CONVERSATION_IMG_BY_LANG: Record<LangCode, Record<string, string>> = {
+  it: CONVERSATION_IMG,
+  en: imgMap(EN_CONVERSATION, "conversazione"), pt: imgMap(PT_CONVERSATION, "conversazione"),
+  fr: imgMap(FR_CONVERSATION, "conversazione"), de: imgMap(DE_CONVERSATION, "conversazione"),
+};
+/* v9.40 · nueva carpeta de fotos para los ejercicios de escritura */
+const WRITING_IMG_BY_LANG: Record<LangCode, Record<string, string>> = {
+  it: imgMap(WRITINGS, "scrittura"),
+  en: imgMap(EN_WRITINGS, "scrittura"), pt: imgMap(PT_WRITINGS, "scrittura"),
+  fr: imgMap(FR_WRITINGS, "scrittura"), de: imgMap(DE_WRITINGS, "scrittura"),
+};
 export function listeningImgFor(lang: string | undefined | null): Record<string, string> {
-  return (lang ?? "it") === "it" ? LISTENING_IMG : {};
+  return LISTENING_IMG_BY_LANG[(lang ?? "it") as LangCode] ?? LISTENING_IMG;
 }
 export function readingImgFor(lang: string | undefined | null): Record<string, string> {
-  return (lang ?? "it") === "it" ? READING_IMG : {};
+  return READING_IMG_BY_LANG[(lang ?? "it") as LangCode] ?? READING_IMG;
 }
 export function conversationImgFor(lang: string | undefined | null): Record<string, string> {
-  return (lang ?? "it") === "it" ? CONVERSATION_IMG : {};
+  return CONVERSATION_IMG_BY_LANG[(lang ?? "it") as LangCode] ?? CONVERSATION_IMG;
+}
+export function writingImgFor(lang: string | undefined | null): Record<string, string> {
+  return WRITING_IMG_BY_LANG[(lang ?? "it") as LangCode] ?? WRITING_IMG_BY_LANG.it;
 }
 export function grammarImgFor(lang: string | undefined | null): Record<string, string> {
   return (lang ?? "it") === "it" ? GRAMMAR_IMG : {};
@@ -155,7 +182,12 @@ export function situationsFor(lang: string | undefined | null): Situation[] {
   return SITUATIONS_BY_LANG[(lang ?? "it") as LangCode] ?? SITUATIONS;
 }
 export function situationImgFor(lang: string | undefined | null): Record<string, string> {
-  return (lang ?? "it") === "it" ? SITUATION_IMG : {};
+  const l = (lang ?? "it") as LangCode;
+  if (l === "it") return SITUATION_IMG;
+  const map: Record<LangCode, { id: string }[]> = {
+    it: [], en: EN_SITUATIONS, pt: PT_SITUATIONS, fr: FR_SITUATIONS, de: DE_SITUATIONS,
+  };
+  return imgMap(map[l] ?? [], "situazioni");
 }
 
 /* ── Cultura ──────────────────────────────────────────────────────── */
@@ -166,7 +198,12 @@ export function cultureFor(lang: string | undefined | null): CultureArticle[] {
   return CULTURE_BY_LANG[(lang ?? "it") as LangCode] ?? CULTURE;
 }
 export function cultureImgFor(lang: string | undefined | null): Record<string, string> {
-  return (lang ?? "it") === "it" ? CULTURE_IMG : {};
+  const l = (lang ?? "it") as LangCode;
+  if (l === "it") return CULTURE_IMG;
+  const map: Record<LangCode, { id: string }[]> = {
+    it: [], en: EN_CULTURE, pt: PT_CULTURE, fr: FR_CULTURE, de: DE_CULTURE,
+  };
+  return imgMap(map[l] ?? [], "cultura");
 }
 
 /* ── Shadowing ──────────────────────────────────────────────────────
@@ -221,4 +258,16 @@ const PRON_BY_LANG: Record<LangCode, PronSound[]> = {
 };
 export function pronunciationFor(lang: string | undefined | null): PronSound[] {
   return PRON_BY_LANG[(lang ?? "it") as LangCode] ?? IT_PRONUNCIATION;
+}
+
+/* v9.40 · fotos realistas por sonido (boca articulando) en 5 lenguas */
+const PRON_IMG_BY_LANG: Record<LangCode, Record<string, string>> = {
+  it: imgMap(IT_PRONUNCIATION, "pronuncia", "webp"),
+  en: imgMap(EN_PRONUNCIATION, "pronuncia", "webp"),
+  pt: imgMap(PT_PRONUNCIATION, "pronuncia", "webp"),
+  fr: imgMap(FR_PRONUNCIATION, "pronuncia", "webp"),
+  de: imgMap(DE_PRONUNCIATION, "pronuncia", "webp"),
+};
+export function pronImgFor(lang: string | undefined | null): Record<string, string> {
+  return PRON_IMG_BY_LANG[(lang ?? "it") as LangCode] ?? PRON_IMG_BY_LANG.it;
 }

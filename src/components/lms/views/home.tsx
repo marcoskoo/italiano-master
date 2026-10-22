@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowRight, BookOpen, Coins, Compass, Dices, Ear, FileSpreadsheet, Flame, GraduationCap, Keyboard, Library, Pencil, Quote, RefreshCcw, Sparkles, Target, Timer, Trophy, Volume2, Wand2, Zap } from "lucide-react";
+import { AlertTriangle, ArrowRight, BookOpen, Coins, Compass, Dices, Ear, FileSpreadsheet, Flame, GraduationCap, Keyboard, Library, Pencil, Quote, RefreshCcw, Sparkles, Bot, Target, Timer, Trophy, Volume2, Wand2, Zap } from "lucide-react";
 import { MorphingHero } from "@/components/italian/morphing-hero";
 import { useLms, rankFor } from "@/lib/lms/store";
 import { VOCAB, VOCAB_BY_ID } from "@/lib/lms/vocabulary";
@@ -142,11 +142,20 @@ export function HomeView() {
       <section className="grid items-center gap-8 lg:grid-cols-[1.15fr_1fr]">
         <div>
           {/* v9.33 · Pappagallo, la mascota de Políglota Master */}
-          <img src="/mascot/hello.webp" alt="" aria-hidden="true" loading="lazy" className="mb-4 h-20 w-20 rounded-full border-2 border-soft bg-crema object-cover shadow-sm sm:h-24 sm:w-24" />
+          <img src="/mascot/hello.webp" alt="" aria-hidden="true" loading="lazy" className="mb-4 h-28 w-28 rounded-[2rem] bg-crema object-cover shadow-sm sm:h-32 sm:w-32" />
           <p className="inline-flex items-center gap-2 rounded-full border border-verde/30 bg-verde-tenue px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-verde-scuro dark:text-verde">
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
             {u.home.heroChip}
           </p>
+          {/* v9.40 · divulgación permanente: la app fue construida con IA */}
+          <button
+            type="button"
+            onClick={() => navigate("legal")}
+            title="Construida con IA · transparencia y detalles en Privacidad y legal"
+            className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-viola/30 bg-viola-tenue/60 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-viola-scuro transition-colors hover:bg-viola-tenue dark:bg-viola-tenue/25 dark:text-viola"
+          >
+            <Bot className="h-3 w-3" aria-hidden="true" /> App construida con IA
+          </button>
           {/* v9.8.2: saludo con nombre editable en línea (lápiz si ya hay nombre,
               "Come ti chiami?" si es invitado sin nombre). */}
           {editingName ? (

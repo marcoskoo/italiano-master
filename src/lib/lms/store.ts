@@ -196,6 +196,10 @@ export interface LmsState {
   setActiveTitle: (id: string | null) => void;
   restoreBackup: (data: Record<string, unknown>) => void;
   resetAll: () => void;
+  /* v9.40 · GDPR Art. 17 parcial: borrado selectivo de datos locales por
+     categoría ("srs" | "writings" | "imported" | "dict" | "activity" |
+     "lessons" | "gamification"). La cuenta/sesión y los ajustes se mantienen. */
+  wipeLocalData: (cats: string[]) => void;
   /* v9.16 · Quadro MCER */
   setCefrSelf: (key: string, level: CefrLevel | null) => void;
   resetCefrSelf: () => void;
@@ -792,6 +796,32 @@ export const useLms = create<LmsState>()(
           activeLang: "it",
           legalConsent: { bannerSeen: false, analytics: false, ageConfirmed: false, ageAt: null, tosVersion: null, acceptedAt: null },
         }),
+
+      /* v9.40 · Borrado selectivo: el usuario elige QUÉ eliminar (total o
+         parcial). Mantiene cuenta/sesión, ajustes, PIN, plan y consentimientos. */
+      wipeLocalData: (cats) => {
+        const reset: Partial<LmsState> = {};
+        if (cats.includes("srs")) reset.srs = {};
+        if (cats.includes("writings")) reset.writingHistory = [];
+        if (cats.includes("imported")) reset.importedTexts = [];
+        if (cats.includes("dict")) { reset.dictFavorites = []; reset.dictHistory = []; }
+        if (cats.includes("activity")) {
+          reset.quizHistory = []; reset.errorLog = {}; reset.skillStats = { ...DEFAULT_SKILLS };
+        }
+        if (cats.includes("lessons")) {
+          reset.completedLessons = []; reset.completedUnits = []; reset.cambridgeProgress = {};
+          reset.readingsRead = []; reset.candoDone = {};
+        }
+        if (cats.includes("gamification")) {
+          reset.xp = 0; reset.streakCount = 0; reset.studyDays = []; reset.dailyXp = 0;
+          reset.weekXp = 0; reset.streakFreezes = 0; reset.lastFreezeDate = null;
+          reset.quests = generateDailyQuests(today()); reset.questsAllBonus = false; reset.counters = {};
+          reset.monthCounters = {}; reset.monthChallengeClaimed = false;
+          reset.coins = 0; reset.xpBoostUntil = 0; reset.lastWheelDate = null;
+          reset.certificates = []; reset.ownedTitles = []; reset.activeTitle = null;
+        }
+        set(reset);
+      },
 
       loginAccount: (account, profile) => {
         const s = get();

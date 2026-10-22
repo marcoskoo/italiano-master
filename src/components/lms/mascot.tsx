@@ -1,8 +1,11 @@
-/* ═══ v9.34 · Pappagallo — mascota de Políglota Master (componente compartido) ═══
+/* ═══ v9.34 · Pappagallo — mascota de Políglota Master (componente compartido)
    Tres poses (assets WebP 512, ~11-15 KB, generadas en v9.33):
      · hello — saludo (hero Home, banners)
      · study — estudia/lee (estados vacíos, secciones de estudio)
      · party — celebra (completar quiz, logros, finalizaciones)
+   v9.40 · sin círculo: la foto del loro es de fondo completo, así que se
+   muestra en tarjeta cuadrada con esquinas amplias (mismo estilo que la
+   pantalla de carga) — se ve más grande y más limpio.
    Decorativa: aria-hidden + alt="" (los textos adyacentes ya describen el contexto). */
 
 import { cn } from "@/lib/utils";
@@ -31,7 +34,7 @@ export function Mascot({
       aria-hidden="true"
       loading={eager ? "eager" : "lazy"}
       decoding="async"
-      className={cn("rounded-full border-2 border-soft bg-crema object-cover shadow-sm", className)}
+      className={cn("rounded-[1.5rem] bg-crema object-cover shadow-sm", className)}
     />
   );
 }

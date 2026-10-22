@@ -54,3 +54,34 @@ export function ThemeImg({ src, noSwap = false, className, alt = "", ...rest }: 
     />
   );
 }
+
+/* ═══ v9.40 · ImgWithFallback · foto realista con degradación ═══════
+   Para las fotos generadas por ítem (escucha, lectura, escritura,
+   conversación, situaciones, cultura, pronunciación): si el archivo
+   aún no existe (o falla la red), cae a un cromo degradado con el
+   emoji de la sección — nunca un broken img.                        */
+export function ImgWithFallback({
+  src, emoji = "🖼️", alt = "", className, eager = false,
+}: {
+  src: string | undefined; emoji?: string; alt?: string; className?: string; eager?: boolean;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed || !src) {
+    return (
+      <div className={cn("flex items-center justify-center bg-gradient-to-br from-verde-tenue via-crema-scura to-oro-tenue/60 dark:from-inchiostro/20 dark:via-inchiostro/10 dark:to-verde/10", className)} aria-hidden="true">
+        <span className="text-4xl opacity-80">{emoji}</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      aria-hidden="true"
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      className={cn("ita-img", className)}
+      onError={() => setFailed(true)}
+    />
+  );
+}

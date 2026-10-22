@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, BookOpen, Check, Languages, PenLine, Play, RotateCcw, Sparkles, Square, Volume2,
 } from "lucide-react";
-import { listeningFor, listeningImgFor, readingsFor, readingImgFor, writingsFor, conversationFor, conversationImgFor } from "@/lib/lms/lang-extras";
+import { listeningFor, listeningImgFor, readingsFor, readingImgFor, writingsFor, writingImgFor, conversationFor, conversationImgFor } from "@/lib/lms/lang-extras";
+import { ImgWithFallback } from "../theme-img";
 import { getExercises } from "@/lib/lms/exercises";
 import { CEFR_LEVELS, type CefrLevel } from "@/lib/lms/types";
 import { useLms } from "@/lib/lms/store";
@@ -64,7 +65,7 @@ export function ListeningView() {
 
         <div className="overflow-hidden rounded-3xl border border-soft bg-surface">
           {LISTENING_IMG[task.id] && (
-            <img src={LISTENING_IMG[task.id]} alt="" loading="lazy" decoding="async" className="ita-img aspect-[16/9] w-full object-cover" />
+            <ImgWithFallback src={LISTENING_IMG[task.id]} emoji="🎧" className="aspect-[16/9] w-full object-cover" eager />
           )}
           <div className="p-6 sm:p-8">
           <VoiceHint />
@@ -168,12 +169,10 @@ export function ListeningView() {
             className="group relative overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
           >
             {LISTENING_IMG[t.id] ? (
-              <img
+              <ImgWithFallback
                 src={LISTENING_IMG[t.id]}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className="ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                emoji="🎧"
+                className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
               <div aria-hidden="true" className="flex aspect-[16/9] w-full items-center justify-center bg-gradient-to-br from-azzurro/15 via-crema-scura/40 to-verde-tenue/60 dark:from-azzurro/10 dark:via-inchiostro/25 dark:to-verde-tenue/15">
@@ -230,7 +229,7 @@ export function ReadingView() {
         </button>
         <article className="overflow-hidden rounded-3xl border border-soft bg-surface">
           {READING_IMG[text.id] && (
-            <img src={READING_IMG[text.id]} alt="" loading="lazy" decoding="async" className="ita-img aspect-[16/9] w-full object-cover" />
+            <ImgWithFallback src={READING_IMG[text.id]} emoji="📖" className="aspect-[16/9] w-full object-cover" eager />
           )}
           <div className="p-6 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -302,12 +301,10 @@ export function ReadingView() {
               </span>
             )}
             {READING_IMG[t.id] && (
-              <img
+              <ImgWithFallback
                 src={READING_IMG[t.id]}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className={cn("ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105", locked && "opacity-60")}
+                emoji="📖"
+                className={cn("aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105", locked && "opacity-60")}
               />
             )}
             <span className={cn("absolute left-3 top-3 z-10 rounded-full bg-inchiostro/70 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-white backdrop-blur-sm", locked && "opacity-80")}>{t.level}</span>
@@ -348,6 +345,8 @@ export function WritingView() {
 
   const prompts = WRITINGS;
   const prompt = WRITINGS.find((p) => p.id === openId);
+  /* v9.40 · foto realista por ejercicio de escritura (5 lenguas) */
+  const WRITING_IMG = useMemo(() => writingImgFor(activeLang), [activeLang]);
 
   const correct = async () => {
     if (!prompt || text.trim().split(/\s+/).length < 5 || wBlocked) return;
@@ -388,7 +387,11 @@ export function WritingView() {
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Tutte le proposte
         </button>
 
-        <div className="rounded-3xl border border-soft bg-surface p-6 sm:p-8">
+        <div className="overflow-hidden rounded-3xl border border-soft bg-surface">
+          {WRITING_IMG[prompt.id] && (
+            <ImgWithFallback src={WRITING_IMG[prompt.id]} emoji="✍️" className="aspect-[16/9] w-full object-cover" eager />
+          )}
+          <div className="p-6 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-display text-2xl font-semibold">{prompt.title}</h2>
             <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">
@@ -462,6 +465,7 @@ export function WritingView() {
               ))}
             </ul>
           </div>
+          </div>
         </div>
       </div>
     );
@@ -476,8 +480,12 @@ export function WritingView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
           onClick={() => setOpenId(p.id)}
-          className="group rounded-3xl border-2 border-soft bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
+          className="group overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
         >
+          {WRITING_IMG[p.id] && (
+            <ImgWithFallback src={WRITING_IMG[p.id]} emoji="✍️" className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          )}
+          <div className="p-5">
           <div className="flex items-center justify-between">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-terracotta/10 text-terracotta">
               <PenLine className="h-5 w-5" aria-hidden="true" />
@@ -487,6 +495,7 @@ export function WritingView() {
           <p className="mt-3.5 font-display text-lg font-semibold">{p.title}</p>
           <p className="mt-1 line-clamp-2 text-sm text-muted-it">{p.task}</p>
           <p className="mt-2 text-xs text-muted-it">min. {p.minWords} parole · corrección IA</p>
+          </div>
         </motion.button>
       ))}
     </div>
@@ -539,7 +548,7 @@ export function ConversationView() {
             )}
             <div className={cn("flex items-center justify-between", locked && "opacity-60")}>
               {CONVERSATION_IMG[s.id] && (
-                <img src={CONVERSATION_IMG[s.id]} alt="" loading="lazy" decoding="async" className="ita-img h-16 w-16 rounded-2xl object-cover shadow-sm" />
+                <ImgWithFallback src={CONVERSATION_IMG[s.id]} emoji={s.emoji ?? "💬"} className="h-16 w-16 rounded-2xl object-cover shadow-sm" />
               )}
               <span className="rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-muted-it dark:bg-inchiostro/15">{s.level}</span>
             </div>

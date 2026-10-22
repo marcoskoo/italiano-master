@@ -67,3 +67,7 @@ tool-results/
 .push-subs.json
 .env*.local
 .security-env-new.txt
+scripts/v940-gen.log
+scripts/v940-gen.out
+scripts/v940-gen.err
+scripts/v940-state.json

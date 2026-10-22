@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Award, Bell, Copy, Check, CreditCard, Crown, Download, GraduationCap, Headphones, KeyRound, Landmark, Lock, ScrollText, ShieldCheck, Trophy, Upload, Wallet } from "lucide-react";
+import { ArrowLeft, Award, Bell, Copy, Check, CreditCard, Crown, Download, GraduationCap, Headphones, KeyRound, Landmark, Lock, ScrollText, ShieldCheck, Trash2, Trophy, Upload, Wallet } from "lucide-react";
 import { CEFR_LEVELS, LEVEL_LABELS, type CefrLevel } from "@/lib/lms/types";
 import { exercisesByLevel } from "@/lib/lms/exercises";
 import { COURSES } from "@/lib/lms/courses";
@@ -272,7 +272,7 @@ export function CertificatesView() {
   return (
       <div className="mx-auto max-w-lg rounded-3xl border border-soft bg-surface p-8 text-center">
         {/* v9.34 · Pappagallo con pose study en el estado vacío */}
-        <img src="/mascot/study.webp" alt="" aria-hidden="true" loading="lazy" className="mx-auto h-24 w-24 rounded-full border-2 border-soft bg-crema object-cover shadow-sm" />
+        <img src="/mascot/study.webp" alt="" aria-hidden="true" loading="lazy" className="mx-auto h-28 w-28 rounded-[1.75rem] bg-crema object-cover shadow-sm" />
         <h2 className="mt-4 font-display text-2xl font-semibold">Nessun attestato ancora</h2>
         <p className="mt-2.5 text-sm leading-relaxed text-muted-it">
           Supera un examen de nivel (80% o más) y tu attestato de finalización aparecerá aquí, listo para
@@ -951,6 +951,20 @@ export function SettingsView() {
         <p className="mt-4 text-xs leading-relaxed text-muted-it">
           {u.impostazioni.dataNote}
         </p>
+        {/* v9.40 · acceso rápido al borrado total o parcial de datos */}
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border-2 border-viola/25 bg-viola-tenue/30 p-4 dark:bg-viola-tenue/15">
+          <ShieldCheck className="h-5 w-5 shrink-0 text-viola-scuro dark:text-viola" aria-hidden="true" />
+          <p className="min-w-0 flex-1 text-sm leading-relaxed text-inchiostro dark:text-crema">
+            <strong>Tus datos son tuyos:</strong> bórralos total o parcialmente (tarjetas, escritos, historial…)
+            cuando quieras desde el Centro de privacidad. Nadie más tiene acceso a ellos.
+          </p>
+          <button
+            onClick={() => navigate("legal")}
+            className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-viola-scuro px-4 py-2.5 text-sm font-bold text-white transition-transform hover:scale-[1.02] dark:bg-viola"
+          >
+            <Trash2 className="h-4 w-4" aria-hidden="true" /> Gestionar mis datos
+          </button>
+        </div>
       </section>
       <section className="rounded-3xl border border-soft bg-surface p-6">
         <h2 className="font-display text-xl font-semibold">{u.impostazioni.a11yTitle}</h2>

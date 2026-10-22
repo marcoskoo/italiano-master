@@ -8,6 +8,7 @@ import { useLms } from "@/lib/lms/store";
 import type { LangCode } from "@/lib/lms/types";
 import { speak } from "@/lib/lms/tts";
 import { cn } from "@/lib/utils";
+import { ImgWithFallback } from "../theme-img";
 
 /* ── Vista: Cultura italiana ──────────────────────────────────────── */
 
@@ -35,7 +36,7 @@ export function CultureView() {
 
         <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="overflow-hidden rounded-3xl border border-soft bg-surface">
           {CULTURE_IMG[article.id] && (
-            <img src={CULTURE_IMG[article.id]} alt="" className="ita-img aspect-[16/9] w-full object-cover" />
+            <ImgWithFallback src={CULTURE_IMG[article.id]} emoji={article.emoji ?? "🏛️"} className="aspect-[16/9] w-full object-cover" eager />
           )}
           <div className="p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
@@ -124,12 +125,10 @@ export function CultureView() {
             className="group relative flex flex-col overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
           >
             {CULTURE_IMG[a.id] && (
-              <img
+              <ImgWithFallback
                 src={CULTURE_IMG[a.id]}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className="ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                emoji={a.emoji ?? "🏛️"}
+                className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             )}
             {answered && (

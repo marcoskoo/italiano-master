@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Brain, BookOpen, FlaskConical, Gamepad2, GraduationCap, Home, Menu, RefreshCcw, Search, Shield, Sparkles,
+  Bot, Brain, BookOpen, FlaskConical, Gamepad2, GraduationCap, Home, Menu, RefreshCcw, Search, Shield, Sparkles,
   X, Zap, Flame, Medal, LogIn, LogOut,
 } from "lucide-react";
 import type { ViewId } from "@/lib/lms/types";
@@ -100,14 +100,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // pestaña contextual de la barra inferior: tutor → juegos → gramática
   // v9.17: respeta la lengua activa (esas vistas son solo-italiano)
+  // v9.40: etiquetas localizadas según la lengua de estudio (navLabelFor)
   const itOnly = (id: ViewId) => viewSupportsLang(id, activeLang);
   const extraTab =
     features.tutor && itOnly("tutor")
-      ? { id: "tutor" as ViewId, label: "Tutor IA", icon: Sparkles }
+      ? { id: "tutor" as ViewId, label: navLabelFor(activeLang, "tutor"), icon: Sparkles }
       : features.games && itOnly("giochi")
-        ? { id: "giochi" as ViewId, label: "Juegos", icon: Gamepad2 }
+        ? { id: "giochi" as ViewId, label: navLabelFor(activeLang, "giochi"), icon: Gamepad2 }
         : itOnly("grammatica")
-          ? { id: "grammatica" as ViewId, label: "Gramática", icon: Brain }
+          ? { id: "grammatica" as ViewId, label: navLabelFor(activeLang, "grammatica"), icon: Brain }
           : { id: "legal" as ViewId, label: u.nav.items.legal ?? "Privacidad", icon: Shield };
 
   async function handleLogin(e: React.FormEvent) {
@@ -228,6 +229,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mt-auto rounded-2xl border border-soft bg-crema-scura p-3.5 dark:bg-inchiostro/10">
           <p className="flex items-center gap-2 text-xs font-bold text-muted-it">
             <FlaskConical className="h-3.5 w-3.5" aria-hidden="true" /> Políglota Master
+            {/* v9.40 · divulgación siempre visible: construida con IA */}
+            <span className="inline-flex items-center gap-1 rounded-full bg-viola-tenue px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-viola-scuro dark:bg-viola-tenue/40 dark:text-viola" title="App construida con IA · más detalles en Privacidad y legal">
+              <Bot className="h-3 w-3" aria-hidden="true" /> IA
+            </span>
           </p>
           <p className="mt-1 text-[11px] leading-relaxed text-muted-it">
             {u.shell.tagline}
@@ -373,6 +378,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-muted-it sm:flex-row sm:px-6">
               <p>
                 <span className="font-display text-sm font-semibold text-inchiostro">{appName}</span> · {u.shell.footer}
+                {/* v9.40 · divulgación IA siempre visible también en el pie */}
+                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-viola-tenue px-2 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wide text-viola-scuro dark:bg-viola-tenue/40 dark:text-viola">
+                  <Bot className="h-3 w-3" aria-hidden="true" /> Construida con IA
+                </span>
               </p>
               <p className="font-mono">A1 → A2 → B1 → B2 → C1 → C2</p>
             </div>

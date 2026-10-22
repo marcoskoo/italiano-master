@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Scale, ShieldCheck, Cookie, FileText, Accessibility, Trash2, Download, CheckCircle2,
-  AlertTriangle, Eye, Clock, Lock, Globe2, UserCheck, Award,
+  AlertTriangle, Eye, Clock, Lock, Globe2, UserCheck, Award, Bot, Eraser, Sparkles, KeyRound,
 } from "lucide-react";
 import { useLms } from "@/lib/lms/store";
 import { getSessionToken } from "@/lib/lms/remote";
@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
    local) y analítica anónima OPT-IN (telemetría desactivable desde
    aquí y desde el Panel Admin).                                        */
 
-const TOS_VERSION = "2026-10-22.1";
+const TOS_VERSION = "2026-10-23.1";
 
 type TabId = "centro" | "privacidad" | "terminos" | "cookies" | "seguridad" | "accesibilidad" | "certificados";
 const TABS: { id: TabId; label: string; icon: typeof Scale }[] = [
@@ -53,6 +53,35 @@ export function LegalView() {
   const logoutAccount = useLms((s) => s.logoutAccount);
   const [deleteState, setDeleteState] = useState<"idle" | "confirm" | "deleting" | "done" | "error">("idle");
   const [deleteMsg, setDeleteMsg] = useState("");
+
+  /* ── v9.40 · borrado selectivo (GDPR Art. 17 parcial): el usuario
+     elige QUÉ datos locales eliminar; cuenta y ajustes se conservan. ── */
+  const wipeLocalData = useLms((s) => s.wipeLocalData);
+  const srs = useLms((s) => s.srs);
+  const writingHistory = useLms((s) => s.writingHistory);
+  const importedTexts = useLms((s) => s.importedTexts);
+  const dictFavorites = useLms((s) => s.dictFavorites);
+  const dictHistory = useLms((s) => s.dictHistory);
+  const quizHistory = useLms((s) => s.quizHistory);
+  const errorLog = useLms((s) => s.errorLog);
+  const completedLessons = useLms((s) => s.completedLessons);
+  const completedUnits = useLms((s) => s.completedUnits);
+  const readingsRead = useLms((s) => s.readingsRead);
+  const certificates = useLms((s) => s.certificates);
+  const xp = useLms((s) => s.xp);
+  const [wipeSel, setWipeSel] = useState<string[]>([]);
+  const [wipeState, setWipeState] = useState<"idle" | "confirm" | "done">("idle");
+
+  const WIPE_CATS = useMemo(() => [
+    { id: "srs", label: "Tarjetas de repaso (memoria SRS)", count: Object.keys(srs).length },
+    { id: "writings", label: "Escritos guardados con sus correcciones", count: writingHistory.length },
+    { id: "imported", label: "Textos importados", count: importedTexts.length },
+    { id: "dict", label: "Favoritos e historial del diccionario", count: dictFavorites.length + dictHistory.length },
+    { id: "activity", label: "Historial de quizzes y registro de errores", count: quizHistory.length + Object.keys(errorLog).length },
+    { id: "lessons", label: "Progreso de lecciones, unidades y lecturas", count: completedLessons.length + completedUnits.length + readingsRead.length },
+    { id: "gamification", label: "XP, racha, misiones, monedas y certificados", count: certificates.length ? certificates.length + (xp > 0 ? 1 : 0) : (xp > 0 ? 1 : 0) },
+  ], [srs, writingHistory, importedTexts, dictFavorites, dictHistory, quizHistory, errorLog, completedLessons, completedUnits, readingsRead, certificates, xp]);
+  const allSelected = wipeSel.length === WIPE_CATS.length;
 
   const edad = useMemo(() => {
     if (!legal.ageConfirmed) return null;
@@ -255,6 +284,139 @@ export function LegalView() {
             </div>
           </section>
 
+          {/* v9.40 · borrado selectivo (total o parcial) */}
+          <section className="rounded-3xl border border-soft bg-surface p-6">
+            <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+              <Eraser className="h-5 w-5 text-verde" aria-hidden="true" /> Borrar tus datos · total o parcial
+            </h2>
+            <p className="mt-1 text-sm text-muted-it">
+              Tus datos son tuyos: elimínalos <strong>cuando quieras y al detalle que elijas</strong>, sin pedir
+              permiso a nadie (GDPR Art. 17 · CCPA §1798.105 · LGPD Art. 18-VI). Selecciona categorías para un
+              borrado <em>parcial</em>, o márcalas todas para uno <em>total</em>. La cuenta, la sesión y tus
+              preferencias (tema, tamaño de texto, PIN) se conservan; si también quieres eliminar la cuenta del
+              servidor, usa la sección roja de abajo.
+            </p>
+            <div className="mt-4 space-y-2">
+              {WIPE_CATS.map((c) => {
+                const on = wipeSel.includes(c.id);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={on}
+                    onClick={() => { setWipeState("idle"); setWipeSel(on ? wipeSel.filter((x) => x !== c.id) : [...wipeSel, c.id]); }}
+                    className={cn(
+                      "flex w-full items-center justify-between gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-colors",
+                      on ? "border-rosso/50 bg-rosso-tenue" : "border-soft bg-crema hover:border-rosso/30 dark:bg-inchiostro/5",
+                    )}
+                  >
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2", on ? "border-rosso bg-rosso text-white" : "border-inchiostro/25")}>
+                        {on && <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />}
+                      </span>
+                      <span className="text-sm font-semibold">{c.label}</span>
+                    </span>
+                    <span className="shrink-0 rounded-full bg-inchiostro/5 px-2.5 py-1 font-mono text-[11px] font-bold text-muted-it dark:bg-inchiostro/15">
+                      {c.count > 0 ? `${c.count} registro${c.count !== 1 ? "s" : ""}` : "vacío"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => { setWipeState("idle"); setWipeSel(allSelected ? [] : WIPE_CATS.map((c) => c.id)); }}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-soft px-4 py-2.5 text-sm font-bold transition-colors hover:border-verde/40"
+              >
+                {allSelected ? "Quitar selección" : "Seleccionar todo"}
+              </button>
+              {wipeState !== "confirm" ? (
+                <button
+                  type="button"
+                  disabled={wipeSel.length === 0}
+                  onClick={() => setWipeState("confirm")}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-rosso px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-rosso/25 transition-transform hover:scale-[1.02] disabled:opacity-40 disabled:shadow-none disabled:hover:scale-100"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" /> Eliminar {wipeSel.length > 0 ? `${wipeSel.length} categoría${wipeSel.length !== 1 ? "s" : ""}` : "selección"}…
+                </button>
+              ) : (
+                <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-rosso-tenue p-4">
+                  <AlertTriangle className="h-5 w-5 text-rosso" aria-hidden="true" />
+                  <p className="flex-1 text-sm font-semibold text-rosso-scuro dark:text-rosso">
+                    ¿Seguro? Esta acción no se puede deshacer.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { wipeLocalData(wipeSel); setWipeSel([]); setWipeState("done"); }}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-rosso px-4 py-2 text-sm font-bold text-white"
+                  >
+                    Sí, eliminar
+                  </button>
+                  <button type="button" onClick={() => setWipeState("idle")} className="inline-flex min-h-11 items-center rounded-xl bg-surface px-4 py-2 text-sm font-bold text-muted-it">
+                    Cancelar
+                  </button>
+                </div>
+              )}
+            </div>
+            {wipeState === "done" && (
+              <p className="mt-3 flex items-center gap-2 rounded-2xl bg-verde-tenue p-4 text-sm font-semibold text-verde-scuro dark:text-verde">
+                <CheckCircle2 className="h-5 w-5" aria-hidden="true" /> Datos eliminados de este dispositivo. Recarga la página para ver los contadores a cero.
+              </p>
+            )}
+          </section>
+
+          {/* v9.40 · acceso exclusivo */}
+          <section className="rounded-3xl border border-soft bg-surface p-6">
+            <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+              <KeyRound className="h-5 w-5 text-verde" aria-hidden="true" /> Solo tú tienes acceso a tus datos
+            </h2>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {[
+                { icon: Lock, t: "Privacidad por diseño", d: "Como invitado, tu progreso vive únicamente en tu dispositivo (localStorage): nunca viaja a ningún servidor." },
+                { icon: KeyRound, t: "Contraseñas cifradas", d: "Se guardan con scrypt + sal única (nunca en claro) y las comparamos en tiempo constante." },
+                { icon: ShieldCheck, t: "Sesiones revocables", d: "Tokens de sesión que puedes invalidar al cerrar sesión o eliminar tu cuenta; bloqueo tras intentos fallidos." },
+                { icon: Globe2, t: "Sin terceros ni venta de datos", d: "No hay anuncios, rastreadores ni perfiles publicitarios. Tus datos no se venden ni se comparten (CCPA: «no sale» / «no comparte»)." },
+              ].map((x) => (
+                <div key={x.t} className="flex items-start gap-3 rounded-2xl border border-soft bg-crema p-4 dark:bg-inchiostro/5">
+                  <x.icon className="mt-0.5 h-5 w-5 shrink-0 text-verde" aria-hidden="true" />
+                  <span>
+                    <span className="block text-sm font-bold">{x.t}</span>
+                    <span className="mt-0.5 block text-xs leading-relaxed text-muted-it">{x.d}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-muted-it">
+              Nadie más puede ver tus datos: ni otros estudiantes, ni anunciantes, ni terceros. El administrador de la
+              plataforma solo ve métricas agregadas (XP, racha, plan) para soporte, nunca tus escritos ni tu
+              historial de estudio, que permanecen en tu dispositivo.
+            </p>
+          </section>
+
+          {/* v9.40 · transparencia IA */}
+          <section className="rounded-3xl border-2 border-viola/30 bg-viola-tenue/40 p-6 dark:bg-viola-tenue/15">
+            <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+              <Bot className="h-5 w-5 text-viola-scuro dark:text-viola" aria-hidden="true" /> Esta app fue construida con IA
+            </h2>
+            <p className="mt-1 text-sm leading-relaxed text-inchiostro dark:text-crema">
+              <strong>Políglota Master se desarrolló con asistencia de inteligencia artificial</strong> (modelo GLM de
+              Z.ai) en tres frentes: el <strong>código</strong> de la plataforma, el <strong>contenido didáctico</strong>{" "}
+              (cursos, lecturas, ejercicios y noticias VOA) y las <strong>imágenes</strong> que lo ilustran. El{" "}
+              <strong>Tutor IA</strong> y la corrección de escritos también funcionan con IA generativa, y el audio usa
+              las voces TTS nativas de tu dispositivo.
+            </p>
+            <ul className="mt-3 space-y-1.5 text-sm leading-relaxed text-inchiostro/90 dark:text-crema/90">
+              <li>· La IA puede cometer errores: verifica la información importante y contrasta con fuentes oficiales (academias, exámenes, gramáticas de referencia).</li>
+              <li>· Tus conversaciones con el Tutor IA se procesan solo para generar la respuesta: <strong>no se usan para entrenar modelos</strong> ni se comparten.</li>
+              <li>· Los textos y traducciones están revisados con criterio pedagógico (nivel MCER, progresión, español neutro), pero no sustituyen a un profesor humano.</li>
+            </ul>
+            <p className="mt-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-viola-scuro dark:text-viola">
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Aprender con IA, saber que es IA: transparencia total
+            </p>
+          </section>
+
           {/* supresión */}
           <section className="rounded-3xl border-2 border-rosso/25 bg-surface p-6">
             <h2 className="flex items-center gap-2 font-display text-lg font-bold">
@@ -387,8 +549,11 @@ export function LegalView() {
           </ul>
           <h3>4. Contenido generado y IA</h3>
           <p>
-            El Tutor IA puede cometer errores. Verifica la información importante. No compartas datos sensibles con el tutor:
-            se procesan para darte la respuesta y no se usan para entrenar modelos.
+            <strong>Esta plataforma fue construida con inteligencia artificial</strong> (código, contenido didáctico,
+            imágenes y tutor), con supervisión humana de criterio pedagógico. El Tutor IA puede cometer errores:
+            verifica la información importante. No compartas datos sensibles con el tutor: se procesan para darte la
+            respuesta y <strong>no se usan para entrenar modelos</strong>. Consulta la pestaña Centro de privacidad
+            para conocer los detalles de transparencia IA.
           </p>
           <h3>5. Limitación de responsabilidad</h3>
           <p>

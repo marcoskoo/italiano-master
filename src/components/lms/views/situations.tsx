@@ -11,6 +11,7 @@ import { speakDialogue, stopSpeaking } from "@/lib/lms/tts";
 import { useVoiceCast, SpeakerAvatar, SpeakerChip, VoiceCastNote, DialogueLineButton, speakerIndexMap, uniqueSpeakers } from "../voice-cast";
 import { QuizEngine } from "../quiz-engine";
 import { AudioButton } from "../audio-button";
+import { ImgWithFallback } from "../theme-img";
 import { cn } from "@/lib/utils";
 
 /* ── Vista: Situaciones reales ────────────────────────────────────── */
@@ -53,7 +54,7 @@ export function SituationsView() {
 
         <div className="overflow-hidden rounded-3xl border border-soft bg-gradient-to-br from-verde-tenue to-surface dark:from-verde-tenue/30">
           {SITUATION_IMG[situation.id] && (
-            <img src={SITUATION_IMG[situation.id]} alt="" className="ita-img aspect-[16/9] w-full object-cover" />
+            <ImgWithFallback src={SITUATION_IMG[situation.id]} emoji={situation.emoji ?? "🗺️"} className="aspect-[16/9] w-full object-cover" eager />
           )}
           <div className="flex items-start gap-4 p-6">
             <div>
@@ -156,12 +157,10 @@ export function SituationsView() {
           className="group relative overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-lg"
         >
           {SITUATION_IMG[s.id] && (
-            <img
+            <ImgWithFallback
               src={SITUATION_IMG[s.id]}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="ita-img aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              emoji={s.emoji ?? "🗺️"}
+              className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           )}
           <span className="absolute right-3 top-3 rounded-full bg-inchiostro/70 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-white backdrop-blur-sm">{s.level}</span>
