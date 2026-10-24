@@ -55,9 +55,20 @@ import { DE_SHADOWING } from "./lang/de/shadowing";
 import { DE_LEVEL_TEST } from "./lang/de/leveltest";
 import { DE_PRONUNCIATION } from "./lang/de/pronunciation";
 
-/* ── Vocabulario ──────────────────────────────────────────────────── */
+/* ── Vocabulario ────────────────────────────────────────────────────
+   v9.41 · las lenguas no italianas usan el DICCIONARIO COMPLETO
+   (base A1-B1 + pack plus B1-C2), igual que el italiano histórico:
+   los juegos (memoria/ahorcado) y las fichas ganan todo el léxico. */
+import { EN_DICT } from "./dict/lang-en";
+import { PT_DICT } from "./dict/lang-pt";
+import { FR_DICT } from "./dict/lang-fr";
+import { DE_DICT } from "./dict/lang-de";
 const VOCAB_BY_LANG: Record<LangCode, VocabWord[]> = {
-  it: IT_VOCAB, en: EN_VOCAB, pt: PT_VOCAB, fr: FR_VOCAB, de: DE_VOCAB,
+  it: IT_VOCAB,
+  en: [...EN_VOCAB, ...EN_DICT],
+  pt: [...PT_VOCAB, ...PT_DICT],
+  fr: [...FR_VOCAB, ...FR_DICT],
+  de: [...DE_VOCAB, ...DE_DICT],
 };
 export function vocabFor(lang: string | undefined | null): VocabWord[] {
   return VOCAB_BY_LANG[(lang ?? "it") as LangCode] ?? IT_VOCAB;

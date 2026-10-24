@@ -4,16 +4,20 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Gamepad2, Grid3x3, ListOrdered, Sparkles, Timer, Trophy } from "lucide-react";
 import { vocabFor, wordsByCategoryFor } from "@/lib/lms/lang-extras";
-import { CATEGORY_META, CATEGORY_IMG, type CefrLevel, type WordCategory } from "@/lib/lms/types";
+import { CATEGORY_IMG, type LangCode, type WordCategory } from "@/lib/lms/types";
 import { ThemeImg } from "../theme-img";
 import { exercisesForLang } from "@/lib/lms/exercises";
 import { useLms } from "@/lib/lms/store";
-import { QuizEngine } from "../quiz-engine";
+import { useUi } from "@/lib/lms/ui";
 import { QuizSection } from "@/components/italian/quiz-section";
 import { AudioButton } from "../audio-button";
 import { cn } from "@/lib/utils";
 
-/* ── Vista: Giochi ────────────────────────────────────────────────── */
+/* ── Vista: Giochi ──────────────────────────────────────────────────
+   v9.41 · juegos íntegramente en la lengua de estudio activa: cartas,
+   botones, marcadores, categorías y notas. El ahorcado usa el alfabeto
+   (y acentos) de la lengua activa; «Ordina la frase» sigue siendo solo
+   italiano (banco histórico type order).                               */
 
 type GameId = "memoria" | "ordinare" | "quiz" | "impiccato";
 
@@ -25,11 +29,29 @@ const GAME_IMG: Record<GameId, string> = {
   impiccato: "/images/giochi/impiccato.webp",
 };
 
+/* v9.41 · teclado y pool del ahorcado por lengua de estudio
+   (antes: solo alfabeto italiano → k/w/x/y y umlautos imposibles). */
+const HANG_KEYS: Record<LangCode, string[]> = {
+  it: ["a", "b", "c", "d", "e", "f", "g", "h", "i", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "z", "à", "è", "é", "ì", "ò", "ù"],
+  en: "abcdefghijklmnopqrstuvwxyz".split(""),
+  pt: [..."abcdefghijklmnopqrstuvwxyz".split(""), "á", "â", "ã", "à", "ç", "é", "ê", "í", "ó", "ô", "õ", "ú"],
+  fr: [..."abcdefghijklmnopqrstuvwxyz".split(""), "à", "â", "ç", "é", "è", "ê", "ë", "î", "ï", "ô", "ù", "û", "ü", "œ"],
+  de: [..."abcdefghijklmnopqrstuvwxyz".split(""), "ä", "ö", "ü", "ß"],
+};
+const POOL_RE: Record<LangCode, RegExp> = {
+  it: /^[a-zàèéìòù]+$/,
+  en: /^[a-z]+$/,
+  pt: /^[a-záâãàçéêíóôõú]+$/,
+  fr: /^[a-zàâçéèêëîïôùûüœ]+$/,
+  de: /^[a-zäöüß]+$/,
+};
+
 export function GamesView() {
   const [game, setGame] = useState<GameId | null>(null);
+  const g = useUi().games;
   const remoteConfig = useLms((s) => s.remoteConfig);
   const navigate = useLms((s) => s.navigate);
-  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
   /* v9.39 · «Ordina la frase» solo tiene banco italiano (type order) */
   const orderAvailable = activeLang === "it";
 
@@ -38,12 +60,10 @@ export function GamesView() {
     return (
       <div className="mx-auto max-w-lg rounded-3xl border border-soft bg-surface p-8 text-center">
         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-inchiostro/10 text-2xl">🎮</span>
-        <h2 className="mt-4 font-display text-xl font-semibold">Giochi temporalmente desactivados</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-it">
-          La administración ha desactivado la sección de juegos por ahora. Los cursos, el vocabulario y el repaso espaciado siguen a tu disposición.
-        </p>
+        <h2 className="mt-4 font-display text-xl font-semibold">{g.off.title}</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-it">{g.off.body}</p>
         <button onClick={() => navigate("inicio")} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-verde px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-verde/25 hover:bg-verde-scuro">
-          Torna all'inizio
+          {g.off.back}
         </button>
       </div>
     );
@@ -55,7 +75,7 @@ export function GamesView() {
   if (game === "quiz") return (
     <div>
       <button onClick={() => setGame(null)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">
-        ← Tutti i giochi
+        {g.back}
       </button>
       <QuizSection lang={activeLang} />
     </div>
@@ -63,43 +83,47 @@ export function GamesView() {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {[
-        { id: "memoria", title: "Memoria", it: "gioco di memoria", desc: "Encuentra las parejas italiano–español. Menos movimientos = más puntos.", icon: Grid3x3 },
-        { id: "quiz", title: "Quiz lampo", it: "quiz relámpago", desc: "Ocho preguntas rápidas: correcto pulsa verde, error pulsa rojo.", icon: Sparkles },
-        { id: "impiccato", title: "L'impiccato", it: "il gioco dell'impiccato", desc: "Adivina la palabra italiana letra a letra antes de completar el muñeco.", icon: Gamepad2 },
-      ].filter((g) => orderAvailable || g.id !== "ordinare").map((g, i) => (
-        <motion.button
-          key={g.id}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.06 }}
-          onClick={() => setGame(g.id as GameId)}
-          className="group overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-xl"
-        >
-          <div className="overflow-hidden">
-            <ThemeImg
-              src={GAME_IMG[g.id as GameId]}
-              alt=""
-              className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          </div>
-          <div className="p-6">
-            <p className="font-display text-2xl font-semibold">{g.title}</p>
-            <p className="mt-0.5 font-mono text-xs italic text-muted-it">{g.it}</p>
-            <p className="mt-3 text-sm leading-relaxed text-muted-it">{g.desc}</p>
-            <span className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl bg-verde-tenue px-4 py-2 text-sm font-bold text-verde-scuro transition-colors group-hover:bg-verde group-hover:text-white dark:text-verde">
-              <Gamepad2 className="h-4 w-4" aria-hidden="true" /> Gioca ora
-            </span>
-          </div>
-        </motion.button>
-      ))}
+      {([
+        { id: "memoria", card: g.cards.memoria, icon: Grid3x3 },
+        { id: "quiz", card: g.cards.quiz, icon: Sparkles },
+        { id: "impiccato", card: g.cards.impiccato, icon: Gamepad2 },
+        { id: "ordinare", card: g.cards.ordinare, icon: ListOrdered },
+      ] as { id: GameId; card: { t: string; sub: string; d: string }; icon: typeof Grid3x3 }[])
+        .filter((x) => orderAvailable || x.id !== "ordinare")
+        .map((x, i) => (
+          <motion.button
+            key={x.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.06 }}
+            onClick={() => setGame(x.id)}
+            className="group overflow-hidden rounded-3xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-1 hover:border-verde/40 hover:shadow-xl"
+          >
+            <div className="overflow-hidden">
+              <ThemeImg
+                src={GAME_IMG[x.id]}
+                alt=""
+                className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+            <div className="p-6">
+              <p className="font-display text-2xl font-semibold">{x.card.t}</p>
+              <p className="mt-0.5 font-mono text-xs italic text-muted-it">{x.card.sub}</p>
+              <p className="mt-3 text-sm leading-relaxed text-muted-it">{x.card.d}</p>
+              <span className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl bg-verde-tenue px-4 py-2 text-sm font-bold text-verde-scuro transition-colors group-hover:bg-verde group-hover:text-white dark:text-verde">
+                <Gamepad2 className="h-4 w-4" aria-hidden="true" /> {g.play}
+              </span>
+            </div>
+          </motion.button>
+        ))}
     </div>
   );
 }
 
 /* ── Juego de memoria ── */
 function MemoryGame({ onBack }: { onBack: () => void }) {
-  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  const g = useUi().games;
   const VOCAB = useMemo(() => vocabFor(activeLang), [activeLang]);
   const wordsByCategory = useCallback((cat: Parameters<typeof wordsByCategoryFor>[1]) => wordsByCategoryFor(activeLang, cat), [activeLang]);
   const [cat, setCat] = useState<WordCategory | null>(null);
@@ -157,11 +181,11 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
   if (!cat) {
     return (
       <div>
-        <button onClick={onBack} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">← Tutti i giochi</button>
-        <h2 className="font-display text-2xl font-semibold">Scegli una categoria</h2>
+        <button onClick={onBack} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">{g.back}</button>
+        <h2 className="font-display text-2xl font-semibold">{g.memory.chooseCat}</h2>
         <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
           {(Array.from(new Set(VOCAB.map((w) => w.cat))) as WordCategory[]).map((c) => (
-            <button key={c} onClick={() => { setCat(c); startGame(c); }} className="group overflow-hidden rounded-2xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-0.5 hover:border-verde/40 hover:shadow-lg">
+            <button key={c} onClick={() => { setCat(c); startGame(c); }} aria-label={g.memory.ariaCat(g.cats[c])} className="group overflow-hidden rounded-2xl border-2 border-soft bg-surface text-left transition-all hover:-translate-y-0.5 hover:border-verde/40 hover:shadow-lg">
               {CATEGORY_IMG[c] && (
                 <ThemeImg
                   src={CATEGORY_IMG[c]}
@@ -171,9 +195,9 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
               )}
               <div className="p-3.5">
                 <p className="flex items-center gap-1.5 text-sm font-bold">
-                  {CATEGORY_META[c].es}
+                  {g.cats[c]}
                 </p>
-                <p className="mt-1 text-xs text-muted-it">{Math.min(8, wordsByCategory(c).length)} coppie</p>
+                <p className="mt-1 text-xs text-muted-it">{g.memory.pairs(Math.min(8, wordsByCategory(c).length))}</p>
               </div>
             </button>
           ))}
@@ -184,25 +208,25 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
 
   return (
     <div>
-      <button onClick={() => setCat(null)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">← Cambia categoria</button>
+      <button onClick={() => setCat(null)} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">{g.memory.changeCat}</button>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-soft bg-surface px-5 py-3.5">
         <p className="flex items-center gap-2.5 font-display text-lg font-semibold">
           {CATEGORY_IMG[cat] && (
             <ThemeImg src={CATEGORY_IMG[cat]} alt="" className="h-9 w-9 rounded-xl object-cover" />
           )}
-          {CATEGORY_META[cat].es}
+          {g.cats[cat]}
         </p>
         <div className="flex items-center gap-4 text-sm font-bold">
           <span className="flex items-center gap-1.5 text-muted-it"><Timer className="h-4 w-4" aria-hidden="true" /> {elapsed}s</span>
           <span className="flex items-center gap-1.5 text-muted-it"><Trophy className="h-4 w-4" aria-hidden="true" /> {pairsFound}/{totalPairs}</span>
-          <span className="text-muted-it">mosse: {moves}</span>
-          <button onClick={() => startGame(cat)} className="rounded-xl bg-verde-tenue px-3 py-1.5 text-xs font-bold text-verde-scuro dark:text-verde">Ricomincia</button>
+          <span className="text-muted-it">{g.memory.moves(moves)}</span>
+          <button onClick={() => startGame(cat)} className="rounded-xl bg-verde-tenue px-3 py-1.5 text-xs font-bold text-verde-scuro dark:text-verde">{g.memory.restart}</button>
         </div>
       </div>
 
       {won && (
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mb-5 rounded-2xl border border-verde/40 bg-verde-tenue p-5 text-center">
-          <p className="font-display text-2xl font-semibold text-verde-scuro dark:text-verde">🎉 Hai vinto in {moves} mosse e {elapsed} secondi!</p>
+          <p className="font-display text-2xl font-semibold text-verde-scuro dark:text-verde">{g.memory.won(moves, elapsed)}</p>
         </motion.div>
       )}
 
@@ -211,7 +235,7 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
           <button
             key={card.id}
             onClick={() => flip(i)}
-            aria-label={card.flipped || card.matched ? card.text : "Carta coperta"}
+            aria-label={card.flipped || card.matched ? card.text : g.memory.covered}
             className={cn(
               "flex aspect-[4/3] items-center justify-center rounded-2xl border-2 p-2 text-center text-xs font-bold transition-all duration-300 sm:text-sm",
               card.matched ? "border-verde bg-verde-tenue text-verde-scuro opacity-60 dark:text-verde" : card.flipped ? "border-oro bg-oro-tenue scale-105" : "border-soft bg-surface hover:-translate-y-0.5 hover:border-verde/40"
@@ -225,9 +249,10 @@ function MemoryGame({ onBack }: { onBack: () => void }) {
   );
 }
 
-/* ── Juego de ordenar frases ── */
+/* ── Juego de ordenar frases (solo italiano) ── */
 function OrderGame({ onBack }: { onBack: () => void }) {
   /* v9.39 · juego «solo italiano»: banco histórico type order */
+  const g = useUi().games;
   const orderExercises = useMemo(() => exercisesForLang("it", 0).filter((e) => e.type === "order") as Extract<import("@/lib/lms/types").Exercise, { type: "order" }>[], []);
   const [idx, setIdx] = useState(0);
   const addXp = useLms((s) => s.addXp);
@@ -265,12 +290,12 @@ function OrderGame({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <button onClick={onBack} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">← Tutti i giochi</button>
+      <button onClick={onBack} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">{g.back}</button>
 
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-2xl font-semibold">Ordina la frase</h2>
+        <h2 className="font-display text-2xl font-semibold">{g.cards.ordinare.t}</h2>
         <span className="rounded-full bg-verde-tenue px-3 py-1.5 text-xs font-bold text-verde-scuro dark:text-verde">
-          {(idx % orderExercises.length) + 1} / {orderExercises.length}
+          {g.order.of((idx % orderExercises.length) + 1, orderExercises.length)}
         </span>
       </div>
 
@@ -281,7 +306,7 @@ function OrderGame({ onBack }: { onBack: () => void }) {
           "mt-5 flex min-h-16 flex-wrap items-center gap-2 rounded-2xl border-2 border-dashed p-3.5 transition-colors",
           state === "won" ? "border-verde bg-verde-tenue quiz-correct" : state === "lost" ? "border-rosso bg-rosso-tenue" : "border-soft bg-crema-scura dark:bg-inchiostro/10"
         )}>
-          {built.length === 0 && <span className="px-1 text-sm text-muted-it">Toca le parole nell'ordine giusto…</span>}
+          {built.length === 0 && <span className="px-1 text-sm text-muted-it">{g.order.tap}</span>}
           {built.map((w, i) => (
             <button
               key={`${w}-${i}`}
@@ -312,7 +337,7 @@ function OrderGame({ onBack }: { onBack: () => void }) {
               disabled={built.length !== exercise.answer.length}
               className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-verde px-6 py-3 font-bold text-white shadow-lg shadow-verde/25 transition-all hover:scale-[1.01] disabled:opacity-40"
             >
-              Verifica
+              {g.order.check}
             </button>
           </>
         )}
@@ -320,21 +345,21 @@ function OrderGame({ onBack }: { onBack: () => void }) {
         {state !== "playing" && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-5">
             {state === "won" ? (
-              <p className="rounded-2xl bg-verde-tenue p-4 text-center font-bold text-verde-scuro dark:text-verde">🎉 Perfetto! +12 XP</p>
+              <p className="rounded-2xl bg-verde-tenue p-4 text-center font-bold text-verde-scuro dark:text-verde">{g.order.perfect}</p>
             ) : (
               <div className="rounded-2xl bg-rosso-tenue p-4 text-center">
-                <p className="font-bold text-rosso-scuro dark:text-rosso">Quasi! La frase corretta era:</p>
+                <p className="font-bold text-rosso-scuro dark:text-rosso">{g.order.almost}</p>
                 <p className="mt-2 font-display text-xl font-semibold">{exercise.answer.join(" ")}</p>
                 <p className="mt-1.5 text-sm text-muted-it">{exercise.explain}</p>
               </div>
             )}
             <div className="mt-4 flex items-center justify-center gap-3">
-              <AudioButton text={exercise.answer.join(" ")} variant="full" label="Ascolta la frase" />
+              <AudioButton text={exercise.answer.join(" ")} variant="full" label={g.order.listen} lang="it" />
               <button
                 onClick={advance}
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-inchiostro px-5 py-2.5 text-sm font-bold text-crema transition-all hover:scale-105 dark:bg-verde dark:text-inchiostro"
               >
-                Frase successiva →
+                {g.order.next}
               </button>
             </div>
           </motion.div>
@@ -344,20 +369,20 @@ function OrderGame({ onBack }: { onBack: () => void }) {
   );
 }
 
-/* ── Juego del ahorcado (L'impiccato) · v1.1 ── */
-const HANG_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "z",
-  "à", "è", "é", "ì", "ò", "ù"];
-
+/* ── Juego del ahorcado (L'impiccato) · v1.1 + v9.41 multilingüe ── */
 function HangmanGame({ onBack }: { onBack: () => void }) {
-  const activeLang = (useLms((s) => s.activeLang) ?? "it") as import("@/lib/lms/types").LangCode;
+  const activeLang = (useLms((s) => s.activeLang) ?? "it") as LangCode;
+  const g = useUi().games;
+  const keys = HANG_KEYS[activeLang];
   const VOCAB = useMemo(() => vocabFor(activeLang), [activeLang]);
   // palabras de una sola pieza, sin espacios ni apóstrofos, entre 4 y 12 letras
+  // v9.41 · el pool acepta el alfabeto completo de la lengua activa (w/k/y, umlautos, ç…)
   const pool = useMemo(
     () => VOCAB.filter((w) => {
       const it = w.it.toLowerCase();
-      return it.length >= 4 && it.length <= 12 && /^[a-zàèéìòù]+$/.test(it);
+      return it.length >= 4 && it.length <= 12 && POOL_RE[activeLang].test(it);
     }),
-    [VOCAB]
+    [VOCAB, activeLang]
   );
   const [target, setTarget] = useState(() => pool[0]);
   const [guessed, setGuessed] = useState<Set<string>>(new Set());
@@ -402,11 +427,11 @@ function HangmanGame({ onBack }: { onBack: () => void }) {
     const onKey = (e: KeyboardEvent) => {
       if (status !== "playing") return;
       const k = e.key.toLowerCase();
-      if (HANG_KEYS.includes(k)) setGuessed((g) => new Set(g).add(k));
+      if (keys.includes(k)) setGuessed((gs) => new Set(gs).add(k));
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [status]);
+  }, [status, keys]);
 
   // muñeco SVG progresivo (7 errores)
   const gallows = (
@@ -433,14 +458,14 @@ function HangmanGame({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <button onClick={onBack} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">← Tutti i giochi</button>
+      <button onClick={onBack} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-it transition-colors hover:text-verde">{g.back}</button>
 
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-2xl font-semibold">L'impiccato 🎯</h2>
+        <h2 className="font-display text-2xl font-semibold">{g.hangman.title}</h2>
         <div className="flex items-center gap-3 text-xs font-bold">
-          <span className="rounded-full bg-verde-tenue px-3 py-1.5 text-verde-scuro dark:text-verde">partita {round} · vinte {wins}</span>
+          <span className="rounded-full bg-verde-tenue px-3 py-1.5 text-verde-scuro dark:text-verde">{g.hangman.round(round, wins)}</span>
           <span className={cn("rounded-full px-3 py-1.5", wrong.length >= 5 ? "bg-rosso-tenue text-rosso-scuro dark:text-rosso" : "bg-oro-tenue text-oro-scuro")}>
-            errori {wrong.length}/{MAX_ERR}
+            {g.hangman.errors(wrong.length, MAX_ERR)}
           </span>
         </div>
       </div>
@@ -452,7 +477,7 @@ function HangmanGame({ onBack }: { onBack: () => void }) {
         <div className="grid items-center gap-6 sm:grid-cols-2">
           <div className="text-inchiostro/70">{gallows}</div>
           <div className="text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-it">Indovina la parola</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-it">{g.hangman.guess}</p>
             <p className="mt-4 flex flex-wrap justify-center gap-1.5">
               {target.it.toLowerCase().split("").map((l, i) => (
                 <span
@@ -467,11 +492,11 @@ function HangmanGame({ onBack }: { onBack: () => void }) {
               ))}
             </p>
             {hintUsed && status === "playing" && (
-              <p className="mt-3 text-xs text-muted-it">💡 Pista: <b>{target.es}</b> · categoría {CATEGORY_META[target.cat].es}</p>
+              <p className="mt-3 text-xs text-muted-it">{g.hangman.hintLine(target.es, g.cats[target.cat])}</p>
             )}
             {status === "playing" && !hintUsed && (
               <button onClick={() => setHintUsed(true)} className="mt-4 min-h-9 rounded-lg border border-oro/50 bg-oro-tenue px-3 py-1.5 text-xs font-bold text-oro-scuro">
-                💡 Pista (−6 XP)
+                {g.hangman.hintCost}
               </button>
             )}
           </div>
@@ -479,15 +504,15 @@ function HangmanGame({ onBack }: { onBack: () => void }) {
 
         {status === "playing" && (
           <div className="mt-6 flex flex-wrap justify-center gap-1.5">
-            {HANG_KEYS.map((k) => {
+            {keys.map((k) => {
               const used = guessed.has(k);
               const hit = used && letters.includes(k);
               return (
                 <button
                   key={k}
-                  onClick={() => setGuessed((g) => new Set(g).add(k))}
+                  onClick={() => setGuessed((gs) => new Set(gs).add(k))}
                   disabled={used}
-                  aria-label={`Letra ${k}`}
+                  aria-label={g.hangman.letter(k)}
                   className={cn(
                     "h-10 w-9 rounded-lg border text-sm font-bold transition-all",
                     used ? (hit ? "border-verde bg-verde text-white" : "border-rosso/50 bg-rosso-tenue text-rosso-scuro dark:text-rosso opacity-70") : "border-soft bg-crema hover:-translate-y-0.5 hover:border-verde/50"
@@ -504,19 +529,19 @@ function HangmanGame({ onBack }: { onBack: () => void }) {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-6 text-center">
             <p className={cn("rounded-2xl p-4 font-bold", status === "won" ? "bg-verde-tenue text-verde-scuro dark:text-verde" : "bg-rosso-tenue text-rosso-scuro dark:text-rosso")}>
               {status === "won"
-                ? `🎉 Bravo! «${target.it}» = ${target.es}${hintUsed ? " (con pista)" : ""} +${hintUsed ? 8 : 14} XP`
-                : `La parola era «${target.it}» = ${target.es}`}
+                ? g.hangman.won(target.it, target.es, hintUsed, hintUsed ? 8 : 14)
+                : g.hangman.lost(target.it, target.es)}
             </p>
             <div className="mt-4 flex items-center justify-center gap-3">
-              <AudioButton text={target.it} variant="full" label="Escucha la palabra" />
+              <AudioButton text={target.it} variant="full" label={g.hangman.listen} lang={activeLang} />
               <button onClick={next} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-inchiostro px-5 py-2.5 text-sm font-bold text-crema transition-all hover:scale-105 dark:bg-verde dark:text-inchiostro">
-                Parola successiva →
+                {g.hangman.next}
               </button>
             </div>
           </motion.div>
         )}
       </div>
-      <p className="mt-4 text-center text-xs text-muted-it">Nivel {target.level} · teclado físico activo (solo letras del alfabeto italiano + vocales acentuadas).</p>
+      <p className="mt-4 text-center text-xs text-muted-it">{g.hangman.note(target.level)}</p>
     </div>
   );
 }

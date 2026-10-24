@@ -1,4 +1,4 @@
-import type { CefrLevel } from "../types";
+import type { CefrLevel, WordCategory } from "../types";
 
 /* ═══ v9.18 · Tipos del diccionario de interfaz por lengua ═══════════
    La UI (chrome, fichas, enunciados, botones) se renderiza en la lengua
@@ -664,6 +664,61 @@ export interface UiNewsStrings {
   rates: string[];
 }
 
+/* ═══ v9.41 · Juegos: nombres, tarjetas y UI interna por lengua ══════
+   Los juegos se muestran en la lengua de estudio activa (igual que
+   nav/títulos desde v9.40): cartas, botones, marcadores y notas del
+   ahorcado/memoria/ordenar/quiz. `cats` localiza las categorías de
+   vocabulario dentro de los juegos.                                    */
+export interface UiGameCard { t: string; sub: string; d: string; }
+export interface UiGamesStrings {
+  off: { title: string; body: string; back: string };
+  back: string;
+  play: string;
+  cards: { memoria: UiGameCard; quiz: UiGameCard; impiccato: UiGameCard; ordinare: UiGameCard };
+  memory: {
+    chooseCat: string; changeCat: string;
+    pairs: (n: number) => string;
+    moves: (n: number) => string;
+    restart: string;
+    won: (m: number, s: number) => string;
+    covered: string;
+    ariaCat: (c: string) => string;
+  };
+  hangman: {
+    title: string;
+    round: (r: number, w: number) => string;
+    errors: (w: number, max: number) => string;
+    guess: string;
+    hintCost: string;
+    hintLine: (es: string, cat: string) => string;
+    won: (w: string, es: string, hint: boolean, xp: number) => string;
+    lost: (w: string, es: string) => string;
+    listen: string;
+    next: string;
+    note: (level: string) => string;
+    letter: (l: string) => string;
+  };
+  order: {
+    tap: string; check: string; perfect: string; almost: string;
+    listen: string; next: string; of: (i: number, n: number) => string;
+  };
+  quiz: {
+    question: (n: number) => string;
+    points: (n: number) => string;
+    streak: (n: number) => string;
+    correct: string;
+    say: (x: string) => string;
+    srOk: string;
+    srKo: (x: string) => string;
+    score: (pct: number) => string;
+    best: (n: number) => string;
+    again: string;
+    msg: [string, string, string, string];
+    option: (l: string, o: string) => string;
+  };
+  cats: Record<WordCategory, string>;
+}
+
 export interface UiStrings {
   common: UiCommonStrings;
   nav: UiNavStrings;
@@ -694,6 +749,8 @@ export interface UiStrings {
   importatore: UiImportatoreStrings;
   pomodoro: UiPomodoroStrings;
   impostazioni: UiImpostazioniStrings;
+  /** v9.41 · vista Giochi por lengua de estudio */
+  games: UiGamesStrings;
   /** etiquetas de misión diaria por tipo (clave = QuestType) */
   questLabels: Record<string, (t: number) => string>;
 }

@@ -1,4 +1,5 @@
 import type { VocabWord, WordType, WordCategory } from "../types";
+import { DE_PLUS } from "./lang-de-plus";
 
 /* ═══ DE Dictionary · Deutsch (Deutschland) → español (A1-B1) ═══════
    Formato de líneas: Wort|es|ipa|T|cat|freq|exDe|exEs[|p=…;n=…;ff=1]
@@ -61,7 +62,7 @@ function parseDe(lines: string): VocabWord[] {
   return out;
 }
 
-export const DE_DICT: VocabWord[] = parseDe(`
+const DE_DICT_BASE: VocabWord[] = parseDe(`
 Hallo|hola|haˈloː|I|sal|5|Hallo! Wie geht es dir?|¡Hola! ¿Cómo estás?
 Guten Morgen|buenos días (por la mañana)|ˈɡuːtn̩ ˈmɔʁɡn̩|L|sal|5|Guten Morgen, Frau Müller!|¡Buenos días, señora Müller!
 Guten Tag|buenos días (durante el día)|ˈɡuːtn̩ ˈtaːk|L|sal|5|Guten Tag! Was kann ich für Sie tun?|¡Buenos días! ¿Qué puedo hacer por usted?
@@ -620,4 +621,6 @@ die Not|la penuria|noːt|S|ast|2|Die Familie lebt in großer Not.|La familia viv
 spenden|donar|ˈʃpɛndn̩|V|fin|3|Er spendet regelmäßig für die Tafel.|Dona periódicamente para el banco de alimentos.;ff=1;n=«spenden» = donar; «gastar» es ausgeben — trampa del inglés to spend
 die Rente|la pensión de jubilación|ˈʁɛntə|S|fin|2|Mit 67 geht er in Rente.|A los 67 años se jubila.;ff=1;n=«die Rente» = la pensión de jubilación; la renta (ingresos) es das Einkommen
 `);
+/* v9.41 · Basis A1-B1 + Plus-Pack B1-C2 (Stufe explizit): vollständiges Wörterbuch */
+export const DE_DICT: VocabWord[] = [...DE_DICT_BASE, ...DE_PLUS];
 export const DE_DICT_COUNT = DE_DICT.length;

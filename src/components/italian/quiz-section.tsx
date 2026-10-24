@@ -6,6 +6,7 @@ import { Check, Flame, Lightbulb, RotateCcw, Trophy, X } from "lucide-react";
 import { Mascot } from "../lms/mascot";
 import { useMemo } from "react";
 import { exercisesForLang } from "@/lib/lms/exercises";
+import { useUi } from "@/lib/lms/ui";
 import type { LangCode } from "@/lib/lms/types";
 
 /* ── Questions ────────────────────────────────────────────────────── */
@@ -89,6 +90,8 @@ const IT_QUESTIONS: Question[] = [
 const LETTERS = ["A", "B", "C", "D"];
 
 export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
+  /* v9.41 · etiquetas del quiz en la lengua de estudio activa */
+  const L = useUi().games.quiz;
   /* v9.39 · preguntas por lengua: IT usa el set histórico; EN/PT/FR/DE
      se construyen desde su banco de ejercicios (mc). */
   const QUESTIONS: Question[] = useMemo(() => {
@@ -160,13 +163,7 @@ export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
   const R = 56;
   const CIRC = 2 * Math.PI * R;
   const message =
-    pct >= 88
-      ? "Perfetto come un espresso!"
-      : pct >= 63
-        ? "Bravissimo! Ci siamo quasi."
-        : pct >= 38
-          ? "Buon lavoro — keep polishing."
-          : "Riproviamo! Every maestro began here.";
+    pct >= 88 ? L.msg[0] : pct >= 63 ? L.msg[1] : pct >= 38 ? L.msg[2] : L.msg[3];
 
   return (
     <div className="force-light mx-auto max-w-3xl">
@@ -193,7 +190,7 @@ export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-crema px-3 py-1 font-mono text-xs font-bold text-verde-scuro">
-              punti {score}
+              {L.points(score)}
             </span>
             <AnimatePresence mode="popLayout">
               <motion.span
@@ -205,7 +202,7 @@ export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
                 }`}
               >
                 <Flame className={`h-3.5 w-3.5 ${streak >= 2 ? "fill-rosso/20" : ""}`} />
-                serie {streak}
+                {L.streak(streak)}
               </motion.span>
             </AnimatePresence>
           </div>
@@ -221,7 +218,7 @@ export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
               transition={{ duration: 0.32, ease: "easeOut" }}
             >
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-oro-scuro">
-                {q.cat} · domanda {idx + 1}
+                {q.cat} · {L.question(idx + 1)}
               </p>
               <h3 className="font-display text-2xl leading-snug text-inchiostro sm:text-[1.7rem]">
                 {q.prompt}
@@ -240,7 +237,7 @@ export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
                       type="button"
                       onClick={() => pick(i)}
                       disabled={locked}
-                      aria-label={`Opzione ${LETTERS[i]}: ${opt}`}
+                      aria-label={L.option(LETTERS[i], opt)}
                       className={`flex min-h-14 items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-all duration-200 ${
                         showCorrect
                           ? "quiz-correct border-verde bg-verde-tenue"
@@ -289,7 +286,7 @@ export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
                       <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" />
                       <p>
                         <span className="font-bold">
-                          {picked === q.answer ? "Esatto! " : `Si dice “${q.options[q.answer]}”. `}
+                          {picked === q.answer ? L.correct : L.say(q.options[q.answer])}
                         </span>
                         {q.note}
                       </p>
@@ -301,8 +298,8 @@ export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
               <p className="sr-only" aria-live="polite">
                 {locked
                   ? picked === q.answer
-                    ? "Risposta esatta"
-                    : `Risposta sbagliata. La risposta corretta è ${q.options[q.answer]}`
+                    ? L.srOk
+                    : L.srKo(q.options[q.answer])
                   : ""}
               </p>
             </motion.div>
@@ -315,7 +312,7 @@ export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
               className="flex flex-col items-center py-4 text-center"
             >
               <div className="relative">
-                <svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label={`Punteggio ${pct}%`}>
+                <svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label={L.score(pct)}>
                   <circle cx="75" cy="75" r={R} fill="none" stroke="#efe8da" strokeWidth="11" />
                   <motion.circle
                     cx="75"
@@ -344,14 +341,14 @@ export function QuizSection({ lang = "it" }: { lang?: LangCode }) {
               {/* v9.34 · Pappagallo celebra el resultado del quiz lampo */}
               <Mascot pose={pct >= 63 ? "party" : "study"} className="mt-3 h-20 w-20" />
               <p className="mt-2 text-sm text-stone-500">
-                Miglior serie · best streak: <span className="font-bold text-inchiostro">{bestStreak}</span>
+                {L.best(bestStreak)}
               </p>
               <button
                 type="button"
                 onClick={restart}
                 className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-inchiostro px-6 py-3 font-semibold text-crema transition-all hover:scale-[1.03] active:scale-95"
               >
-                <RotateCcw className="h-4 w-4" /> ricomincia
+                <RotateCcw className="h-4 w-4" /> {L.again}
               </button>
             </motion.div>
           )}

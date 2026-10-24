@@ -1,4 +1,5 @@
 import type { VocabWord, WordType, WordCategory } from "../types";
+import { FR_PLUS } from "./lang-fr-plus";
 
 /* ═══ FR Dictionary · français de France → español (A1-B1) ══════════════
    Formato de líneas: mot|es|ipa|T|cat|freq|exFr|exEs[|p=…;n=…;ff=1]
@@ -59,7 +60,7 @@ function parseFr(lines: string): VocabWord[] {
   return out;
 }
 
-export const FR_DICT: VocabWord[] = parseFr(`
+const FR_DICT_BASE: VocabWord[] = parseFr(`
 # ── saludos y cortesía ─────────────────────────────────────────────
 bonjour|buenos días / hola|bɔ̃ʒuʁ|I|sal|5|Bonjour, Madame !|¡Buenos días, señora!
 bonsoir|buenas noches (al saludar)|bɔ̃swaʁ|I|sal|5|Bonsoir, entrez !|¡Buenas noches, pase!
@@ -644,4 +645,6 @@ la|la|la|T|cmu|5|La rue est calme.|La calle está tranquila.
 les|los / las|le|T|cmu|5|Les enfants dorment.|Los niños duermen.
 `);
 
+/* v9.41 · base A1-B1 + pack plus B1-C2 (niveau explicite) : dictionnaire complet */
+export const FR_DICT: VocabWord[] = [...FR_DICT_BASE, ...FR_PLUS];
 export const FR_DICT_COUNT = FR_DICT.length;

@@ -1,4 +1,5 @@
 import type { VocabWord, WordType, WordCategory } from "../types";
+import { EN_PLUS } from "./lang-en-plus";
 
 /* ═══ EN Dictionary · inglés americano → español (A1-A2) ══════════════
    Formato de líneas: word|es|ipa|T|cat|freq|exEn|exEs[|p=plural;n=note;ff=1]
@@ -59,7 +60,7 @@ function parseEn(lines: string): VocabWord[] {
   return out;
 }
 
-export const EN_DICT: VocabWord[] = parseEn(`
+const EN_DICT_BASE: VocabWord[] = parseEn(`
 hi|hola|haɪ|I|sal|5|Hi! I'm Alex.|¡Hola! Soy Alex.
 hello|hola|həˈloʊ|I|sal|5|Hello! How are you?|¡Hola! ¿Cómo estás?
 goodbye|adiós|ˌɡʊdˈbaɪ|I|sal|5|Goodbye, see you tomorrow!|Adiós, ¡hasta mañana!
@@ -701,4 +702,6 @@ temple|templo|ˈtɛmpəl|S|art|4|Home is the first temple.|La casa es el primer 
 altar|altar|ˈɔːltər|S|art|3|The altar begins at home.|El altar empieza en casa.
 church|iglesia|tʃɜːrtʃ|S|art|3|A quiet church after work.|Una iglesia tranquila después del trabajo.
 `);
+/* v9.41 · base A1-B1 + pack plus B1-C2 (nivel explícito): diccionario completo */
+export const EN_DICT: VocabWord[] = [...EN_DICT_BASE, ...EN_PLUS];
 export const EN_DICT_COUNT = EN_DICT.length;

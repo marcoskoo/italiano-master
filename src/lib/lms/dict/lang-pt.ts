@@ -1,4 +1,5 @@
 import type { VocabWord, WordType, WordCategory } from "../types";
+import { PT_PLUS } from "./lang-pt-plus";
 
 /* ═══ PT Dictionary · português europeu → español (A1-A2) ══════════════
    Formato de líneas: word|es|ipa|T|cat|freq|exPt|exEs[|p=plural;n=note;ff=1]
@@ -59,7 +60,7 @@ function parsePt(lines: string): VocabWord[] {
   return out;
 }
 
-export const PT_DICT: VocabWord[] = parsePt(`
+const PT_DICT_BASE: VocabWord[] = parsePt(`
 olá|hola|ɔˈla|I|sal|5|Olá! Como te chamas?|¡Hola! ¿Cómo te llamas?
 bom dia|buenos días|bõ ˈdiɐ|L|sal|5|Bom dia, o senhor!|¡Buenos días, señor!
 boa tarde|buenas tardes|ˈboɐ ˈtaɾdɨ|L|sal|5|Boa tarde! Deseja algo?|¡Buenas tardes! ¿Desea algo?
@@ -590,4 +591,6 @@ cidade invicta|ciudad invicta (Oporto)|siˈdaðɨ ĩˈviktɐ|L|cit|3|O Porto é 
 sócios|socios (miembros)|ˈsɔsiuʃ|S|spt|2|O Benfica tem milhões de sócios.|El Benfica tiene millones de socios.
 os três grandes|los tres grandes|uʃ tɾeʃ ɡɾɐ̃ˈdɨʃ|L|spt|3|Benfica, Sporting e Porto: os três grandes.|Benfica, Sporting y Porto: los tres grandes.
 `);
+/* v9.41 · base A1-B1 + pack plus B1-C2 (nível explícito): dicionário completo */
+export const PT_DICT: VocabWord[] = [...PT_DICT_BASE, ...PT_PLUS];
 export const PT_DICT_COUNT = PT_DICT.length;
