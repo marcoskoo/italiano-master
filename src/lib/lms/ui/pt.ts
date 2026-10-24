@@ -44,7 +44,7 @@ export const PT: UiStrings = {
     situazioni: { title: "Situações reais", sub: "A língua que realmente se usa: aeroporto, hotel, médico…" },
     cultura: { title: "Cultura", sub: "História, arte, gastronomia e gestos: a língua em contexto" },
     tutor: { title: "Tutor de IA", sub: "O teu professor disponível 24/7" },
-    giochi: { title: "Jogos", sub: "Memória, ordem de frases, quiz-relâmpago e jogo da forca" },
+    giochi: { title: "Jogos", sub: "Memória, Quiz-relâmpago e O enforcado" },
     repaso: { title: "Revisão inteligente", sub: "Repetição espaçada adaptada à tua memória" },
     esami: { title: "Exames", sub: "Provas por nível com certificado ao aprovar" },
     cils: { title: "Preparação CILS", sub: "Estrutura do exame, estratégias e simulacro cronometrado" },

@@ -2707,3 +2707,24 @@ Work Log:
 Stage Summary:
 - v9.40 fase 1 DESPLEGADA: logo del loro sin círculo (más grande y limpio), borrado de datos total/parcial siempre disponible (legal + settings), divulgación "Construida con IA" siempre visible (sidebar/footer/home/legal), herramientas nombradas en los 5 idiomas (nav+títulos), 274 fotos realistas nuevas de noticias VOA (364/450) y degradación elegante a emoji en secciones hasta completar las 302 restantes.
 - FASE 2 PENDIENTE (cuota API): 86 noticias (1 PT, 13 FR, 72 DE) + 120 secciones + 34 escritura + 62 pronunciación → correr `bun scripts/v940-manifest.ts && bun scripts/v940-generate.ts` (reanudable, salta existentes) y re-desplegar con bump de SW.
+
+---
+Task ID: v9.41
+Agent: main (Super Z)
+Task: Juegos localizados por lengua + diccionarios completos A1-C2 en los 5 idiomas + fotos realistas fase 2 (reanudación del generador perdido de v9.40)
+
+Work Log:
+- Fotos fase 2 (scripts perdidos de v9.40, reconstruidos): scripts/v941-manifest.ts (manifiesto de faltantes: 302 = 86 noticias + 120 secciones ls/rd/cs/sit/cul + 34 scrittura + 62 pronuncia; bandera --redo-news para las 90 IT de v9.29) + scripts/v941-generate.ts (1024×576 vía SDK → sharp 1008×576 webp/jpg, concurrencia 4, pacing 4 s, backoff 429 15→90 s, escritura atómica reanudable, heartbeat 30 s, filtro 1301 con fallback genérico por sección + segunda pasada ultraneutra).
+- VLM (z-ai vision) sobre muestras existentes: las fotos v9.29/v9.40 son estilo fotográfico de prensa (A) — prompts v9.41 reforzados con «NO ilustración, NO dibujo, NO 3D, NO texto» en las 3 lenguas del prompt.
+- Hallazgo crítico de infraestructura: el harness mata los procesos en background al cerrar cada llamada de Bash (setsid+nohup incluidos, muerte silenciosa sin FIN en el log). Solución: generación en primer plano por chunks `--limit N` con timeout 570 s; burst ≈ 24-32 imágenes, cuota por minutos (NO diaria): tras agotarse basta esperar ~5-10 min.
+- Juegos por lengua (ui/types.ts UiGamesStrings + sección games en it/en/pt/fr/de): cartas (t+sub+d), CTA, marcadores, categorías (37 cats localizadas), quiz completo (preguntas, puntos, serie, sr-only, mensajes de resultado, mejor serie) y notas de teclado físico. games.tsx reescrito: teclados y pool del ahorcado por alfabeto (DE ä/ö/ü/ß, EN j/k/w/x/y, PT á/â/ã/à/ç/é/ê/í/ó/ô/õ/ú, FR à/â/ç/é/è/ê/ë/î/ï/ô/ù/û/ü/œ), tarjeta «Ordina la frase» restaurada (antes inalcanzable; solo IT), AudioButton con lang, arias localizadas. quiz-section.tsx consumiendo u.games.quiz.
+- Corrección de títulos v9.40: titles.giochi.sub alineado con los nombres reales de las cartas (en/pt/fr/de; el Satzbau se anota como solo-italiano).
+- Diccionarios completos: plus-parse.ts (parser con nivel MCER explícito en 6.ª columna, freq derivado B1→3/B2-C1→2/C2→1, id <prefijo>-<lvl>-<slug> sin colisión con la base, extras p/g/n/ff/s/a/rel/r/c) + 4 packs: lang-{en,pt,fr,de}-plus.ts (EN 472 / PT 350 / FR 371 / DE 347 líneas de léxico con IPA, ES, ejemplo bilingüe y notas contrastivas) fusionados en lang-XX.ts ([...BASE, ...PLUS]).
+- vocabFor (lang-extras.ts): las lenguas no italianas ahora devuelven el diccionario completo (VOCAB ∪ DICT) — memoria/ahorcado/fichas/categorías ganan todo el léxico, como el italiano histórico (8.033).
+- Resultados: DICT EN 1.112 / PT 906 / FR 927 / DE 904 — TODAS las bandas cubiertas (B2 99-151, C1 88-128, C2 64-78 por lengua; antes B1 máximo con 1-9). IT 8.031 intacto.
+- QA: tsc 82 = baseline exacto (0 en tocados); build OK; E2E agent-browser 4 sesiones (3461-3464): DE tarjetas+CTA+nav «Spiele», ahorcado ä ö ü ß w + «ERRATE DAS WORT» + «Tipp (−6 XP)» + Niveau; EN Hangman j/k/w/x/y + memoria «Pick a category»/«Greetings»/«N pairs»; PT «O enforcado»/«Quiz-relâmpago»/«Jogar agora»; Satzbau oculto en DE/EN/PT/FR; diccionario EN 1.112 con filtro C2 mostrando plus (serendipity/quintessential); 0 errores de página, consola limpia. Capturas upload/v941-*.
+- Deploy: SW im-v9-41-0, commit 7ff3975, push → producción verificada (SW, juegos DE en alemán, diccionario 1.112, 0 errores; captura v941-prod-de-games/en-dict).
+
+Stage Summary:
+- v9.41 DESPLEGADA: juegos íntegramente en la lengua de estudio (5 idiomas), ahorcado multilingüe con alfabetos completos, tarjeta de ordenar restaurada para IT, diccionarios completos A1-C2 en EN/PT/FR/DE (falsos amigos, colocaciones, registro), fotos fase 2 en curso por chunks (109 nuevas en esta sesión: 86 noticias casi completas + inicio de secciones).
+- PENDIENTE fotos: ~191 restantes (noticias casi listas; luego 120 secciones + 34 scrittura + 62 pronuncia) → seguir con `timeout 570 bun scripts/v941-generate.ts --limit 32` (reanudable; cuota por minutos: esperar 5-10 min tras «CUOTA AGOTADA»). pt-news-c1-06 quedó con escena neutra (filtro 1301 doble): regenerar a mano con prompt específico de la avutarda/estepa de Castro Verde.

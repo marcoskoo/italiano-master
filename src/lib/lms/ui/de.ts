@@ -45,7 +45,7 @@ export const DE: UiStrings = {
     situazioni: { title: "Reale Situationen", sub: "Die wirklich gesprochene Sprache: Flughafen, Hotel, Arzt…" },
     cultura: { title: "Kultur", sub: "Geschichte, Kunst, Küche und Gesten: die Sprache im Kontext" },
     tutor: { title: "KI-Tutor", sub: "Dein Lehrer, rund um die Uhr verfügbar" },
-    giochi: { title: "Spiele", sub: "Memory, Satzordnung, Blitz-Quiz und Galgenmännchen" },
+    giochi: { title: "Spiele", sub: "Memory, Blitz-Quiz und Galgenraten — Satzbau nur auf Italienisch" },
     repaso: { title: "Intelligente Wiederholung", sub: "Spaced Repetition, angepasst an dein Gedächtnis" },
     esami: { title: "Prüfungen", sub: "Prüfungen je Niveau mit Zertifikat bei Bestehen" },
     cils: { title: "CILS-Vorbereitung", sub: "Prüfungsaufbau, Strategien und zeitgesteuerte Simulation" },

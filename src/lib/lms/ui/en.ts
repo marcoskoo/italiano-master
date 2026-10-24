@@ -80,7 +80,7 @@ export const EN: UiStrings = {
     situazioni: { title: "Real situations", sub: "The language people actually use: airport, hotel, doctor…" },
     cultura: { title: "Culture", sub: "History, art, food and gestures: the language in context" },
     tutor: { title: "AI tutor", sub: "Your teacher available 24/7" },
-    giochi: { title: "Games", sub: "Memory, sentence order, flash quiz and hangman" },
+    giochi: { title: "Games", sub: "Memory, Lightning quiz and Hangman — the sentence builder is Italian-only" },
     repaso: { title: "Smart review", sub: "Spaced repetition adapted to your memory" },
     esami: { title: "Exams", sub: "Level tests with a completion certificate when you pass" },
     cils: { title: "CILS prep", sub: "Exam structure, strategies per section and timed mock test" },
